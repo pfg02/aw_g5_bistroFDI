@@ -1,0 +1,320 @@
+<!DOCTYPE html>
+<html lang="es">
+	<head>
+		<meta charset="UTF-8">
+		<link id="estilo" rel="stylesheet" type="text/css" href="css/estilo.css">
+		<title>Bocetos</title>
+	</head>
+
+	<body>
+		<!--Lista de enlaces a las diferentes páginas-->
+		<nav>
+			<a href="index.html" class="logo-nav">
+            	<img src="img/logo.jpg" alt="Logo Bistro FDI">
+        	</a>
+			<ul>
+				<li><a href="index.html">Inicio</a></li>
+				<li><a href="detalles.html">Detalles</a></li>
+				<li><a href="bocetos.html">Bocetos</a></li>
+				<li><a href="miembros.html">Miembros</a></li>
+				<li><a href="planificacion.html">Planificación</a></li>
+				<li><a href="contacto.html">Contacto</a></li>
+			</ul>
+		</nav>
+
+		<!--Para los bocetos usamos la etiqueta figure para poner la imagen y un texto debajo con su leyenda/caption-->
+		<main>
+			<h1>Bocetos de la Aplicación</h1>
+        	<p>A continuación, presentamos los diseños iniciales de las distintas pantallas de la aplicación Bistro FDI.</p>
+            
+            <ul>
+				<li><a href="#func0">Funcionalidad 0 - Gestión de Usuarios</a></li>
+				<li><a href="#func1">Funcionalidad 1 - Gestión de Productos</a></li>
+				<li><a href="#func2">Funciondlidad 2 - Gestión de Pedidos</a></li>
+			</ul>
+
+			<section>
+                <h2 id="func0">Funcionalidad 0. Gestión de Usuarios</h2>
+
+                <!-- 1 -->
+                <figure>
+                    <img src="img/bocetos/func0/gestion_login.png" alt="Gestión login" height="50">
+                    <figcaption>Figura 0.1: Gestión login.</figcaption>
+                </figure>
+                <dl>
+                    <dt><strong>Descripción: Gestión login</strong></dt>
+                    <dd>
+                        Pantalla de autenticación donde el usuario introduce su nombre de usuario
+                        y contraseña para acceder a la aplicación.
+                    </dd>
+                </dl>
+
+                <!-- 2 -->
+                <figure>
+                    <img src="img/bocetos/func0/iniciar_y_registro.png" alt="Iniciar y registro" height="50">
+                    <figcaption>Figura 0.2: Iniciar y registro.</figcaption>
+                </figure>
+                <dl>
+                    <dt><strong>Descripción: Iniciar y registro</strong></dt>
+                    <dd>
+                        Vista que permite iniciar sesión o registrar un nuevo usuario.
+                        En el registro se almacenan nombre de usuario único, email,
+                        nombre, apellidos y contraseña. El rol por defecto es cliente.
+                    </dd>
+                </dl>
+
+                <!-- 3 -->
+                <figure>
+                    <img src="img/bocetos/func0/perfil.png" alt="Perfil" height="50">
+                    <figcaption>Figura 0.3: Perfil.</figcaption>
+                </figure>
+                <dl>
+                    <dt><strong>Descripción: Perfil</strong></dt>
+                    <dd>
+                        Pantalla donde el usuario puede visualizar y actualizar sus datos
+                        personales, incluyendo nombre de usuario, email, nombre, apellidos
+                        y rol asignado.
+                    </dd>
+                </dl>
+
+                <!-- 4 -->
+                <figure>
+                    <img src="img/bocetos/func0/avatar.png" alt="Avatar" height="50">
+                    <figcaption>Figura 0.4: Avatar.</figcaption>
+                </figure>
+                <dl>
+                    <dt><strong>Descripción: Avatar</strong></dt>
+                    <dd>
+                        Permite seleccionar un avatar predeterminado, subir una imagen
+                        personalizada o eliminar la foto para usar el avatar por defecto.
+                    </dd>
+                </dl>
+
+                <!-- 5 -->
+                <figure>
+                    <img src="img/bocetos/func0/asignar_nuevo_rol.png" alt="Asignar nuevo rol" height="50">
+                    <figcaption>Figura 0.5: Asignar nuevo rol.</figcaption>
+                </figure>
+                <dl>
+                    <dt><strong>Descripción: Asignar nuevo rol</strong></dt>
+                    <dd>
+                        Vista para que el gerente pueda modificar el rol de un usuario.
+                        Los roles son jerárquicos: cliente, camarero, cocinero y gerente.
+                    </dd>
+                </dl>
+
+            </section>
+
+			<hr>
+
+			<section>
+                <h2 id="func1">Funcionalidad 1 - Gestión de Productos</h2>
+
+                <!-- 1 -->
+                <figure>
+                    <img src="img/bocetos/func1/listado_categorias.png" alt="Listado de categorías" height="50">
+                    <figcaption>Figura 1.1: Listado de categorías.</figcaption>
+                </figure>
+                <dl>
+                    <dt><strong>Descripción: Listado de categorías</strong></dt>
+                    <dd>
+                        Vista principal donde el gerente puede visualizar todas las categorías
+                        existentes con su nombre, descripción e imagen.
+                    </dd>
+                </dl>
+
+                <!-- 2 -->
+                <figure>
+                    <img src="img/bocetos/func1/crear_nueva_categoria.png" alt="Crear nueva categoría" height="50">
+                    <figcaption>Figura 1.2: Crear nueva categoría.</figcaption>
+                </figure>
+                <dl>
+                    <dt><strong>Descripción: Crear nueva categoría</strong></dt>
+                    <dd>
+                        Formulario que permite añadir una nueva categoría introduciendo
+                        nombre, descripción e imagen opcional.
+                    </dd>
+                </dl>
+
+                <!-- 3 -->
+                <figure>
+                    <img src="img/bocetos/func1/editar_categoria.png" alt="Editar categoría" height="50">
+                    <figcaption>Figura 1.3: Editar categoría existente.</figcaption>
+                </figure>
+                <dl>
+                    <dt><strong>Descripción: Editar categoría</strong></dt>
+                    <dd>
+                        Permite modificar los datos de una categoría ya creada,
+                        incluyendo cambiar o eliminar su imagen.
+                    </dd>
+                </dl>
+
+                <!-- 4 -->
+                <figure>
+                    <img src="img/bocetos/func1/detalle_categoria.png" alt="Detalle de categoría" height="50">
+                    <figcaption>Figura 1.4: Detalle de una categoría.</figcaption>
+                </figure>
+                <dl>
+                    <dt><strong>Descripción: Detalle de categoría</strong></dt>
+                    <dd>
+                        Vista individual que muestra la información completa de una categoría.
+                    </dd>
+                </dl>
+
+                <!-- 5 -->
+                <figure>
+                    <img src="img/bocetos/func1/gestion_productos.png" alt="Gestión de productos" height="50">
+                    <figcaption>Figura 1.5: Listado de productos.</figcaption>
+                </figure>
+                <dl>
+                    <dt><strong>Descripción: Gestión de productos</strong></dt>
+                    <dd>
+                        Vista principal de gestión de productos donde se muestran los ocho atributos:
+                        nombre, descripción, categoría, imagen, precio base, IVA, disponible y ofertado.
+                    </dd>
+                </dl>
+
+                <!-- 6 -->
+                <figure>
+                    <img src="img/bocetos/func1/annadir_editar_producto.png" alt="Añadir producto" height="50">
+                    <figcaption>Figura 1.6: Añadir nuevo producto.</figcaption>
+                </figure>
+                <dl>
+                    <dt><strong>Descripción: Añadir producto</strong></dt>
+                    <dd>
+                        Formulario para crear un nuevo producto introduciendo todos sus atributos.
+                    </dd>
+                </dl>
+
+                <!-- 7 -->
+                <figure>
+                    <img src="img/bocetos/func1/annadir_editar_categoria.png" alt="Editar producto" height="50">
+                    <figcaption>Figura 1.7: Editar producto existente.</figcaption>
+                </figure>
+                <dl>
+                    <dt><strong>Descripción: Editar producto</strong></dt>
+                    <dd>
+                        Permite modificar la información del producto y actualizar automáticamente
+                        el precio final con IVA.
+                    </dd>
+                </dl>
+
+                <!-- 8 -->
+                <figure>
+                    <img src="img/bocetos/func1/retirar_de_carta.png" alt="Confirmación retirar producto" height="50">
+                    <figcaption>Figura 1.8: Confirmación de retirada de producto.</figcaption>
+                </figure>
+                <dl>
+                    <dt><strong>Descripción: Confirmación retirar producto</strong></dt>
+                    <dd>
+                        Ventana de confirmación para retirar un producto de la carta.
+                        Esta acción actualiza la propiedad "ofertado" sin eliminar el producto
+                        de la base de datos.
+                    </dd>
+                </dl>
+
+            </section>
+
+            <hr>
+
+            <section>
+                <h2 id="func2">Funcionalidad 2 - Gestión de Pedidos</h2>
+
+                <!-- 1 -->
+                <figure>
+                    <img src="img/bocetos/func2/pedido_inicio.png" alt="Pedido Inicio" height="50">
+                    <figcaption>Figura 2.1: Pantalla de inicio.</figcaption>
+                </figure>
+
+                <dl>
+                    <dt><strong>Descripción: Pantalla de inicio</strong></dt>
+                    <dd>El cliente se identifica y elige entre iniciar un nuevo pedido o consultar su historial.</dd>
+                </dl>
+
+                <!-- 2 -->
+                <figure>
+                    <img src="img/bocetos/func2/tipo_pedido.png" alt="Tipo Pedido" height="50">
+                    <figcaption>Figura 2.2: Tipo de pedido.</figcaption>
+                </figure>
+
+                <dl>
+                    <dt><strong>Descripción: Tipo de pedido</strong></dt>
+                    <dd>El cliente elige si el pedido es para consumir en el local o para llevar.</dd>
+                </dl>
+
+                <!-- 3 -->
+                <figure>
+                    <img src="img/bocetos/func2/carta.png" alt="Carta" height="50">
+                    <figcaption>Figura 2.3: Carta.</figcaption>
+                </figure>
+
+                <dl>
+                    <dt><strong>Descripción: Carta</strong></dt>
+                    <dd>El cliente añade a su pedido productos de la carta (ordenados por categoría).</dd>
+                </dl>
+
+                <!-- 4 -->
+                <figure>
+                    <img src="img/bocetos/func2/resumen_pedido.png" alt="Resumen Pedido" height="50">
+                    <figcaption>Figura 2.4: Resumen del pedido.</figcaption>
+                </figure>
+
+                <dl>
+                    <dt><strong>Descripción: Resumen del pedido</strong></dt>
+                    <dd>El cliente revisa su pedido y elige entre confirmarlo y pagar o cancelarlo.</dd>
+                </dl>
+
+                <!-- 5 -->
+                <figure>
+                    <img src="img/bocetos/func2/pago_pedido.png" alt="Pago Pedido" height="50">
+                    <figcaption>Figura 2.5: Realizar pago.</figcaption>
+                </figure>
+
+                <dl>
+                    <dt><strong>Descripción: Realizar pago</strong></dt>
+                    <dd>El cliente elige entre introducir los datos de su tarjeta y realizar el pago o pagar en caja.</dd>
+                </dl>
+
+                <!-- 6 -->
+                <figure>
+                    <img src="img/bocetos/func2/pedido_confirmado.png" alt="Pedido Confirmado" height="50">
+                    <figcaption>Figura 2.6: Pedido confirmado.</figcaption>
+                </figure>
+
+                <dl>
+                    <dt><strong>Descripción: Pedido confirmado</strong></dt>
+                    <dd>Pantalla de confirmación del pedido una vez realizado el pago.</dd>
+                </dl>
+
+                <!-- 7 -->
+                <figure>
+                    <img src="img/bocetos/func2/lista_pedidos.png" alt="Lista Pedidos" height="50">
+                    <figcaption>Figura 2.7: Lista de pedidos.</figcaption>
+                </figure>
+
+                <dl>
+                    <dt><strong>Descripción: Lista de pedidos.</strong></dt>
+                    <dd>El cliente puede ver la lista de sus pedidos con el estado y un pequeño resumen.</dd>
+                </dl>
+
+                <!-- 8 -->
+                <figure>
+                    <img src="img/bocetos/func2/gestion_pedidos.png" alt="Gestion Pedidos" height="50">
+                    <figcaption>Figura 2.8: Gestión de pedidos (camarero).</figcaption>
+                </figure>
+
+                <dl>
+                    <dt><strong>Descripción: Gestión de pedidos (camarero).</strong></dt>
+                    <dd>El camarero puede ver los pedidos que hay pendientes, preparar el pedido para llevar y ponerlo como terminado, o llevarlo al cliente y ponerlo como entregado.</dd>
+                </dl>
+
+            </section>
+
+		</main>
+
+		<!--Pie de página idéntico en todas las páginas-->
+		<footer>
+			<p>&copy; 2026 - Grupo 5 - Práctica 1</p>
+		</footer>
+	</body>
+</html>

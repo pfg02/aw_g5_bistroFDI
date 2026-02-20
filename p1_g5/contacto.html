@@ -1,0 +1,70 @@
+<!DOCTYPE html>
+<html lang="es">
+	<head>
+		<meta charset="UTF-8">
+		<link id="estilo" rel="stylesheet" type="text/css" href="css/estilo.css">
+		<title>Contacto</title>
+	</head>
+
+	<body>
+		<!--Lista de enlaces a las diferentes páginas-->
+		<nav>
+			<a href="index.html" class="logo-nav">
+            	<img src="img/logo.jpg" alt="Logo Bistro FDI">
+        	</a>
+			<ul>
+				<li><a href="index.html">Inicio</a></li>
+				<li><a href="detalles.html">Detalles</a></li>
+				<li><a href="bocetos.html">Bocetos</a></li>
+				<li><a href="miembros.html">Miembros</a></li>
+				<li><a href="planificacion.html">Planificación</a></li>
+				<li><a href="contacto.html">Contacto</a></li>
+			</ul>
+		</nav>
+
+		<main>
+			<h1>Formulario de Contacto</h1>
+			
+			<!--
+			Etiqueta para el formulario con la función mailto para que al pulsar enviarse abra la aplicación de correo con el email preredactado.
+			- El atributo required hace que los campos sean obligatorios.
+			- El atributo type=email para obligar al usuario a utilizar @.
+			- type=radio para poner los "radio buttons".
+			- Los motivos tienen el mismo atributo name para que solo deje marcar una vez.
+			- textarea para textos largos y le hemos puesto 5 filas de alto.
+			- checkbox obligatorio. El label está vinculada al checkbox para que al clicar en cualquier parte del texto se marque la casilla.
+			-->
+			<form action="mailto:bistrofdi@ucm.es" method="post" enctype="text/plain">
+			
+				<label for="nombre">Nombre:</label><br>
+				<input type="text" id="nombre" name="nombre" required><br><br>
+
+				<label for="email">Correo electrónico:</label><br>
+				<input type="email" id="email" name="email" required><br><br>
+
+				<p>Motivo de la consulta:</p>
+				<input type="radio" id="evaluacion" name="motivo" value="Evaluación">
+				<label for="evaluacion">Evaluación</label><br>
+				
+				<input type="radio" id="sugerencias" name="motivo" value="Sugerencias">
+				<label for="sugerencias">Sugerencias</label><br>
+				
+				<input type="radio" id="criticas" name="motivo" value="Críticas">
+				<label for="criticas">Críticas</label><br><br>
+
+				<label for="consulta">Escriba su consulta:</label><br>
+				<textarea id="consulta" name="consulta" rows="5" cols="40" required></textarea><br><br>
+
+				<input type="checkbox" id="terminos" name="terminos" required>
+				<label for="terminos">Marque esta casilla para verificar que ha leído nuestros términos y condiciones del servicio.</label><br><br>
+
+				<button type="submit">Enviar correo</button>
+			</form>
+		</main>
+		
+		<!--Pie de página idéntico en todas las páginas-->
+		<footer>
+			<p>&copy; 2026 - Grupo 5 - Práctica 1</p>
+		</footer>
+	</body>
+</html>
