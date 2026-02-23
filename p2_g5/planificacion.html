@@ -1,0 +1,98 @@
+<!DOCTYPE html>
+<html lang="es">
+	<head>
+		<meta charset="UTF-8">
+		<link id="estilo" rel="stylesheet" type="text/css" href="css/estilo.css">
+		<title>Planificación</title>
+	</head>
+
+	<body>
+		<!--Lista de enlaces a las diferentes páginas-->
+		<nav>
+			<a href="index.html" class="logo-nav">
+            	<img src="img/logo.jpg" alt="Logo Bistro FDI">
+        	</a>
+			<ul>
+				<li><a href="index.html">Inicio</a></li>
+				<li><a href="detalles.html">Detalles</a></li>
+				<li><a href="bocetos.html">Bocetos</a></li>
+				<li><a href="miembros.html">Miembros</a></li>
+				<li><a href="planificacion.html">Planificación</a></li>
+				<li><a href="contacto.html">Contacto</a></li>
+			</ul>
+		</nav>
+
+		<main>
+		<h1>Planificación del Proyecto</h1>
+		
+		<!--Planificación del proyecto dividido por secciones-->
+		<section>
+			<h2>Reparto de Tareas</h2>
+			<p>Para el desarrollo de esta aplicación, el equipo se ha organizado de la siguiente manera:</p>
+			<ul>
+				<li><strong>Segio Celma Sosa (SC):</strong> Responsable de la redacción de contenidos.</li>
+				<li><strong>Pablo Ferrando Galán (PF):</strong> Encargado de la estructura HTML base.</li>
+				<li><strong>Gabriel Omaña García (GO):</strong> Encargado del diseño de interfaces y del estilo.</li>
+				<li><strong>Gonzalo Rodríguez Martínez (GR):</strong> Encargado de la revisión del código.</li>
+			</ul>
+		</section>
+
+		<!--Imagen del Diagrama de Gantt que ocupe todo el ancho-->
+		<section>
+			<h2>Diagrama de Gantt</h2>
+			<p>A continuación se muestra una representación visual de nuestro calendario de trabajo:</p>
+			<img src="img/Diagrama Gantt.jpg" alt="Diagrama de Gantt">
+		</section>
+
+		<hr>
+
+		<section>
+			<h2>Tabla Resumen de Hitos</h2>
+			<p>Aquí se muestran los hitos principales y sus fechas límite:</p>
+			
+			<!--
+			Uilizamos una tabla:
+			- thead: ponemos el nombre de cada columna con th.
+			- tbody: ponemos las diferentes filas con tr y sus datos con td.
+			-->
+			<table>
+				<thead>
+					<tr>
+						<th>Hito del Proyecto</th>
+						<th>Descripción</th>
+						<th>Fecha de Terminación</th>
+					</tr>
+				</thead>
+				<tbody>
+					<tr>
+						<td><strong>Práctica 1</strong></td>
+						<td>Descripción detallada del proyecto en forma de un Sitio Web simple.</td>
+						<td>18-02-2026</td>
+					</tr>
+					<tr>
+						<td><strong>Práctica 2</strong></td>
+						<td>Diseño de la aplicación usando HTML, de la arquitectura del lado del servidor y prototipo funcional de parte de la aplicación.</td>
+						<td>06-03-2026</td>
+					</tr>
+					<tr>
+						<td><strong>Práctica 3</strong></td>
+						<td>Diseño de la apariencia de la aplicación usando hojas de estilos sobre la entrega anterior e incremento de la funcionalidad.</td>
+						<td>08-04-2026</td>
+					</tr>
+					<tr>
+						<td><strong>Entrega Final</strong></td>
+						<td>Aplicación web completa y funcional.</td>
+						<td>03-05-2026</td>
+					</tr>
+				</tbody>
+			</table>
+		</section>
+	</main>
+
+	<!--Pie de página idéntico en todas las páginas-->
+	<footer>
+			<p>&copy; 2026 - Grupo 5 - Práctica 1</p>
+	</footer>
+	
+	</body>
+</html>
