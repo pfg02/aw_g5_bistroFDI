@@ -1,13 +1,28 @@
 <?php
-$host = "localhost";
-$db_name = "bistrofdi(g5)";
-$user = "root";
-$pass = "tu_password_vps";
+// Configuración de la Base de Datos
+$db_host = "localhost";
+$db_user = "root";       
+$db_pass = "";           
+$db_name = "bistrofdi(g5)"; // Nombre exacto de tu captura
 
-try {
-    $conn = new PDO("mysql:host=$host;dbname=$db_name", $user, $pass);
-    $conn->setAttribute(PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION);
-} catch(PDOException $e) {
-    die("Error: " . $e->getMessage());
+// Jerarquía de Roles (Prioridad de menos a más)
+$JERARQUIA_ROLES = [
+    'cliente'  => 1,
+    'camarero' => 2,
+    'cocinero' => 3,
+    'gerente'  => 4
+];
+
+/**
+ * Verifica si el usuario en sesión tiene nivel suficiente
+ */
+function tienePermiso($rolMinimo) {
+    global $JERARQUIA_ROLES;
+    $rolUsuario = $_SESSION['rol'] ?? 'cliente'; // Por defecto es cliente
+    
+    $nivelUsuario = $JERARQUIA_ROLES[$rolUsuario] ?? 1;
+    $nivelRequerido = $JERARQUIA_ROLES[$rolMinimo] ?? 5; 
+    
+    return $nivelUsuario >= $nivelRequerido;
 }
 ?>
