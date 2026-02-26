@@ -1,28 +1,28 @@
 <?php
-// Configuración de la Base de Datos
+// config.php
 $db_host = "localhost";
-$db_user = "root";       
-$db_pass = "";           
-$db_name = "bistrofdi(g5)"; // Nombre exacto de tu captura
+$db_user = "root";
+$db_pass = "";
+$db_name = "bistrofdi(g5)"; // Asegúrate de que los paréntesis estén dentro
 
-// Jerarquía de Roles (Prioridad de menos a más)
+$db = new mysqli($db_host, $db_user, $db_pass, $db_name);
+
+if ($db->connect_error) {
+    die("Error de conexión: " . $db->connect_error);
+}
+
+// Jerarquía de Roles (Nivel 'gerente' es 4)
 $JERARQUIA_ROLES = [
     'cliente'  => 1,
     'camarero' => 2,
-    'cocinero' => 3,
     'gerente'  => 4
 ];
 
-/**
- * Verifica si el usuario en sesión tiene nivel suficiente
- */
 function tienePermiso($rolMinimo) {
     global $JERARQUIA_ROLES;
-    $rolUsuario = $_SESSION['rol'] ?? 'cliente'; // Por defecto es cliente
-    
+    $rolUsuario = $_SESSION['rol'] ?? 'cliente'; 
     $nivelUsuario = $JERARQUIA_ROLES[$rolUsuario] ?? 1;
     $nivelRequerido = $JERARQUIA_ROLES[$rolMinimo] ?? 5; 
-    
     return $nivelUsuario >= $nivelRequerido;
 }
 ?>
