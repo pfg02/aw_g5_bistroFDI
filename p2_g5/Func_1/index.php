@@ -30,7 +30,7 @@ session_start();
     <?php include 'nav.php'; ?>
 
     <div class="home-container">
-        <img src="img/logo.png" alt="Logo Bistró FDI" class="logo-bistro" onerror="this.src='https://via.placeholder.com/350x150?text=Logo+Bistr%C3%B3+FDI'">
+        <img src="img/logo.jpg" alt="Logo Bistró FDI" class="logo-bistro" onerror="this.src='https://via.placeholder.com/350x150?text=Logo+Bistr%C3%B3+FDI'">
         
         <h1 style="color: #343a40; margin-bottom: 5px;">Bienvenido a Bistró FDI</h1>
         <p style="color: #65676b; font-size: 1.1em;">El sistema integral de gestión de tu restaurante.</p>
