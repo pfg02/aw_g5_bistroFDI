@@ -2,7 +2,6 @@
 session_start();
 require_once 'config.php';
 
-// Seguridad: Solo Gerente
 if (!isset($_SESSION['rol']) || !tienePermiso('gerente')) {
     die("Acceso denegado.");
 }
@@ -10,7 +9,6 @@ if (!isset($_SESSION['rol']) || !tienePermiso('gerente')) {
 $id = $_GET['id'] ?? null;
 $producto = null;
 
-// 1. Cargar datos del producto si es Edición (Vista 3)
 if ($id) {
     $stmt = $db->prepare("SELECT * FROM productos WHERE id = ?");
     $stmt->bind_param("i", $id);
@@ -18,11 +16,9 @@ if ($id) {
     $producto = $stmt->get_result()->fetch_assoc();
 }
 
-// 2. Cargar categorías para el Selector (USABILIDAD)
 $res_cats = $db->query("SELECT id, nombre FROM categorias ORDER BY nombre ASC");
 $categorias = $res_cats->fetch_all(MYSQLI_ASSOC);
 
-// 3. Procesar Formulario (Crear o Actualizar)
 if ($_SERVER['REQUEST_METHOD'] == 'POST') {
     $nombre = $_POST['nombre'];
     $precio = $_POST['precio_base'];
@@ -32,15 +28,12 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
     $ofertado = $_POST['ofertado'] ?? 1;
     $descripcion = $_POST['descripcion'];
 
-    // Mantener imagen actual o procesar nuevas (Lógica simplificada)
-    $imagen = $producto['imagen'] ?? ''; 
-
     if ($id) {
         $stmt = $db->prepare("UPDATE productos SET nombre=?, precio_base=?, iva=?, id_categoria=?, stock=?, ofertado=?, descripcion=? WHERE id=?");
         $stmt->bind_param("sdiiiisi", $nombre, $precio, $iva, $cat_id, $stock, $ofertado, $descripcion, $id);
     } else {
-        $stmt = $db->prepare("INSERT INTO productos (nombre, precio_base, iva, id_categoria, stock, ofertado, descripcion) VALUES (?, ?, ?, ?, ?, 1, ?)");
-        $stmt->bind_param("sdiiis", $nombre, $precio, $iva, $cat_id, $stock, $descripcion);
+        $stmt = $db->prepare("INSERT INTO productos (nombre, precio_base, iva, id_categoria, stock, ofertado, descripcion) VALUES (?, ?, ?, ?, ?, ?, ?)");
+        $stmt->bind_param("sdiiiis", $nombre, $precio, $iva, $cat_id, $stock, $ofertado, $descripcion);
     }
     
     if ($stmt->execute()) {
@@ -55,19 +48,8 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
 <head>
     <meta charset="UTF-8">
     <title><?= $id ? 'Editar' : 'Nuevo' ?> Producto</title>
-    <style>
-        body { font-family: sans-serif; background: #f4f7f6; padding: 40px; }
-        .form-container { max-width: 500px; margin: auto; background: white; padding: 30px; border-radius: 10px; box-shadow: 0 5px 15px rgba(0,0,0,0.1); }
-        h2 { color: #333; margin-top: 0; }
-        label { display: block; margin-top: 15px; font-weight: bold; color: #555; }
-        input, select, textarea { width: 100%; padding: 10px; margin-top: 5px; border: 1px solid #ddd; border-radius: 5px; box-sizing: border-box; }
-        .precio-final-card { background: #e7f3ff; padding: 15px; border-radius: 5px; margin-top: 20px; border-left: 5px solid #1877f2; }
-        .btn-save { background: #28a745; color: white; border: none; padding: 12px; width: 100%; border-radius: 5px; cursor: pointer; font-size: 16px; margin-top: 20px; }
-        .btn-save:hover { background: #218838; }
-    </style>
-
+    <link rel="stylesheet" href="estilos.css">
     <script>
-        // Visualización y actualización automática del precio final
         function actualizarPrecio() {
             const base = parseFloat(document.getElementById('base').value) || 0;
             const iva = parseFloat(document.getElementById('iva').value) || 0;
@@ -77,6 +59,8 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
     </script>
 </head>
 <body onload="actualizarPrecio()">
+
+<?php include 'nav.php'; ?>
 
 <div class="form-container">
     <h2><?= $id ? 'Editar Producto' : 'Crear Nuevo Producto' ?></h2>
@@ -115,8 +99,14 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
         <label>Stock inicial:</label>
         <input type="number" name="stock" value="<?= $producto['stock'] ?? 0 ?>">
 
-        <button type="submit" class="btn-save">Guardar Producto</button>
-        <p style="text-align:center;"><a href="gestion_productos.php" style="color:#666; text-decoration:none;">← Volver al listado</a></p>
+        <label>Estado en Carta:</label>
+        <select name="ofertado">
+            <option value="1" <?= ($producto['ofertado'] ?? 1) == 1 ? 'selected' : '' ?>>✅ En Carta</option>
+            <option value="0" <?= ($producto['ofertado'] ?? 1) == 0 ? 'selected' : '' ?>>❌ Retirado</option>
+        </select>
+
+        <button type="submit" class="btn btn-success">Guardar Producto</button>
+        <p style="text-align:center; margin-top:20px;"><a href="gestion_productos.php" style="color:#666; text-decoration:none;">← Volver al listado</a></p>
     </form>
 </div>
 

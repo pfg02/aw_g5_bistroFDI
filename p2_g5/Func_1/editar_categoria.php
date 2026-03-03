@@ -20,10 +20,8 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
     $nombre = $_POST['nombre'];
     $descripcion = $_POST['descripcion'];
     
-    // Si no hay foto nueva, mantenemos la anterior
     $imagen = ($cat) ? $cat['imagen'] : 'default_cat.png';
 
-    // Solo procesamos si el archivo se subió correctamente
     if (isset($_FILES['imagen']) && $_FILES['imagen']['error'] === 0) {
         $nombre_foto = time() . "_" . basename($_FILES['imagen']['name']);
         if (move_uploaded_file($_FILES['imagen']['tmp_name'], "img/categorias/" . $nombre_foto)) {
@@ -47,35 +45,38 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
 ?>
 
 <!DOCTYPE html>
-<html>
+<html lang="es">
 <head>
     <meta charset="UTF-8">
-    <title>Editor</title>
-    <style>
-        body { font-family: sans-serif; padding: 30px; }
-        .form-container { max-width: 400px; margin: auto; padding: 20px; border: 1px solid #ccc; }
-        input, textarea { width: 100%; margin: 10px 0; display: block; }
-        .btn { background: #28a745; color: white; padding: 10px; border: none; width: 100%; cursor: pointer; }
-    </style>
+    <title><?= $id ? 'Editar' : 'Nueva' ?> Categoría - Bistró FDI</title>
+    <link rel="stylesheet" href="estilos.css">
 </head>
 <body>
-    <div class="form-container">
-        <h2><?= $id ? 'Editar' : 'Nueva' ?> Categoría</h2>
-        
-        <form method="POST" enctype="multipart/form-data" novalidate>
-            
-            Nombre:
-            <input type="text" name="nombre" value="<?= htmlspecialchars($cat['nombre'] ?? '') ?>" required>
 
-            Descripción:
-            <textarea name="descripcion"><?= htmlspecialchars($cat['descripcion'] ?? '') ?></textarea>
+<?php include 'nav.php'; ?>
 
-            Imagen (Puedes dejarlo vacío):
-            <input type="file" name="imagen">
-            
-            <button type="submit" class="btn">GUARDAR</button>
-            <p><a href="gestion_categorias.php">Cancelar</a></p>
-        </form>
-    </div>
+<div class="form-container">
+    <h2><?= $id ? 'Editar' : 'Nueva' ?> Categoría</h2>
+    
+    <form method="POST" enctype="multipart/form-data" novalidate>
+        <label>Nombre:</label>
+        <input type="text" name="nombre" value="<?= htmlspecialchars($cat['nombre'] ?? '') ?>" required>
+
+        <label>Descripción:</label>
+        <textarea name="descripcion" rows="3"><?= htmlspecialchars($cat['descripcion'] ?? '') ?></textarea>
+
+        <label>Imagen de la Categoría:</label>
+        <?php if($cat && $cat['imagen']): ?>
+            <div style="margin-bottom: 10px;">
+                <img src="img/categorias/<?= htmlspecialchars($cat['imagen']) ?>" width="80" style="border-radius: 6px;">
+            </div>
+        <?php endif; ?>
+        <input type="file" name="imagen" accept="image/*">
+
+        <button type="submit" class="btn btn-success" style="margin-top: 20px;">Guardar Categoría</button>
+        <p style="text-align:center; margin-top:20px;"><a href="gestion_categorias.php" style="color:#666; text-decoration:none;">← Volver al listado</a></p>
+    </form>
+</div>
+
 </body>
 </html>

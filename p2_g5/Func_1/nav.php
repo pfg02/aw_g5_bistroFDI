@@ -1,6 +1,6 @@
 <?php if (session_status() === PHP_SESSION_NONE) session_start(); ?>
 <nav>
-    <a href="index.php"><strong>Bistró FDI</strong></a>
+    <a href="index.php">Bistró FDI</a>
     <ul>
         <li><a href="index.php">Inicio</a></li>
         <?php if (isset($_SESSION['rol']) && $_SESSION['rol'] === 'gerente'): ?>
@@ -8,7 +8,7 @@
             <li><a href="gestion_productos.php">Productos</a></li>
         <?php endif; ?>
         <?php if (isset($_SESSION['username'])): ?>
-            <li><a href="perfil.php">Mi Perfil (<?= $_SESSION['username'] ?>)</a></li>
+            <li><a href="perfil.php">Perfil (<?= htmlspecialchars($_SESSION['username']) ?>)</a></li>
             <li><a href="logout.php">Salir</a></li>
         <?php else: ?>
             <li><a href="login.php">Login</a></li>
