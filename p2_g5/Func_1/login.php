@@ -39,8 +39,8 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
 <head>
     <meta charset="UTF-8">
     <title>Login - Bistró FDI</title>
-    <link rel="stylesheet" href="estilos.css">
-    <style>
+    <link rel="stylesheet" href="../css/estilos.css">   
+     <style>
         /* Un pequeño ajuste solo para centrar el login en toda la pantalla */
         body { display: flex; align-items: center; justify-content: center; min-height: 100vh; margin: 0; }
     </style>

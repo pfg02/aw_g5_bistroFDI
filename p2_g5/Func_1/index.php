@@ -6,8 +6,8 @@ session_start();
 <head>
     <meta charset="UTF-8">
     <title>Inicio - Bistró FDI</title>
-    <link rel="stylesheet" href="estilos.css">
-    <style>
+<link rel="stylesheet" href="../css/estilos.css">    
+<style>
         /* Estilos específicos para centrar el contenido en el inicio */
         .home-container {
             display: flex;

@@ -14,7 +14,7 @@ if (!isset($_SESSION['username'])) {
 <head>
     <meta charset="UTF-8">
     <title>Mi Perfil - Bistró FDI</title>
-    <link rel="stylesheet" href="estilos.css">
+<link rel="stylesheet" href="../css/estilos.css">
 </head>
 <body>
 

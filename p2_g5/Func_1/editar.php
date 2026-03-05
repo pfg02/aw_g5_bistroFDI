@@ -48,8 +48,7 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
 <head>
     <meta charset="UTF-8">
     <title><?= $id ? 'Editar' : 'Nuevo' ?> Producto</title>
-    <link rel="stylesheet" href="estilos.css">
-    <script>
+    <link rel="stylesheet" href="../css/estilos.css">    <script>
         function actualizarPrecio() {
             const base = parseFloat(document.getElementById('base').value) || 0;
             const iva = parseFloat(document.getElementById('iva').value) || 0;

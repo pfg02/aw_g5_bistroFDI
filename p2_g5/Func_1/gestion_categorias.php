@@ -7,6 +7,7 @@ if (!isset($_SESSION['rol']) || !tienePermiso('gerente')) {
     exit();
 }
 
+// Traemos las categorías (mantenemos el count por si lo necesitas en el futuro, pero no se muestra)
 $query = "SELECT c.*, COUNT(p.id) AS total_productos 
           FROM categorias c 
           LEFT JOIN productos p ON c.id = p.id_categoria 
@@ -19,7 +20,7 @@ $resultado = $db->query($query);
 <head>
     <meta charset="UTF-8">
     <title>Gestión de Categorías - Bistró FDI</title>
-    <link rel="stylesheet" href="estilos.css">
+    <link rel="stylesheet" href="../css/estilos.css">
 </head>
 <body>
 
@@ -28,39 +29,44 @@ $resultado = $db->query($query);
 <div class="container">
     <h1>Gestión de Categorías</h1>
     
+    <p class="instrucciones">Haz clic en el nombre o icono para ver los productos de esa categoría.</p>
+    
     <a href="editar_categoria.php" class="btn btn-primary" style="margin-bottom: 20px;">+ Añadir Nueva Categoría</a>
-
-    <?php if(isset($_GET['msg']) && $_GET['msg'] == 'error_fk'): ?>
-        <div style="background: #fde8e8; color: #e41e3f; padding: 15px; border-radius: 6px; margin-bottom: 20px; font-weight: bold;">
-            Error: No puedes borrar esta categoría porque tiene productos asignados.
-        </div>
-    <?php endif; ?>
 
     <table>
         <thead>
             <tr>
                 <th>Icono</th>
-                <th>Nombre</th>
+                <th>Nombre de Categoría</th>
                 <th>Descripción</th>
-                <th>Productos</th>
                 <th>Acciones</th>
             </tr>
         </thead>
         <tbody>
-            <?php while($cat = $resultado->fetch_assoc()): ?>
+            <?php while($cat = $resultado->fetch_assoc()): 
+                // Extraemos solo la primera imagen para el icono
+                $fotos = !empty($cat['imagen']) ? explode(',', $cat['imagen']) : [];
+                $icono = !empty($fotos) ? trim($fotos[0]) : 'default_cat.png';
+            ?>
             <tr>
-                <td>
-                    <img src="img/categorias/<?= $cat['imagen'] ?: 'default_cat.png' ?>" 
-                         class="img-cat" onerror="this.src='https://via.placeholder.com/50?text=Cat'">
+                <td style="width: 60px; text-align: center;">
+                    <a href="gestion_productos.php?cat_id=<?= $cat['id'] ?>">
+                        <img src="../img/categorias/<?= $icono ?>" 
+                             style="width: 45px; height: 45px; object-fit: cover; border-radius: 8px; border: 1px solid #ddd;"
+                             onerror="this.src='https://via.placeholder.com/45?text=Cat'">
+                    </a>
                 </td>
-                <td><strong><?= htmlspecialchars($cat['nombre']) ?></strong></td>
-                <td class="desc-col"><?= htmlspecialchars($cat['descripcion'] ?: 'Sin descripción') ?></td>
-                <td><span class="badge badge-success"><?= $cat['total_productos'] ?> ítems</span></td>
+                <td>
+                    <a href="gestion_productos.php?cat_id=<?= $cat['id'] ?>" style="text-decoration: none; color: #2c3e50; font-weight: bold;">
+                        <?= htmlspecialchars($cat['nombre']) ?>
+                    </a>
+                </td>
+                <td class="desc-col">
+                    <small><?= htmlspecialchars($cat['descripcion'] ?: 'Sin descripción') ?></small>
+                </td>
                 <td class="actions">
                     <a href="editar_categoria.php?id=<?= $cat['id'] ?>" class="edit">Editar</a> |
-                    <a href="borrar_categoria.php?id=<?= $cat['id'] ?>" 
-                       class="delete" 
-                       onclick="return confirm('¿Borrar esta categoría? Solo se podrá si no tiene productos.')">Borrar</a>
+                    <a href="borrar_categoria.php?id=<?= $cat['id'] ?>" class="delete" onclick="return confirm('¿Borrar categoría?')">Borrar</a>
                 </td>
             </tr>
             <?php endwhile; ?>
