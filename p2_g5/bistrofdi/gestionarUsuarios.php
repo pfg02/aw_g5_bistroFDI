@@ -13,8 +13,10 @@ $usuarios = listarUsuarios();
 <head>
     <meta charset="UTF-8">
     <title>Gestionar usuarios - Bistro FDI</title>
+    <link rel="stylesheet" href="css/estilos.css">
 </head>
 <body>
+<?php include __DIR__ . '/includes/nav.php'; ?>
 
 <h1>Gestión de usuarios</h1>
 

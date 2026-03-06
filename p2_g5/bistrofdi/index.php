@@ -1,34 +1,53 @@
 <?php
-require_once __DIR__ . '/includes/sesion.php';
+// 1. Carga de configuración y control de sesión
+require_once __DIR__ . '/includes/sesion.php'; 
+require_once __DIR__ . '/includes/config.php';
+
+// No hace falta session_start() aquí porque ya debería estar en sesion.php
 ?>
 <!DOCTYPE html>
 <html lang="es">
 <head>
     <meta charset="UTF-8">
-    <title>Bistro FDI - Inicio</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Bistró FDI - Inicio</title>
+    <link rel="stylesheet" href="css/estilos.css">
 </head>
 <body>
-    <h1>Bistro FDI - Funcionalidad 0</h1>
 
-    <?php if (usuarioLogueado()): ?>
-        <p>Hola, <?php echo htmlspecialchars($_SESSION['nombre_usuario']); ?>.</p>
+    <?php include __DIR__ . '/includes/nav.php'; ?>
 
-        <ul>
-            <li><a href="perfil.php">Mi perfil</a></li>
-
-            <?php if (tieneRolMinimo('gerente')): ?>
-                <li><a href="gestionarUsuarios.php">Gestionar usuarios</a></li>
+    <main class="contenedor-principal">
+        
+        <section class="heroe">
+            <img src="img/logo.jpg" alt="Logo Bistró FDI" class="logo-inicio">
+            
+            <h1>Bienvenido a Bistró FDI</h1>
+            
+            <?php 
+            // CORRECCIÓN: Usamos id_usuario que es la variable correcta que guarda el login
+            if (isset($_SESSION['id_usuario'])): 
+            ?>
+                <p class="saludo">Hola, bienvenido de nuevo al sistema.</p>
+                
+                <?php if (isset($_SESSION['rol']) && $_SESSION['rol'] === 'gerente'): ?>
+                    <div class="panel-admin">
+                        <p>Acceso concedido al panel de administración.</p>
+                        <a href="gestion_productos.php" class="boton-primario">Gestionar Catálogo de Productos</a>
+                    </div>
+                <?php endif; ?>
+                
+            <?php else: ?>
+                <p class="mensaje-invitado">Por favor, inicia sesión para acceder a las funciones del sistema.</p>
+                <a href="login.php" class="boton-secundario">Ir al Login</a>
             <?php endif; ?>
+        </section>
 
-            <li><a href="logout.php">Cerrar sesión</a></li>
-        </ul>
+    </main>
 
-    <?php else: ?>
-        <p>No has iniciado sesión.</p>
-        <ul>
-            <li><a href="login.php">Iniciar sesión</a></li>
-            <li><a href="registro.php">Registrarse</a></li>
-        </ul>
-    <?php endif; ?>
+    <footer>
+        <p>&copy; <?php echo date('Y'); ?> Bistró FDI - Facultad de Informática</p>
+    </footer>
+
 </body>
 </html>

@@ -25,8 +25,12 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 <head>
     <meta charset="UTF-8">
     <title>Mi perfil - Bistro FDI</title>
+    <link rel="stylesheet" href="css/estilos.css">
+    
 </head>
 <body>
+
+<?php include __DIR__ . '/includes/nav.php'; ?>
     <h1>Mi perfil</h1>
 
     <?php if ($mensajeOk): ?>

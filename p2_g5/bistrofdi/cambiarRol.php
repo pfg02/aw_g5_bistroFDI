@@ -36,8 +36,11 @@ $roles = ['cliente', 'camarero', 'cocinero', 'gerente'];
 <head>
     <meta charset="UTF-8">
     <title>Cambiar rol - Bistro FDI</title>
+    <link rel="stylesheet" href="css/estilos.css">
 </head>
 <body>
+    <?php include __DIR__ . '/includes/nav.php'; ?>
+
     <h1>Cambiar rol de usuario</h1>
 
     <?php if ($mensajeOk): ?>
