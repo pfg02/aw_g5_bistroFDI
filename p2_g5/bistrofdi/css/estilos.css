@@ -98,3 +98,130 @@ input, select, textarea { width: 100%; padding: 10px; border: 1px solid #ddd; bo
     vertical-align: middle;
     margin-left: 10px;
 }
+
+/* Asegura que el contenedor de bienvenida ocupe el centro */
+.main-bienvenida {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    min-height: calc(100vh - 80px); /* Ajuste para el nav */
+    padding: 20px;
+}
+
+/* Fuerza el centrado del contenido dentro de la tarjeta */
+.tarjeta-presentacion {
+    display: flex;
+    flex-direction: column;
+    align-items: center; /* ESTO CENTRA TODO EL CONTENIDO */
+    justify-content: center;
+}
+
+/* Botones con mejor espacio */
+.contenedor-botones-index {
+    margin-top: 20px;
+    display: flex;
+    gap: 15px;
+    justify-content: center;
+    width: 100%;
+}
+
+/* Blindaje de la celda */
+.contenedor-img-fija {
+    width: 60px;
+    height: 45px;
+    margin: 0 auto;
+    overflow: hidden; /* Corta lo que sobresalga */
+    border-radius: 4px;
+    border: 1px solid #ddd;
+    background: #f1f1f1;
+}
+
+/* Blindaje de la imagen */
+.img-tabla-pequena {
+    width: 100%;
+    height: 100%;
+    object-fit: cover; /* Ajusta y recorta sin deformar */
+    display: block;
+}
+
+/* Blindaje del texto (evita que descripciones largas estiren la fila) */
+.col-descripcion {
+    max-width: 250px;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis; /* Pone "..." al final */
+}
+
+/* =========================================
+   RECUPERACIÓN INDEX PROFESIONAL
+   ========================================= */
+
+/* Fondo con imagen */
+.body-inicio {
+    background: #1a1a1a url('../img/fondo_madera.jpg') no-repeat center center fixed;
+    background-size: cover;
+    margin: 0;
+}
+
+/* La tarjeta blanca central */
+.tarjeta-presentacion {
+    background: rgba(255, 255, 255, 0.95);
+    padding: 40px;
+    border-radius: 12px;
+    text-align: center;
+    box-shadow: 0 10px 30px rgba(0,0,0,0.5);
+    max-width: 450px;
+    width: 90%;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+}
+
+/* El logo circular centrado */
+.logo-wrapper {
+    display: flex;
+    justify-content: center;
+    margin-bottom: 20px;
+}
+
+.logo-index-pequeno {
+    width: 120px;
+    height: 120px;
+    border-radius: 50%; /* Hace el logo circular */
+    object-fit: cover;
+    border: 3px solid #bfa071; /* Borde dorado */
+    box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+}
+
+/* Textos y títulos */
+.tarjeta-presentacion h1 { font-size: 2.2rem; color: #333; margin: 10px 0; }
+.tarjeta-presentacion h1 span { color: #bfa071; }
+.lema { color: #777; font-style: italic; margin-bottom: 20px; }
+
+/* Línea divisoria elegante */
+.divisor {
+    height: 1px;
+    background: linear-gradient(to right, transparent, #bfa071, transparent);
+    margin: 20px auto;
+    width: 70%;
+}
+
+/* Estilos de bienvenida de usuario */
+.txt-bienvenida { color: #888; font-size: 0.9rem; margin: 0; }
+.user-destacado { font-size: 1.4rem; color: #2c3e50; font-weight: bold; margin: 5px 0 20px 0; }
+
+/* Botones del Index */
+.btn-login, .btn-admin {
+    background: #2c3e50;
+    color: white;
+    padding: 12px 25px;
+    border-radius: 25px;
+    text-decoration: none;
+    font-weight: bold;
+    transition: 0.3s;
+}
+
+.btn-login:hover, .btn-admin:hover {
+    background: #bfa071;
+    transform: translateY(-2px);
+}
