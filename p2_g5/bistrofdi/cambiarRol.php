@@ -1,71 +1,99 @@
 <?php
-// cambiarRol.php: vista para cambiar el rol de un usuario (solo gerente)
 require_once __DIR__ . '/includes/sesion.php';
-require_once __DIR__ . '/includes/funcionesUsuarios.php';
+require_once __DIR__ . '/includes/config.php'; 
 
 exigirLogin();
 exigirRol('gerente');
 
-$id = isset($_GET['id']) ? (int)$_GET['id'] : 0;
-$usuario = obtenerUsuarioPorId($id);
+// 1. CAPTURAMOS EL ID DE LA URL (El usuario que quieres cambiar)
+$idUsuario = isset($_GET['id']) ? (int)$_GET['id'] : 0;
 
-if (!$usuario) {
-    echo "<p>Usuario no encontrado.</p>";
-    echo '<p><a href="gestionarUsuarios.php">Volver</a></p>';
-    exit;
+if ($idUsuario <= 0) {
+    header("Location: gestionarUsuarios.php");
+    exit();
 }
 
-$mensajeOk = '';
+// 2. CONSULTA SQL: Buscamos al usuario según el ID de la URL
+// IMPORTANTE: Aquí NO usamos $_SESSION, usamos $idUsuario
+$sql = "SELECT id, nombre_usuario, rol FROM usuarios WHERE id = $idUsuario";
+$resultado = $db->query($sql);
+$usuarioAEditar = $resultado->fetch_assoc();
 
+if (!$usuarioAEditar) {
+    die("Error: El usuario que intentas editar no existe.");
+}
+
+// 3. Limpiamos el rol para la comparación
+$rolActual = strtolower(trim($usuarioAEditar['rol'])); 
+
+// 4. Procesar el cambio cuando se pulsa el botón
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
-    $nuevoRol = $_POST['nuevo_rol'] ?? 'cliente';
-
-    if (cambiarRolUsuario($id, $nuevoRol)) {
-        $mensajeOk = 'Rol actualizado correctamente.';
-        // refrescamos datos del usuario
-        $usuario = obtenerUsuarioPorId($id);
+    $nuevoRol = $_POST['rol'];
+    
+    // Evitar que el gerente se quite el cargo a sí mismo
+    if ($idUsuario == $_SESSION['id_usuario'] && $nuevoRol !== 'gerente') {
+        $error = "No puedes quitarte el rol de gerente a ti mismo por seguridad.";
     } else {
-        $mensajeOk = 'Error al actualizar el rol.';
+        $stmt = $db->prepare("UPDATE usuarios SET rol = ? WHERE id = ?");
+        $stmt->bind_param("si", $nuevoRol, $idUsuario);
+        
+        if ($stmt->execute()) {
+            header("Location: gestionarUsuarios.php?mensaje=actualizado");
+            exit();
+        } else {
+            $error = "Error al actualizar los datos.";
+        }
     }
 }
-
-$roles = ['cliente', 'camarero', 'cocinero', 'gerente'];
 ?>
+
 <!DOCTYPE html>
 <html lang="es">
 <head>
     <meta charset="UTF-8">
-    <title>Cambiar rol - Bistro FDI</title>
+    <title>Cambiar Rol - Bistro FDI</title>
     <link rel="stylesheet" href="css/estilos.css">
 </head>
-<body>
+<body class="body-inicio">
     <?php include __DIR__ . '/includes/nav.php'; ?>
 
-    <h1>Cambiar rol de usuario</h1>
+    <main class="main-bienvenida">
+        <section class="tarjeta-presentacion">
+            
+            <h2>Gestión de Permisos</h2>
+            
+            <p>Editando a: <strong><?php echo htmlspecialchars($usuarioAEditar['nombre_usuario']); ?></strong></p>
+            
+            <div class="divisor"></div>
 
-    <?php if ($mensajeOk): ?>
-        <p style="color:green;"><?php echo htmlspecialchars($mensajeOk); ?></p>
-    <?php endif; ?>
+            <?php if (isset($error)): ?>
+                <p class="error-msg"><?php echo $error; ?></p>
+            <?php endif; ?>
 
-    <p><strong>Usuario:</strong> <?php echo htmlspecialchars($usuario['nombre_usuario']); ?></p>
-    <p><strong>Nombre completo:</strong> <?php echo htmlspecialchars($usuario['nombre'] . ' ' . $usuario['apellidos']); ?></p>
-    <p><strong>Rol actual:</strong> <?php echo htmlspecialchars($usuario['rol']); ?></p>
+            <form method="POST" action="cambiarRol.php?id=<?php echo $idUsuario; ?>">
+                
+                <label for="rol">Seleccione el nuevo cargo:</label>
+                
+                <select name="rol" id="rol">
+                    <option value="cliente" <?php if($rolActual == 'cliente') echo 'selected'; ?>>Cliente</option>
+                    <option value="cocinero" <?php if($rolActual == 'cocinero') echo 'selected'; ?>>Cocinero</option>
+                    <option value="camarero" <?php if($rolActual == 'camarero') echo 'selected'; ?>>Camarero</option>
+                    <option value="gerente" <?php if($rolActual == 'gerente') echo 'selected'; ?>>Gerente</option>
+                </select>
 
-    <form method="post" action="cambiarRol.php?id=<?php echo $usuario['id']; ?>">
-        <label>Nuevo rol:
-            <select name="nuevo_rol">
-                <?php foreach ($roles as $rol): ?>
-                    <option value="<?php echo $rol; ?>"
-                        <?php if ($usuario['rol'] === $rol) echo 'selected'; ?>>
-                        <?php echo ucfirst($rol); ?>
-                    </option>
-                <?php endforeach; ?>
-            </select>
-        </label>
-        <br><br>
-        <button type="submit">Guardar cambios</button>
-    </form>
+                <button type="submit" class="btn-login">Actualizar Rango</button>
+                
+            </form>
 
-    <p><a href="gestionarUsuarios.php">Volver a gestión de usuarios</a></p>
+            <div class="contenedor-enlaces">
+                <a href="gestionarUsuarios.php">Volver al panel de gestión</a>
+            </div>
+
+        </section>
+    </main>
+
+    <footer class="footer-simple">
+        <p>&copy; <?php echo date('Y'); ?> Bistró FDI</p>
+    </footer>
 </body>
 </html>
