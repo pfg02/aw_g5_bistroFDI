@@ -47,7 +47,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             <div class="perfil-layout">
                 <div class="perfil-sidebar">
                     <div class="perfil-avatar-container">
-                        <small>Avatar actual</small>
+                       
                         <div class="avatar-wrapper">
                             <img src="<?php echo htmlspecialchars($usuario['avatar']); ?>" alt="Avatar">
                         </div>
