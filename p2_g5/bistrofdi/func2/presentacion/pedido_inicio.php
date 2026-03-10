@@ -1,25 +1,28 @@
+<?php
+
 /**
- * Vista inicial para crear un nuevo pedido.
+ * Vista para iniciar un nuevo pedido.
  * @author Gabriel Omaña
  */
 
-// exigimos inicio de sesión y rol de cliente para poder crear un nuevo pedido
-<?php
-require_once __DIR__ . '/includes/sesion.php';
+require_once __DIR__ . '/../../includes/sesion.php';
+
+// exigimos inicio de sesión y rol de cliente para poder crear un pedido
 exigirLogin();
 exigirRol('cliente');
+
 ?>
 
 <!DOCTYPE html>
 <html>
 <head>
 <meta charset="UTF-8">
-<title>Nuevo Pedido</title>
+<title>Nuevo pedido</title>
 </head>
 
 <body>
 
-<h2>Nuevo Pedido</h2>
+<h2>Nuevo pedido</h2>
 
 <form action="catalogo.php" method="POST">
 

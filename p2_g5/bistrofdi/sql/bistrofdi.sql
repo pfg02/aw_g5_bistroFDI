@@ -149,4 +149,73 @@ COMMIT;
 /*!40101 SET CHARACTER_SET_RESULTS=@OLD_CHARACTER_SET_RESULTS */;
 /*!40101 SET COLLATION_CONNECTION=@OLD_COLLATION_CONNECTION */;
 
+-- --------------------------------------------------------
+--
+-- Estructura de tabla para la tabla `pedidos`
+--
+-- --------------------------------------------------------
 
+CREATE TABLE `pedidos` (
+  `id` int(11) NOT NULL,
+  `cliente_id` int(11) NOT NULL,
+  `tipo` varchar(20) NOT NULL,
+  `estado` varchar(20) NOT NULL,
+  `fecha` datetime NOT NULL,
+  `total` decimal(10,2) NOT NULL
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+
+-- --------------------------------------------------------
+--
+-- Estructura de tabla para la tabla `pedido_productos`
+--
+-- --------------------------------------------------------
+
+CREATE TABLE `pedido_productos` (
+  `pedido_id` int(11) NOT NULL,
+  `producto_id` int(11) NOT NULL,
+  `cantidad` int(11) NOT NULL
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+
+-- --------------------------------------------------------
+--
+-- Índices para las tablas de pedidos
+--
+-- --------------------------------------------------------
+
+ALTER TABLE `pedidos`
+  ADD PRIMARY KEY (`id`),
+  ADD KEY `cliente_id` (`cliente_id`);
+
+ALTER TABLE `pedido_productos`
+  ADD PRIMARY KEY (`pedido_id`,`producto_id`),
+  ADD KEY `producto_id` (`producto_id`);
+
+-- --------------------------------------------------------
+--
+-- AUTO_INCREMENT de las tablas de pedidos
+--
+-- --------------------------------------------------------
+
+ALTER TABLE `pedidos`
+  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT;
+
+-- --------------------------------------------------------
+--
+-- Claves foráneas
+--
+-- --------------------------------------------------------
+
+ALTER TABLE `pedidos`
+  ADD CONSTRAINT `pedidos_cliente_fk`
+  FOREIGN KEY (`cliente_id`) REFERENCES `usuarios`(`id`)
+  ON DELETE CASCADE;
+
+ALTER TABLE `pedido_productos`
+  ADD CONSTRAINT `pedido_productos_pedido_fk`
+  FOREIGN KEY (`pedido_id`) REFERENCES `pedidos`(`id`)
+  ON DELETE CASCADE;
+
+ALTER TABLE `pedido_productos`
+  ADD CONSTRAINT `pedido_productos_producto_fk`
+  FOREIGN KEY (`producto_id`) REFERENCES `productos`(`id`)
+  ON DELETE CASCADE;

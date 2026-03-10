@@ -1,6 +1,9 @@
-
-
 <?php
+
+/**
+ * Clase de transferencia de datos para pedidos.
+ * @author Gabriel Omaña
+ */
 
 class PedidoDTO {
 
@@ -71,4 +74,5 @@ class PedidoDTO {
     public function setTotal($total) {
         $this->total = $total;
     }
+
 }

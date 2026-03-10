@@ -1,11 +1,12 @@
+<?php
+
 /**
- * Vista del catálogo de productos a agregar al carrito.
+ * Vista del catálogo de productos que se pueden añadir a un pedido.
  * @author Gabriel Omaña
  */
 
-<?php
 session_start();
-require_once 'includes/config.php';
+require_once __DIR__ . '/../../includes/config.php';
 
 if (!isset($_SESSION['carrito'])) {
     $_SESSION['carrito'] = [];
@@ -15,18 +16,19 @@ if ($_SERVER["REQUEST_METHOD"] === "POST" && isset($_POST["tipo"])) {
     $_SESSION["tipoPedido"] = $_POST["tipo"];
 }
 
-// bbtenemos la lista de productos de la base de datos:
+// obtenemos la lista de productos de la base de datos
+// idealmente, esto se debe hacer a través de ProductoController->ProductoServiceApp->ProductoDAO
 $productos = [];
-
+$conn = obtenerConexionBD();
 $sql = "SELECT id, nombre, precio FROM productos";
-
-$result = $db->query($sql);
+$result = $conn->query($sql);
 
 if ($result) {
     while ($row = $result->fetch_assoc()) {
         $productos[] = $row;
     }
 }
+
 ?>
 
 <!DOCTYPE html>

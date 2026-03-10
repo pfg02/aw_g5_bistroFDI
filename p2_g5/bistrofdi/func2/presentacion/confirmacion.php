@@ -1,11 +1,11 @@
+<?php
+
 /**
- * Vista para confirmar que el pedido se ha creado correctamente.
+ * Vista para mostrar la confirmación de un pedido.
  * @author Gabriel Omaña
  */
 
-<?php
-
-require_once "../business/PedidoController.php";
+require_once __DIR__ . '/../negocio/PedidoController.php';
 
 $controller = PedidoController::getInstance();
 

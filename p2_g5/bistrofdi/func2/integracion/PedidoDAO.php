@@ -1,12 +1,23 @@
-
-
 <?php
+
+/**
+ * Clase de acceso a datos para pedidos.
+ * @author Gabriel Omaña
+ */
+
+require_once __DIR__ . '/../negocio/PedidoDTO.php';
+require_once __DIR__ . '/../../includes/config.php';
 
 class PedidoDAO {
 
+    /**
+     * Guarda un nuevo pedido en la base de datos.
+     * @param PedidoDTO $pedidoDTO El objeto con los datos del pedido a guardar.
+     * @return int El ID del pedido recién creado.
+     */
     public function guardarPedido($pedidoDTO) {
 
-        global $db;
+        $conn = obtenerConexionBD();
 
         $clienteId = $pedidoDTO->getClienteId();
         $tipo = $pedidoDTO->getTipo();
@@ -17,9 +28,9 @@ class PedidoDAO {
         $sql = "INSERT INTO pedidos (cliente_id, tipo, estado, fecha, total)
                 VALUES ('$clienteId', '$tipo', '$estado', '$fecha', '$total')";
 
-        $db->query($sql);
+        $conn->query($sql);
 
-        $pedidoId = $db->insert_id;
+        $pedidoId = $conn->insert_id;
 
         $productos = $pedidoDTO->getProductos();
 
@@ -28,19 +39,24 @@ class PedidoDAO {
             $sql = "INSERT INTO pedido_productos (pedido_id, producto_id, cantidad)
                     VALUES ('$pedidoId', '$productoId', '$cantidad')";
 
-            $db->query($sql);
+            $conn->query($sql);
         }
 
         return $pedidoId;
     }
 
+    /**
+     * Busca un pedido por su ID.
+     * @param int $idPedido El ID del pedido a buscar.
+     * @return array Un array asociativo con los datos del pedido, o null si no se encuentra.
+     */
     public function buscarPedido($idPedido) {
 
-        global $db;
+        $conn = obtenerConexionBD();
 
         $sql = "SELECT * FROM pedidos WHERE id = '$idPedido'";
 
-        $result = $db->query($sql);
+        $result = $conn->query($sql);
 
         return $result->fetch_assoc();
     }

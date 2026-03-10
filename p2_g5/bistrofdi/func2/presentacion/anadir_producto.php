@@ -1,9 +1,10 @@
+<?php
+
 /**
- * Vista de confirmación para añadir un producto al carrito.
+ * Controlador para añadir un producto al carrito de un pedido en curso.
  * @author Gabriel Omaña
  */
 
-<?php
 session_start();
 
 $productoId = $_POST["productoId"];

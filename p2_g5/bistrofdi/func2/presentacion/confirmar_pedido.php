@@ -1,12 +1,13 @@
+<?php
+
 /**
- * Vista solicitando confirmación del pedido.
+ * Controlador para confirmar un pedido en curso.
  * @author Gabriel Omaña
  */
 
-<?php
 session_start();
 
-require_once "../business/PedidoController.php";
+require_once __DIR__ . '/../negocio/PedidoController.php';
 
 $controller = PedidoController::getInstance();
 

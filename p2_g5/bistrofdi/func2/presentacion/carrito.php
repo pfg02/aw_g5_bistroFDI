@@ -1,12 +1,12 @@
+<?php
+
 /**
- * Vista del carrito de productos.
+ * Vista del carrito de un pedido en curso.
  * @author Gabriel Omaña
  */
 
-<?php
 session_start();
-
-require_once 'includes/config.php';
+require_once __DIR__ . '/../../includes/config.php';
 
 $carrito = $_SESSION["carrito"] ?? [];
 
@@ -17,9 +17,10 @@ if (!empty($carrito)) {
 
     $ids = implode(",", array_keys($carrito));
 
+    // esta consulta se debería hacer de acuerdo al modelo de 3 capas
+    $conn = obtenerConexionBD();
     $sql = "SELECT id, nombre, precio FROM productos WHERE id IN ($ids)";
-
-    $result = $db->query($sql);
+    $result = $conn->query($sql);
 
     if ($result) {
         while ($row = $result->fetch_assoc()) {
@@ -27,6 +28,7 @@ if (!empty($carrito)) {
         }
     }
 }
+
 ?>
 
 <!DOCTYPE html>

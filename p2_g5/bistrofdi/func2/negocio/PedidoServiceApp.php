@@ -1,9 +1,12 @@
-
-
-
 <?php
 
-require_once __DIR__ . "/../integration/PedidoDAO.php";
+/**
+ * Servicio de negocio para la gestión de pedidos.
+ * @author Gabriel Omaña
+ */
+
+require_once __DIR__ . '/../integracion/PedidoDAO.php';
+require_once __DIR__ . '/../../includes/config.php';
 
 class PedidoServiceApp {
 
@@ -13,9 +16,16 @@ class PedidoServiceApp {
         $this->dao = new PedidoDAO();
     }
 
+    /**
+     * Crea un nuevo pedido a partir de un PedidoDTO.
+     * Calcula el total del pedido sumando el precio de cada producto por su cantidad.
+     * @param PedidoDTO $pedidoDTO El objeto con los datos del pedido a crear.
+     * @return int El ID del pedido recién creado.
+     */
     public function crearPedido($pedidoDTO) {
 
-        global $db;
+        // lo ideal sería tener un DAO de productos para acceder al precio de los productos...
+        $conn = obtenerConexionBD();
 
         $productos = $pedidoDTO->getProductos();
 
@@ -23,7 +33,7 @@ class PedidoServiceApp {
 
         $sql = "SELECT id, precio FROM productos WHERE id IN ($ids)";
 
-        $result = $db->query($sql);
+        $result = $conn->query($sql);
 
         $precios = [];
 
@@ -44,6 +54,11 @@ class PedidoServiceApp {
         return $this->dao->guardarPedido($pedidoDTO);
     }
 
+    /**
+     * Obtiene los datos de un pedido por su ID.
+     * @param int $idPedido El ID del pedido a obtener.
+     * @return array Un array asociativo con los datos del pedido, o null si no se encuentra.
+     */
     public function obtenerPedido($idPedido) {
         return $this->dao->buscarPedido($idPedido);
     }
