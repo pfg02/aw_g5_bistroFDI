@@ -5,7 +5,7 @@
  * @author Gabriel Omaña
  */
 
-require_once __DIR__ . 'includes/sesion.php';
+require_once __DIR__ . '/includes/sesion.php';
 
 // exigimos inicio de sesión y rol de cliente para poder crear un pedido
 exigirLogin();
