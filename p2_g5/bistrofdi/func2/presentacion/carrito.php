@@ -19,7 +19,7 @@ if (!empty($carrito)) {
 
     // esta consulta se debería hacer de acuerdo al modelo de 3 capas
     $conn = obtenerConexionBD();
-    $sql = "SELECT id, nombre, precio FROM productos WHERE id IN ($ids)";
+    $sql = "SELECT id, nombre, precio_base FROM productos WHERE id IN ($ids)";
     $result = $conn->query($sql);
 
     if ($result) {
@@ -51,7 +51,7 @@ if (!empty($carrito)) {
 <?php foreach ($carrito as $productoId => $cantidad): 
 
 $producto = $productos[$productoId];
-$subtotal = $producto["precio"] * $cantidad;
+$subtotal = $producto["precio_base"] * $cantidad;
 $total += $subtotal;
 
 ?>
@@ -62,7 +62,7 @@ $total += $subtotal;
 
 Cantidad: <?php echo $cantidad; ?><br>
 
-Precio: <?php echo $producto["precio"]; ?> €<br>
+Precio: <?php echo $producto["precio_base"]; ?> €<br>
 
 Subtotal: <?php echo $subtotal; ?> €
 

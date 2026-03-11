@@ -36,6 +36,7 @@ require_once __DIR__ . '/includes/config.php';
                             <a href="gestion_productos.php" class="btn-admin">Gestionar Catálogo</a>
                         <?php else: ?>
                             <a href="perfil.php" class="btn-login">Ver mi Perfil</a>
+                             <a href="func2/presentacion/pedido_inicio.php" class="btn-admin">Hacer Pedido</a>
                         <?php endif; ?>
                     </div>
                     

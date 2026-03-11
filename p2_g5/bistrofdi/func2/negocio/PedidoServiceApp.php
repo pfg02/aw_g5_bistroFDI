@@ -31,14 +31,14 @@ class PedidoServiceApp {
 
         $ids = implode(",", array_keys($productos));
 
-        $sql = "SELECT id, precio FROM productos WHERE id IN ($ids)";
+        $sql = "SELECT id, precio_base FROM productos WHERE id IN ($ids)";
 
         $result = $conn->query($sql);
 
         $precios = [];
 
         while ($row = $result->fetch_assoc()) {
-            $precios[$row["id"]] = $row["precio"];
+            $precios[$row["id"]] = $row["precio_base"];
         }
 
         $total = 0;

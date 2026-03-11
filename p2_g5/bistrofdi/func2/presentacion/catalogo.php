@@ -20,7 +20,7 @@ if ($_SERVER["REQUEST_METHOD"] === "POST" && isset($_POST["tipo"])) {
 // idealmente, esto se debe hacer a través de ProductoController->ProductoServiceApp->ProductoDAO
 $productos = [];
 $conn = obtenerConexionBD();
-$sql = "SELECT id, nombre, precio FROM productos";
+$sql = "SELECT id, nombre, precio_base FROM productos";
 $result = $conn->query($sql);
 
 if ($result) {
@@ -53,7 +53,7 @@ if ($result) {
 <div>
 
 <strong><?php echo $p["nombre"]; ?></strong>
-(<?php echo $p["precio"]; ?> €)
+(<?php echo $p["precio_base"]; ?> €)
 
 <form action="anadir_producto.php" method="POST">
 
@@ -65,13 +65,13 @@ if ($result) {
 
 </form>
 
-</div>
+	</div>
 
-<hr>
+	<hr>
 
-<?php endforeach; ?>
-
-<a href="carrito.php">Ver carrito</a>
+	<?php endforeach; ?>
+	<?php endif; ?>
+	<a href="carrito.php">Ver carrito</a>
 
 </body>
 </html>

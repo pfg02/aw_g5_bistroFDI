@@ -5,7 +5,7 @@
 define('BD_HOST', 'localhost');
 define('BD_USER', 'root');      
 define('BD_PASS', '');          
-define('BD_NAME', 'bistrofdi'); // Asegúrate de que este es el nombre de tu BD
+define('BD_NAME', 'bistrofdi');
 
 function obtenerConexionBD(): mysqli {
     $conn = new mysqli(BD_HOST, BD_USER, BD_PASS, BD_NAME);

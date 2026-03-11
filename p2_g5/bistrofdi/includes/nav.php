@@ -5,7 +5,7 @@ if (session_status() === PHP_SESSION_NONE) {
 
 // Detectamos la ruta base del proyecto para que las imágenes y enlaces no fallen nunca
 // Si tu carpeta se llama distinto a 'bistroFDI', cámbialo aquí:
-$base = "/bistroFDI/"; 
+$base = "/aw_g5_bistroFDI/p2_g5/bistrofdi/"; 
 
 // Intentamos cargar las funciones de la F0 para poder sacar la foto de avatar
 $rutaFunciones = __DIR__ . '/funcionesUsuarios.php'; // Al estar en la misma carpeta 'includes'

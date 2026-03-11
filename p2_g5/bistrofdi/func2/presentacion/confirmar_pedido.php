@@ -11,7 +11,7 @@ require_once __DIR__ . '/../negocio/PedidoController.php';
 
 $controller = PedidoController::getInstance();
 
-$clienteId = $_SESSION["usuario_id"]; 
+$clienteId = $_SESSION["id_usuario"]; 
 $tipo = $_SESSION["tipoPedido"];
 $productos = $_SESSION["carrito"];
 
