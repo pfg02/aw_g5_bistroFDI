@@ -6,7 +6,7 @@
  */
 
 require_once __DIR__ . '/../negocio/PedidoDTO.php';
-require_once __DIR__ . '/../../includes/config.php';
+require_once __DIR__ . '/../config.php';
 
 class PedidoDAO {
 

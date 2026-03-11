@@ -5,7 +5,7 @@
  * @author Gabriel Omaña
  */
 
-require_once __DIR__ . '/../negocio/PedidoController.php';
+require_once __DIR__ . 'includes/negocio/PedidoController.php';
 
 $controller = PedidoController::getInstance();
 
