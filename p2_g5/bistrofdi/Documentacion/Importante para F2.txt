@@ -17,28 +17,28 @@ gestionar estos cargos.
 No hace falta que inventéis nada para proteger las vistas. 
 Usad el motor de sesiones que hemos dejado en /includes/sesion.php:
 
-   require_once __DIR__ . '/includes/sesion.php';
-   exigirLogin(); // Echa a los que no están logueados
-   exigirRol('camarero'); // Solo deja pasar al rol indicado
+	require_once __DIR__ . '/includes/sesion.php';
+	exigirLogin(); // Echa a los que no están logueados
+	exigirRol('camarero'); // Solo deja pasar al rol indicado
 
 3. 📂 CONFIGURACIÓN Y VPS (GUACAMOLE)
 -----------------------------------------------------------
 - BASE DE DATOS: Los datos de conexión están en 'includes/config.php'. 
-  Si subís al VPS, cambiad los datos allí y funcionará en todo el sitio.
+	Si subís al VPS, cambiad los datos allí y funcionará en todo el sitio.
 - RUTAS: Usamos __DIR__ en todos los includes. Si creáis archivos nuevos, 
-  seguid esta norma para que no pete al subirlo a Linux (Guacamole).
+	seguid esta norma para que no pete al subirlo a Linux (Guacamole).
 - IMÁGENES: Las fotos de los platos van en /img/. Si no se ven al subir, 
-  revisad los permisos de la carpeta en el servidor.
+	revisad los permisos de la carpeta en el servidor.
 
 4. 🎨 DISEÑO Y RESPONSIVE
 -----------------------------------------------------------
 - CSS: Todo el estilo está en 'css/estilos.css'. 
 - Clases útiles: 
-    * .body-inicio (Fondo madera)
-    * .tarjeta-presentacion (El cuadro blanco centrado)
-    * .btn-login (Botón dorado)
-    * .tabla-gestion (Tablas limpias para los pedidos)
+	* .body-inicio (Fondo madera)
+	* .tarjeta-presentacion (El cuadro blanco centrado)
+	* .btn-login (Botón dorado)
+	* .tabla-gestion (Tablas limpias para los pedidos)
 
 - IMPORTANTE: El enunciado pide que el cliente use móvil (vertical) 
-  y el camarero tablet (apaisado). El 'viewport' ya está en el <head> 
-  de nuestras páginas, mantenedlo en las vuestras.
+	y el camarero tablet (apaisado). El 'viewport' ya está en el <head> 
+	de nuestras páginas, mantenedlo en las vuestras.

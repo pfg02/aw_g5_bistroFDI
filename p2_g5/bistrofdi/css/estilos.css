@@ -1,6 +1,6 @@
 /* =========================================
-   ESTILOS GENERALES - BISTRÓ FDI
-   ========================================= */
+	ESTILOS GENERALES - BISTRÓ FDI
+	========================================= */
 body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; margin: 0; background: #f0f2f5; color: #1c1e21; }
 .container { background: white; padding: 25px; border-radius: 12px; box-shadow: 0 4px 15px rgba(0,0,0,0.05); max-width: 1100px; margin: 40px auto; }
 h1, h2 { color: #343a40; margin-top: 0; }
@@ -56,141 +56,141 @@ input, select, textarea { width: 100%; padding: 10px; border: 1px solid #ddd; bo
 
 /* Estilos para las miniaturas de categorías/productos */
 .galeria-miniatura {
-    display: flex;
-    gap: 5px;
-    flex-wrap: wrap;
-    max-width: 150px;
+	display: flex;
+	gap: 5px;
+	flex-wrap: wrap;
+	max-width: 150px;
 }
 
 .img-cat-mini {
-    width: 40px;
-    height: 40px;
-    object-fit: cover;
-    border-radius: 4px;
-    border: 1px solid #ddd;
+	width: 40px;
+	height: 40px;
+	object-fit: cover;
+	border-radius: 4px;
+	border: 1px solid #ddd;
 }
 
 .acciones {
-    display: flex;
-    gap: 10px;
-    justify-content: center;
-    align-items: center;
+	display: flex;
+	gap: 10px;
+	justify-content: center;
+	align-items: center;
 }
 
 .acciones a {
-    padding: 6px 12px;
-    border-radius: 4px;
-    font-size: 0.9em;
-    text-decoration: none;
-    transition: opacity 0.2s;
+	padding: 6px 12px;
+	border-radius: 4px;
+	font-size: 0.9em;
+	text-decoration: none;
+	transition: opacity 0.2s;
 }
 
 .acciones a:hover {
-    opacity: 0.8;
+	opacity: 0.8;
 }
 
 .avatar-nav {
-    width: 35px;
-    height: 35px;
-    border-radius: 50%;
-    object-fit: cover;
-    border: 2px solid #fff;
-    vertical-align: middle;
-    margin-left: 10px;
+	width: 35px;
+	height: 35px;
+	border-radius: 50%;
+	object-fit: cover;
+	border: 2px solid #fff;
+	vertical-align: middle;
+	margin-left: 10px;
 }
 
 /* Asegura que el contenedor de bienvenida ocupe el centro */
 .main-bienvenida {
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    min-height: calc(100vh - 80px); /* Ajuste para el nav */
-    padding: 20px;
+	display: flex;
+	justify-content: center;
+	align-items: center;
+	min-height: calc(100vh - 80px); /* Ajuste para el nav */
+	padding: 20px;
 }
 
 /* Fuerza el centrado del contenido dentro de la tarjeta */
 .tarjeta-presentacion {
-    display: flex;
-    flex-direction: column;
-    align-items: center; /* ESTO CENTRA TODO EL CONTENIDO */
-    justify-content: center;
+	display: flex;
+	flex-direction: column;
+	align-items: center; /* ESTO CENTRA TODO EL CONTENIDO */
+	justify-content: center;
 }
 
 /* Botones con mejor espacio */
 .contenedor-botones-index {
-    margin-top: 20px;
-    display: flex;
-    gap: 15px;
-    justify-content: center;
-    width: 100%;
+	margin-top: 20px;
+	display: flex;
+	gap: 15px;
+	justify-content: center;
+	width: 100%;
 }
 
 /* Blindaje de la celda */
 .contenedor-img-fija {
-    width: 60px;
-    height: 45px;
-    margin: 0 auto;
-    overflow: hidden; /* Corta lo que sobresalga */
-    border-radius: 4px;
-    border: 1px solid #ddd;
-    background: #f1f1f1;
+	width: 60px;
+	height: 45px;
+	margin: 0 auto;
+	overflow: hidden; /* Corta lo que sobresalga */
+	border-radius: 4px;
+	border: 1px solid #ddd;
+	background: #f1f1f1;
 }
 
 /* Blindaje de la imagen */
 .img-tabla-pequena {
-    width: 100%;
-    height: 100%;
-    object-fit: cover; /* Ajusta y recorta sin deformar */
-    display: block;
+	width: 100%;
+	height: 100%;
+	object-fit: cover; /* Ajusta y recorta sin deformar */
+	display: block;
 }
 
 /* Blindaje del texto (evita que descripciones largas estiren la fila) */
 .col-descripcion {
-    max-width: 250px;
-    white-space: nowrap;
-    overflow: hidden;
-    text-overflow: ellipsis; /* Pone "..." al final */
+	max-width: 250px;
+	white-space: nowrap;
+	overflow: hidden;
+	text-overflow: ellipsis; /* Pone "..." al final */
 }
 
 /* =========================================
-   RECUPERACIÓN INDEX PROFESIONAL
-   ========================================= */
+	RECUPERACIÓN INDEX PROFESIONAL
+	========================================= */
 
 /* Fondo con imagen */
 .body-inicio {
-    background: #1a1a1a url('../img/fondo_madera.jpg') no-repeat center center fixed;
-    background-size: cover;
-    margin: 0;
+	background: #1a1a1a url('../img/fondo_madera.jpg') no-repeat center center fixed;
+	background-size: cover;
+	margin: 0;
 }
 
 /* La tarjeta blanca central */
 .tarjeta-presentacion {
-    background: rgba(255, 255, 255, 0.95);
-    padding: 40px;
-    border-radius: 12px;
-    text-align: center;
-    box-shadow: 0 10px 30px rgba(0,0,0,0.5);
-    max-width: 450px;
-    width: 90%;
-    display: flex;
-    flex-direction: column;
-    align-items: center;
+	background: rgba(255, 255, 255, 0.95);
+	padding: 40px;
+	border-radius: 12px;
+	text-align: center;
+	box-shadow: 0 10px 30px rgba(0,0,0,0.5);
+	max-width: 450px;
+	width: 90%;
+	display: flex;
+	flex-direction: column;
+	align-items: center;
 }
 
 /* El logo circular centrado */
 .logo-wrapper {
-    display: flex;
-    justify-content: center;
-    margin-bottom: 20px;
+	display: flex;
+	justify-content: center;
+	margin-bottom: 20px;
 }
 
 .logo-index-pequeno {
-    width: 120px;
-    height: 120px;
-    border-radius: 50%; /* Hace el logo circular */
-    object-fit: cover;
-    border: 3px solid #bfa071; /* Borde dorado */
-    box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+	width: 120px;
+	height: 120px;
+	border-radius: 50%; /* Hace el logo circular */
+	object-fit: cover;
+	border: 3px solid #bfa071; /* Borde dorado */
+	box-shadow: 0 4px 8px rgba(0,0,0,0.1);
 }
 
 /* Textos y títulos */
@@ -200,10 +200,10 @@ input, select, textarea { width: 100%; padding: 10px; border: 1px solid #ddd; bo
 
 /* Línea divisoria elegante */
 .divisor {
-    height: 1px;
-    background: linear-gradient(to right, transparent, #bfa071, transparent);
-    margin: 20px auto;
-    width: 70%;
+	height: 1px;
+	background: linear-gradient(to right, transparent, #bfa071, transparent);
+	margin: 20px auto;
+	width: 70%;
 }
 
 /* Estilos de bienvenida de usuario */
@@ -212,16 +212,16 @@ input, select, textarea { width: 100%; padding: 10px; border: 1px solid #ddd; bo
 
 /* Botones del Index */
 .btn-login, .btn-admin {
-    background: #2c3e50;
-    color: white;
-    padding: 12px 25px;
-    border-radius: 25px;
-    text-decoration: none;
-    font-weight: bold;
-    transition: 0.3s;
+	background: #2c3e50;
+	color: white;
+	padding: 12px 25px;
+	border-radius: 25px;
+	text-decoration: none;
+	font-weight: bold;
+	transition: 0.3s;
 }
 
 .btn-login:hover, .btn-admin:hover {
-    background: #bfa071;
-    transform: translateY(-2px);
+	background: #bfa071;
+	transform: translateY(-2px);
 }

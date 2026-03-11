@@ -28,10 +28,10 @@ SET time_zone = "+00:00";
 --
 
 CREATE TABLE `categorias` (
-  `id` int(11) NOT NULL,
-  `nombre` varchar(100) NOT NULL,
-  `descripcion` text DEFAULT NULL,
-  `imagen` text DEFAULT NULL
+	`id` int(11) NOT NULL,
+	`nombre` varchar(100) NOT NULL,
+	`descripcion` text DEFAULT NULL,
+	`imagen` text DEFAULT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 
 --
@@ -52,15 +52,15 @@ INSERT INTO `categorias` (`id`, `nombre`, `descripcion`, `imagen`) VALUES
 --
 
 CREATE TABLE `productos` (
-  `id` int(11) NOT NULL,
-  `id_categoria` int(11) DEFAULT NULL,
-  `nombre` varchar(100) NOT NULL,
-  `descripcion` text DEFAULT NULL,
-  `precio_base` decimal(10,2) DEFAULT NULL,
-  `stock` int(11) DEFAULT 0,
-  `imagen` varchar(255) DEFAULT 'default_prod.png',
-  `iva` int(11) DEFAULT 10,
-  `ofertado` tinyint(1) DEFAULT 1
+	`id` int(11) NOT NULL,
+	`id_categoria` int(11) DEFAULT NULL,
+	`nombre` varchar(100) NOT NULL,
+	`descripcion` text DEFAULT NULL,
+	`precio_base` decimal(10,2) DEFAULT NULL,
+	`stock` int(11) DEFAULT 0,
+	`imagen` varchar(255) DEFAULT 'default_prod.png',
+	`iva` int(11) DEFAULT 10,
+	`ofertado` tinyint(1) DEFAULT 1
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 
 --
@@ -78,15 +78,15 @@ INSERT INTO `productos` (`id`, `id_categoria`, `nombre`, `descripcion`, `precio_
 --
 
 CREATE TABLE `usuarios` (
-  `id` int(11) NOT NULL,
-  `nombre_usuario` varchar(50) NOT NULL,
-  `email` varchar(100) NOT NULL,
-  `nombre` varchar(50) NOT NULL,
-  `apellidos` varchar(100) NOT NULL,
-  `password_hash` varchar(255) NOT NULL,
-  `rol` enum('cliente','camarero','cocinero','gerente') NOT NULL DEFAULT 'cliente',
-  `avatar` varchar(255) DEFAULT 'img/avatares/default.jpg',
-  `fecha_alta` datetime NOT NULL DEFAULT current_timestamp()
+	`id` int(11) NOT NULL,
+	`nombre_usuario` varchar(50) NOT NULL,
+	`email` varchar(100) NOT NULL,
+	`nombre` varchar(50) NOT NULL,
+	`apellidos` varchar(100) NOT NULL,
+	`password_hash` varchar(255) NOT NULL,
+	`rol` enum('cliente','camarero','cocinero','gerente') NOT NULL DEFAULT 'cliente',
+	`avatar` varchar(255) DEFAULT 'img/avatares/default.jpg',
+	`fecha_alta` datetime NOT NULL DEFAULT current_timestamp()
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 
 --
@@ -105,22 +105,22 @@ INSERT INTO `usuarios` (`id`, `nombre_usuario`, `email`, `nombre`, `apellidos`, 
 -- Indices de la tabla `categorias`
 --
 ALTER TABLE `categorias`
-  ADD PRIMARY KEY (`id`),
-  ADD UNIQUE KEY `nombre` (`nombre`);
+	ADD PRIMARY KEY (`id`),
+	ADD UNIQUE KEY `nombre` (`nombre`);
 
 --
 -- Indices de la tabla `productos`
 --
 ALTER TABLE `productos`
-  ADD PRIMARY KEY (`id`);
+	ADD PRIMARY KEY (`id`);
 
 --
 -- Indices de la tabla `usuarios`
 --
 ALTER TABLE `usuarios`
-  ADD PRIMARY KEY (`id`),
-  ADD UNIQUE KEY `nombre_usuario` (`nombre_usuario`),
-  ADD UNIQUE KEY `email` (`email`);
+	ADD PRIMARY KEY (`id`),
+	ADD UNIQUE KEY `nombre_usuario` (`nombre_usuario`),
+	ADD UNIQUE KEY `email` (`email`);
 
 --
 -- AUTO_INCREMENT de las tablas volcadas
@@ -130,19 +130,19 @@ ALTER TABLE `usuarios`
 -- AUTO_INCREMENT de la tabla `categorias`
 --
 ALTER TABLE `categorias`
-  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=25;
+	MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=25;
 
 --
 -- AUTO_INCREMENT de la tabla `productos`
 --
 ALTER TABLE `productos`
-  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=7;
+	MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=7;
 
 --
 -- AUTO_INCREMENT de la tabla `usuarios`
 --
 ALTER TABLE `usuarios`
-  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=6;
+	MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=6;
 COMMIT;
 
 /*!40101 SET CHARACTER_SET_CLIENT=@OLD_CHARACTER_SET_CLIENT */;
@@ -156,12 +156,12 @@ COMMIT;
 -- --------------------------------------------------------
 
 CREATE TABLE `pedidos` (
-  `id` int(11) NOT NULL,
-  `cliente_id` int(11) NOT NULL,
-  `tipo` varchar(20) NOT NULL,
-  `estado` varchar(20) NOT NULL,
-  `fecha` datetime NOT NULL,
-  `total` decimal(10,2) NOT NULL
+	`id` int(11) NOT NULL,
+	`cliente_id` int(11) NOT NULL,
+	`tipo` varchar(20) NOT NULL,
+	`estado` varchar(20) NOT NULL,
+	`fecha` datetime NOT NULL,
+	`total` decimal(10,2) NOT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 
 -- --------------------------------------------------------
@@ -171,9 +171,9 @@ CREATE TABLE `pedidos` (
 -- --------------------------------------------------------
 
 CREATE TABLE `pedido_productos` (
-  `pedido_id` int(11) NOT NULL,
-  `producto_id` int(11) NOT NULL,
-  `cantidad` int(11) NOT NULL
+	`pedido_id` int(11) NOT NULL,
+	`producto_id` int(11) NOT NULL,
+	`cantidad` int(11) NOT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 
 -- --------------------------------------------------------
@@ -183,12 +183,12 @@ CREATE TABLE `pedido_productos` (
 -- --------------------------------------------------------
 
 ALTER TABLE `pedidos`
-  ADD PRIMARY KEY (`id`),
-  ADD KEY `cliente_id` (`cliente_id`);
+	ADD PRIMARY KEY (`id`),
+	ADD KEY `cliente_id` (`cliente_id`);
 
 ALTER TABLE `pedido_productos`
-  ADD PRIMARY KEY (`pedido_id`,`producto_id`),
-  ADD KEY `producto_id` (`producto_id`);
+	ADD PRIMARY KEY (`pedido_id`,`producto_id`),
+	ADD KEY `producto_id` (`producto_id`);
 
 -- --------------------------------------------------------
 --
@@ -197,7 +197,7 @@ ALTER TABLE `pedido_productos`
 -- --------------------------------------------------------
 
 ALTER TABLE `pedidos`
-  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT;
+	MODIFY `id` int(11) NOT NULL AUTO_INCREMENT;
 
 -- --------------------------------------------------------
 --
@@ -206,16 +206,16 @@ ALTER TABLE `pedidos`
 -- --------------------------------------------------------
 
 ALTER TABLE `pedidos`
-  ADD CONSTRAINT `pedidos_cliente_fk`
-  FOREIGN KEY (`cliente_id`) REFERENCES `usuarios`(`id`)
-  ON DELETE CASCADE;
+	ADD CONSTRAINT `pedidos_cliente_fk`
+	FOREIGN KEY (`cliente_id`) REFERENCES `usuarios`(`id`)
+	ON DELETE CASCADE;
 
 ALTER TABLE `pedido_productos`
-  ADD CONSTRAINT `pedido_productos_pedido_fk`
-  FOREIGN KEY (`pedido_id`) REFERENCES `pedidos`(`id`)
-  ON DELETE CASCADE;
+	ADD CONSTRAINT `pedido_productos_pedido_fk`
+	FOREIGN KEY (`pedido_id`) REFERENCES `pedidos`(`id`)
+	ON DELETE CASCADE;
 
 ALTER TABLE `pedido_productos`
-  ADD CONSTRAINT `pedido_productos_producto_fk`
-  FOREIGN KEY (`producto_id`) REFERENCES `productos`(`id`)
-  ON DELETE CASCADE;
+	ADD CONSTRAINT `pedido_productos_producto_fk`
+	FOREIGN KEY (`producto_id`) REFERENCES `productos`(`id`)
+	ON DELETE CASCADE;

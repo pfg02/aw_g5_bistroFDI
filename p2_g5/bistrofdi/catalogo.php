@@ -1,19 +1,19 @@
 <?php
 
 /**
- * Vista del catálogo de productos que se pueden añadir a un pedido.
- * @author Gabriel Omaña
- */
+	* Vista del catálogo de productos que se pueden añadir a un pedido.
+	* @author Gabriel Omaña
+	*/
 
 session_start();
 require_once __DIR__ . '/includes/config.php';
 
 if (!isset($_SESSION['carrito'])) {
-    $_SESSION['carrito'] = [];
+	$_SESSION['carrito'] = [];
 }
 
 if ($_SERVER["REQUEST_METHOD"] === "POST" && isset($_POST["tipo"])) {
-    $_SESSION["tipoPedido"] = $_POST["tipo"];
+	$_SESSION["tipoPedido"] = $_POST["tipo"];
 }
 
 // obtenemos la lista de productos de la base de datos
@@ -24,9 +24,9 @@ $sql = "SELECT id, nombre, precio_base FROM productos";
 $result = $conn->query($sql);
 
 if ($result) {
-    while ($row = $result->fetch_assoc()) {
-        $productos[] = $row;
-    }
+	while ($row = $result->fetch_assoc()) {
+	$productos[] = $row;
+	}
 }
 
 ?>

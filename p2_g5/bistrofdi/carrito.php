@@ -1,9 +1,9 @@
 <?php
 
 /**
- * Vista del carrito de un pedido en curso.
- * @author Gabriel Omaña
- */
+	* Vista del carrito de un pedido en curso.
+	* @author Gabriel Omaña
+	*/
 
 session_start();
 require_once __DIR__ . '/includes/config.php';
@@ -15,18 +15,18 @@ $total = 0;
 
 if (!empty($carrito)) {
 
-    $ids = implode(",", array_keys($carrito));
+	$ids = implode(",", array_keys($carrito));
 
-    // esta consulta se debería hacer de acuerdo al modelo de 3 capas
-    $conn = obtenerConexionBD();
-    $sql = "SELECT id, nombre, precio_base FROM productos WHERE id IN ($ids)";
-    $result = $conn->query($sql);
+	// esta consulta se debería hacer de acuerdo al modelo de 3 capas
+	$conn = obtenerConexionBD();
+	$sql = "SELECT id, nombre, precio_base FROM productos WHERE id IN ($ids)";
+	$result = $conn->query($sql);
 
-    if ($result) {
-        while ($row = $result->fetch_assoc()) {
-            $productos[$row["id"]] = $row;
-        }
-    }
+	if ($result) {
+		while ($row = $result->fetch_assoc()) {
+			$productos[$row["id"]] = $row;
+		}
+	}
 }
 
 ?>

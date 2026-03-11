@@ -1,9 +1,9 @@
 <?php
 
 /**
- * Vista para mostrar la confirmación de un pedido.
- * @author Gabriel Omaña
- */
+	* Vista para mostrar la confirmación de un pedido.
+	* @author Gabriel Omaña
+	*/
 
 require_once __DIR__ . '/includes/negocio/PedidoController.php';
 
@@ -32,7 +32,7 @@ $pedido = $controller->verPedido($idPedido);
 
 <br>
 
-<a href="pedido_inicio.php">Volver al inicio</a>
+<a href="pago.php?id=<?php echo htmlspecialchars($idPedido); ?>">Pago</a>
 
 </body>
 </html>

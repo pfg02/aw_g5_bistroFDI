@@ -1,38 +1,38 @@
 /* =========================================
-   Reset básico
+	Reset básico
 ========================================= */
 * {
-    box-sizing: border-box; 
-    margin: 0;
-    padding: 0;
+	box-sizing: border-box; 
+	margin: 0;
+	padding: 0;
 }
 
 body {
-    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-    line-height: 1.6;
-    color: #000000;
-    background-color: #ffffff;
-    
-    /* FLEXBOX */
-    display: flex;
-    flex-direction: column;
-    min-height: 100vh; /* Obliga al body a ocupar al menos el 100% del alto de la ventana */
+	font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+	line-height: 1.6;
+	color: #000000;
+	background-color: #ffffff;
+	
+	/* FLEXBOX */
+	display: flex;
+	flex-direction: column;
+	min-height: 100vh; /* Obliga al body a ocupar al menos el 100% del alto de la ventana */
 }
 
 /* =========================================
-   Estructura Principal
+	Estructura Principal
 ========================================= */
 main, header {
-    max-width: 900px; 
-    margin: 20px auto; /* Centrar las cajas horizontalmente */
-    padding: 20px;
-    background-color: #fff;
-    border-radius: 8px;
-    box-shadow: 0 2px 5px rgba(0,0,0,0.1);
-    
-    /* FLEXBOX: El <main> se expande para rellenar el hueco vacío, empujando el footer */
-    flex: 1;
-    width: 100%; 
+	max-width: 900px; 
+	margin: 20px auto; /* Centrar las cajas horizontalmente */
+	padding: 20px;
+	background-color: #fff;
+	border-radius: 8px;
+	box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+	
+	/* FLEXBOX: El <main> se expande para rellenar el hueco vacío, empujando el footer */
+	flex: 1;
+	width: 100%; 
 }
 
 /* Tipografía general */
@@ -48,71 +48,71 @@ main li { margin-bottom: 8px; }
 	Menú de Navegación
 ========================================= */
 nav {
-    background-color: #2c3e50;
-    padding: 10px 30px;
-    
-    /* FLEXBOX: poner el logo a la izq. y el menú a la der. */
-    display: flex;
-    justify-content: space-between; 
-    align-items: center; 
+	background-color: #2c3e50;
+	padding: 10px 30px;
+	
+	/* FLEXBOX: poner el logo a la izq. y el menú a la der. */
+	display: flex;
+	justify-content: space-between; 
+	align-items: center; 
 }
 
 .logo-nav img {
-    height: 40px; /* Fija la altura del logo para que no deforme el menú */
-    width: auto;
+	height: 40px; /* Fija la altura del logo para que no deforme el menú */
+	width: auto;
 	border-radius: 8px;
-    display: block; 
+	display: block; 
 }
 
 nav ul { list-style: none; } /* Quitar los puntos de la lista */
 
 nav ul li {
-    display: inline; /* Coloca los enlaces del menú en horizontal */
-    margin: 0 15px;
+	display: inline; /* Coloca los enlaces del menú en horizontal */
+	margin: 0 15px;
 }
 
 nav ul li a {
-    color: #fff;
-    text-decoration: none;
-    font-weight: bold;
-    padding: 5px 10px;
-    border-radius: 4px;
-    transition: background 0.3s; /* Crear una animación suave al pasar el ratón */
+	color: #fff;
+	text-decoration: none;
+	font-weight: bold;
+	padding: 5px 10px;
+	border-radius: 4px;
+	transition: background 0.3s; /* Crear una animación suave al pasar el ratón */
 }
 
 nav ul li a:hover { background-color: #34495e; }
 
 /* =========================================
-   Imágenes y Figuras
+	Imágenes y Figuras
 ========================================= */
 img {
-    max-width: 100%;
-    height: auto;
-    border-radius: 4px;
+	max-width: 100%;
+	height: auto;
+	border-radius: 4px;
 }
 
 figure {
-    margin: 20px 0;
-    padding: 15px;
-    background-color: #ecf0f1;
-    border-radius: 8px;
-    text-align: center;
+	margin: 20px 0;
+	padding: 15px;
+	background-color: #ecf0f1;
+	border-radius: 8px;
+	text-align: center;
 }
 
 figure img {
-    height: 350px !important; 
-    object-fit: contain; 
+	height: 350px !important; 
+	object-fit: contain; 
 }
 
 figcaption {
-    font-size: 0.9em;
-    color: #7f8c8d;
-    margin-top: 10px;
-    font-style: italic;
+	font-size: 0.9em;
+	color: #7f8c8d;
+	margin-top: 10px;
+	font-style: italic;
 }
 
 /* =========================================
-   Tablas (Planificación)
+	Tablas (Planificación)
 ========================================= */
 table { 
 	width: 100%; 
@@ -132,44 +132,44 @@ th {
 }
 
 /* =========================================
-   Contacto
+	Contacto
 ========================================= */
 form { max-width: 600px; }
 
 input[type="text"], input[type="email"], textarea {
-    width: 100%;
-    padding: 10px;
-    margin-top: 5px;
-    margin-bottom: 15px;
-    border: 1px solid #ccc;
-    border-radius: 4px;
-    font-family: inherit; 
+	width: 100%;
+	padding: 10px;
+	margin-top: 5px;
+	margin-bottom: 15px;
+	border: 1px solid #ccc;
+	border-radius: 4px;
+	font-family: inherit; 
 }
 
 button {
-    background-color: #27ae60;
-    color: white;
-    border: none;
-    padding: 10px 20px;
-    font-size: 1em;
-    border-radius: 4px;
-    cursor: pointer;
+	background-color: #27ae60;
+	color: white;
+	border: none;
+	padding: 10px 20px;
+	font-size: 1em;
+	border-radius: 4px;
+	cursor: pointer;
 }
 
 button:hover { background-color: #219150; }
 
 /* =========================================
-   Pie de página (Footer)
+	Pie de página (Footer)
 ========================================= */
 footer {
-    background-color: #2c3e50;
-    color: #ecf0f1;
-    text-align: center;
-    padding: 20px 0;
-    
-    /* Estructura flex para empujarse hacia abajo del todo */
-    margin-top: auto; 
-    width: 100%;
+	background-color: #2c3e50;
+	color: #ecf0f1;
+	text-align: center;
+	padding: 20px 0;
+	
+	/* Estructura flex para empujarse hacia abajo del todo */
+	margin-top: auto; 
+	width: 100%;
 }
 
 footer p { 
@@ -178,44 +178,44 @@ footer p {
 }
 
 /* =========================================
-   Listas de Descripción
+	Listas de Descripción
 ========================================= */
 dl {
-    margin: 20px 0;
-    padding: 20px;
-    background-color: #f4f6f7; 
-    border-left: 5px solid #2c3e50; /* Línea lateral decorativa */
-    border-radius: 0 8px 8px 0;
+	margin: 20px 0;
+	padding: 20px;
+	background-color: #f4f6f7; 
+	border-left: 5px solid #2c3e50; /* Línea lateral decorativa */
+	border-radius: 0 8px 8px 0;
 }
 
 dt {
-    font-weight: bold;
-    color: #2c3e50; 
-    font-size: 1.15em;
-    margin-top: 15px;
-    border-bottom: 1px solid #ddd;
-    padding-bottom: 5px;
+	font-weight: bold;
+	color: #2c3e50; 
+	font-size: 1.15em;
+	margin-top: 15px;
+	border-bottom: 1px solid #ddd;
+	padding-bottom: 5px;
 }
 
 dt:first-child { margin-top: 0; } /* El primer título de la lista no tiene margen superior */
 
 dd {
-    margin-left: 0; 
-    padding-left: 10px; 
-    margin-top: 10px;
-    margin-bottom: 20px;
-    color: #444; 
+	margin-left: 0; 
+	padding-left: 10px; 
+	margin-top: 10px;
+	margin-bottom: 20px;
+	color: #444; 
 }
 
 dd:last-child { margin-bottom: 0; }
 
 /* =========================================
-   Fotos de Perfil (Miembros)
+	Fotos de Perfil (Miembros)
 ========================================= */
 .foto-perfil {
-    width: 100px;
-    height: 100px !important; /* Para ignorar el height auto general */
-    object-fit: cover; /* Recortar la foto como un cuadrado sin deformar la cara */
-    border-radius: 50%; 
-    box-shadow: 0 2px 4px rgba(0,0,0,0.2);
+	width: 100px;
+	height: 100px !important; /* Para ignorar el height auto general */
+	object-fit: cover; /* Recortar la foto como un cuadrado sin deformar la cara */
+	border-radius: 50%; 
+	box-shadow: 0 2px 4px rgba(0,0,0,0.2);
 }

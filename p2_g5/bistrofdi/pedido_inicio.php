@@ -1,9 +1,9 @@
 <?php
 
 /**
- * Vista para iniciar un nuevo pedido.
- * @author Gabriel Omaña
- */
+	* Vista para iniciar un nuevo pedido.
+	* @author Gabriel Omaña
+	*/
 
 require_once __DIR__ . '/includes/sesion.php';
 
@@ -29,8 +29,8 @@ exigirRol('cliente');
 <label for="tipo">Tipo de pedido:</label>
 
 <select name="tipo" id="tipo">
-    <option value="LOCAL">Consumir en local</option>
-    <option value="LLEVAR">Para llevar</option>
+	<option value="LOCAL">Consumir en local</option>
+	<option value="LLEVAR">Para llevar</option>
 </select>
 
 <br><br>

@@ -1,9 +1,9 @@
 <?php
 
 /**
- * Controlador para confirmar un pedido en curso.
- * @author Gabriel Omaña
- */
+	* Controlador para confirmar un pedido en curso.
+	* @author Gabriel Omaña
+	*/
 
 session_start();
 
