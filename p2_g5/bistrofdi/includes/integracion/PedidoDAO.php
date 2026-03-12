@@ -2,8 +2,7 @@
 
 /**
 	* Clase de acceso a datos para pedidos.
-	* @author Gabriel Omaña
-	*/
+*/
 
 require_once __DIR__ . '/../negocio/PedidoDTO.php';
 require_once __DIR__ . '/../config.php';
@@ -15,34 +14,64 @@ class PedidoDAO {
 	* @param PedidoDTO $pedidoDTO El objeto con los datos del pedido a guardar.
 	* @return int El ID del pedido recién creado.
 	*/
+
 	public function guardarPedido($pedidoDTO) {
 
-	$conn = obtenerConexionBD();
+		$conn = obtenerConexionBD();
 
-	$clienteId = $pedidoDTO->getClienteId();
-	$tipo = $pedidoDTO->getTipo();
-	$estado = $pedidoDTO->getEstado();
-	$fecha = $pedidoDTO->getFecha();
-	$total = $pedidoDTO->getTotal();
+		$conn->begin_transaction();
 
-	$sql = "INSERT INTO pedidos (cliente_id, tipo, estado, fecha, total)
-	VALUES ('$clienteId', '$tipo', '$estado', '$fecha', '$total')";
+		try {
+			// Extraemos los datos del DTO
+			$pedidoId = $pedidoDTO->getId();
+			$clienteId = $pedidoDTO->getClienteId();
+			$tipo = $pedidoDTO->getTipo();
+			$estado = $pedidoDTO->getEstado();
+			$fecha = $pedidoDTO->getFecha();
+			$total = $pedidoDTO->getTotal();
 
-	$conn->query($sql);
+			// Calcular el numero de pedido diario
+			$hoy = date('Y-m-d');
+			$sqlNum = "SELECT MAX(numero_pedido) as max_num FROM pedidos WHERE DATE(fecha) = ?";
+			$stmtNum = $conn->prepare($sqlNum);
+			$stmtNum->bind_param("s", $hoy);
+			$stmtNum->execute();
+			$resNum = $stmtNum->get_result()->fetch_assoc();
 
-	$pedidoId = $conn->insert_id;
+			// Si hay pedidos hoy, sumamos 1 al máximo. Si no, es el pedido 1 del día.
+			$numeroPedido = ($resNum['max_num'] !== null) ? $resNum['max_num'] + 1 : 1;
+			$stmtNum->close();
 
-	$productos = $pedidoDTO->getProductos();
+			$sqlPedido = "INSERT INTO pedidos (cliente_id, numero_pedido, tipo, estado, fecha, total) VALUES (?, ?, ?, ?, ?, ?)";
+			$stmtPedido = $conn->prepare($sqlPedido);
+			$stmtPedido->bind_param("iisssd", $clienteId, $numeroPedido, $tipo, $estado, $fecha, $total);
+			$stmtPedido->execute();
 
-	foreach ($productos as $productoId => $cantidad) {
+			// Capturamos el ID autonumérico que MySQL ha dado al nuevo pedido
+			$pedidoId = $conn->insert_id;
+			$stmtPedido->close();
 
-	$sql = "INSERT INTO pedido_productos (pedido_id, producto_id, cantidad)
-	VALUES ('$pedidoId', '$productoId', '$cantidad')";
+			// Guardar los productos en la tabla intermedia
+			$productos = $pedidoDTO->getProductos();
+			$sqlProductos = "INSERT INTO pedido_productos (pedido_id, producto_id, cantidad) VALUES (?, ?, ?)";
+			$stmtProductos = $conn->prepare($sqlProductos);
 
-	$conn->query($sql);
-	}
+			foreach ($productos as $productoId => $cantidad) {
+				$stmtProductos->bind_param("iii", $pedidoId, $productoId, $cantidad);
+				$stmtProductos->execute();
+			}
+			$stmtProductos->close();
 
-	return $pedidoId;
+			// Confirmamos los cambios en la BD
+			$conn->commit();
+
+			return $pedidoId;
+
+		} catch (Exception $e) {
+			// Si algo falla, revertimos los cambios
+			$conn->rollback();
+			throw $e; // Re-lanzamos la excepción para que el controlador pueda manejarla
+		}
 	}
 
 	/**
@@ -52,13 +81,66 @@ class PedidoDAO {
 	*/
 	public function buscarPedido($idPedido) {
 
-	$conn = obtenerConexionBD();
+		$conn = obtenerConexionBD();
 
-	$sql = "SELECT * FROM pedidos WHERE id = '$idPedido'";
+		$sql = "SELECT * FROM pedidos WHERE id = ?";
+		$stmt = $conn->prepare($sql);
+		$stmt->bind_param("i", $idPedido);
+		$stmt->execute();
+		
+		$result = $stmt->get_result();
+		$pedido = $result->fetch_assoc();
 
-	$result = $conn->query($sql);
+		$stmt->close();
 
-	return $result->fetch_assoc();
+		return $pedido;
 	}
 
+	/**
+	* Actualiza el estado de un pedido existente.
+	* * @param int $idPedido El ID autonumérico del pedido.
+	* @param string $nuevoEstado El nuevo estado (ej. 'En preparación', 'Terminado').
+	* @return bool True si se actualizó correctamente, False en caso de error.
+	*/
+	public function actualizarEstado($idPedido, $nuevoEstado) {
+		
+		$conn = obtenerConexionBD();
+
+		$sql = "UPDATE pedidos SET estado = ? WHERE id = ?";
+        $stmt = $conn->prepare($sql);
+		$stmt->bind_param("si", $nuevoEstado, $idPedido);
+        
+		$exito = $stmt->execute();
+		$stmt->close();
+
+		return $exito;
+    }
+
+    /**
+	* Obtiene todo el historial de pedidos de un cliente específico.
+	* * @param int $idCliente El ID autonumérico del usuario.
+	* @return array Un array de arrays asociativos con los datos de todos sus pedidos.
+	*/
+	public function obtenerPedidosPorCliente($idCliente) {
+
+		$conn = obtenerConexionBD();
+
+		// Buscar los pedidos del cliente y ordenarlos del más reciente al más antiguo
+		$sql = "SELECT * FROM pedidos WHERE cliente_id = ? ORDER BY fecha DESC";
+        $stmt = $conn->prepare($sql);
+		$stmt->bind_param("i", $idCliente);
+		$stmt->execute();
+        
+		$result = $stmt->get_result();
+		$pedidos = [];
+
+		// Extraemos todas las filas encontradas en un array
+		while ($row = $result->fetch_assoc()) {
+			$pedidos[] = $row;
+        }
+
+		$stmt->close();
+		
+		return $pedidos;
+    }
 }

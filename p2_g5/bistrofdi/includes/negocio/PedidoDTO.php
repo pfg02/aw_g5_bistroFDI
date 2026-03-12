@@ -2,8 +2,7 @@
 
 /**
 	* Clase de transferencia de datos para pedidos.
-	* @author Gabriel Omaña
-	*/
+*/
 
 class PedidoDTO {
 
