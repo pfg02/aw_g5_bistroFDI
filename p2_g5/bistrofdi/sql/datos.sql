@@ -31,13 +31,13 @@ INSERT INTO productos (id_categoria, nombre, descripcion, precio_base, stock, im
 -- POBLAR USUARIOS
 -- Contraseña para TODOS: 123456
 -- --------------------------------------------------------
-INSERT INTO usuarios (nombre_usuario, email, nombre, apellidos, password_hash, rol) VALUES
-	('admin', 'gerente@bistrofdi.es', 'Carlos', 'Gerente', '$2y$10$dQIYUskupVUKinCqeaDPWuI7W2oEUausA02XYxO3J5LjDSWnNm52C', 'gerente'),
-	('chef_chicote', 'chicote@bistrofdi.es', 'Alberto', 'Chicote', '$2y$10$dQIYUskupVUKinCqeaDPWuI7W2oEUausA02XYxO3J5LjDSWnNm52C', 'cocinero'),
-	('camarero_juan', 'juan@bistrofdi.es', 'Juan', 'Pérez', '$2y$10$dQIYUskupVUKinCqeaDPWuI7W2oEUausA02XYxO3J5LjDSWnNm52C', 'camarero'),
-	('ana_cliente', 'ana@gmail.com', 'Ana', 'Martínez', '$2y$10$dQIYUskupVUKinCqeaDPWuI7W2oEUausA02XYxO3J5LjDSWnNm52C', 'cliente'),
-	('luis_cliente', 'luis@hotmail.com', 'Luis', 'Fernández', '$2y$10$dQIYUskupVUKinCqeaDPWuI7W2oEUausA02XYxO3J5LjDSWnNm52C', 'cliente'),
-	('maria_cliente', 'maria@yahoo.es', 'María', 'Sánchez', '$2y$10$dQIYUskupVUKinCqeaDPWuI7W2oEUausA02XYxO3J5LjDSWnNm52C', 'cliente');
+INSERT INTO usuarios (nombre_usuario, email, nombre, apellidos, password_hash, rol, avatar) VALUES
+	('admin', 'gerente@bistrofdi.es', 'Carlos', 'Gerente', '$2y$10$dQIYUskupVUKinCqeaDPWuI7W2oEUausA02XYxO3J5LjDSWnNm52C', 'gerente', 'gerente.png'),
+	('chef_chicote', 'chicote@bistrofdi.es', 'Alberto', 'Chicote', '$2y$10$dQIYUskupVUKinCqeaDPWuI7W2oEUausA02XYxO3J5LjDSWnNm52C', 'cocinero', 'cocinero.png'),
+	('camarero_juan', 'juan@bistrofdi.es', 'Juan', 'Pérez', '$2y$10$dQIYUskupVUKinCqeaDPWuI7W2oEUausA02XYxO3J5LjDSWnNm52C', 'camarero', 'camarero.png'),
+	('ana_cliente', 'ana@gmail.com', 'Ana', 'Martínez', '$2y$10$dQIYUskupVUKinCqeaDPWuI7W2oEUausA02XYxO3J5LjDSWnNm52C', 'cliente', 'cliente.png'),
+	('luis_cliente', 'luis@hotmail.com', 'Luis', 'Fernández', '$2y$10$dQIYUskupVUKinCqeaDPWuI7W2oEUausA02XYxO3J5LjDSWnNm52C', 'cliente', 'default.png'),
+	('maria_cliente', 'maria@yahoo.es', 'María', 'Sánchez', '$2y$10$dQIYUskupVUKinCqeaDPWuI7W2oEUausA02XYxO3J5LjDSWnNm52C', 'cliente', 'default.png');
 
 -- --------------------------------------------------------
 -- POBLAR PEDIDOS

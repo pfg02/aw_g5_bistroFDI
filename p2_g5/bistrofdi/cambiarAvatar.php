@@ -1,5 +1,4 @@
 <?php
-// 1. Corregida la ruta con la barra "/" necesaria
 require_once __DIR__ . '/includes/sesion.php';
 require_once __DIR__ . '/includes/funcionesUsuarios.php';
 
@@ -17,11 +16,11 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 
 	// Opción A: avatar predefinido
 	if (isset($_POST['avatar_predefinido'])) {
-	$archivo = basename($_POST['avatar_predefinido']); // seguridad básica
-	$ruta = $carpetaAvatares . '/' . $archivo;
+		$archivo = basename($_POST['avatar_predefinido']); // seguridad básica
+		$ruta = $carpetaAvatares . '/' . $archivo;
 	if (actualizarAvatar($idUsuario, $ruta)) {
-	$_SESSION['avatar'] = $ruta; // ACTUALIZAMOS SESIÓN PARA EL NAV
-	$mensajeOk = 'Avatar actualizado correctamente.';
+		$_SESSION['avatar'] = $ruta; // ACTUALIZAMOS SESIÓN PARA EL NAV
+		$mensajeOk = 'Avatar actualizado correctamente.';
 	} else {
 	$mensajeError = 'Error al actualizar el avatar.';
 	}
@@ -48,7 +47,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 
 	// Opción C: avatar por defecto
 	} elseif (isset($_POST['accion']) && $_POST['accion'] === 'defecto') {
-	$ruta = $carpetaAvatares . '/default.jpg';
+	$ruta = $carpetaAvatares . '/default.png';
 	if (actualizarAvatar($idUsuario, $ruta)) {
 	$_SESSION['avatar'] = $ruta; // ACTUALIZAMOS SESIÓN PARA EL NAV
 	$mensajeOk = 'Avatar por defecto restaurado.';
@@ -61,9 +60,11 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 }
 
 $avataresPredefinidos = [
-	'avatar1.jpg',
-	'avatar2.jpg',
-	'avatar3.jpg',
+	'camarero.png',
+	'cliente.png',
+	'cocinero.png',
+	'gerente.png',
+	'default.png'
 ];
 ?>
 <!DOCTYPE html>
