@@ -2,18 +2,17 @@
 
 /**
 	* Servicio de negocio para la gestión de pedidos.
-	* @author Gabriel Omaña
-	*/
+*/
 
 require_once __DIR__ . '/../integracion/PedidoDAO.php';
 require_once __DIR__ . '/../config.php';
 
 class PedidoServiceApp {
 
-	private $dao;
+	private $pedidoDAO;
 
 	public function __construct() {
-	$this->dao = new PedidoDAO();
+		$this->pedidoDAO = new PedidoDAO();
 	}
 
 	/**
@@ -23,35 +22,31 @@ class PedidoServiceApp {
 	* @return int El ID del pedido recién creado.
 	*/
 	public function crearPedido($pedidoDTO) {
+		$productos = $pedidoDTO->getProductos();
+		$total = 0;
 
-	// lo ideal sería tener un DAO de productos para acceder al precio de los productos...
-	$conn = obtenerConexionBD();
+		// lo ideal sería tener un DAO de productos para acceder al precio de los productos...
+		$conn = obtenerConexionBD();
+		$ids = implode(",", array_keys($productos));
+		$sql = "SELECT id, precio_base, iva FROM productos WHERE id IN ($ids)";
+		$result = $conn->query($sql);
 
-	$productos = $pedidoDTO->getProductos();
+		while ($row = $result->fetch_assoc()) {
+			$cantidad = $productos[$row["id"]];
+            $precioBase = $row["precio_base"];
+            $porcentajeIva = $row["iva"];
 
-	$ids = implode(",", array_keys($productos));
-
-	$sql = "SELECT id, precio_base FROM productos WHERE id IN ($ids)";
-
-	$result = $conn->query($sql);
-
-	$precios = [];
-
-	while ($row = $result->fetch_assoc()) {
-	$precios[$row["id"]] = $row["precio_base"];
+			// Calcular el precio con IVA incluido
+			$precioConIva = $precioBase * (1 + $porcentajeIva / 100);
+			$total += $precioConIva * $cantidad;
 	}
 
-	$total = 0;
+		// Completamos los datos del pedidoDTO antes de guardarlo
+		$pedidoDTO->setTotal($total);
+		$pedidoDTO->setEstado("Recibido");
+		$pedidoDTO->setFecha(date("Y-m-d H:i:s"));
 
-	foreach ($productos as $productoId => $cantidad) {
-	$total += $precios[$productoId] * $cantidad;
-	}
-
-	$pedidoDTO->setTotal($total);
-	$pedidoDTO->setEstado("RECIBIDO");
-	$pedidoDTO->setFecha(date("Y-m-d H:i:s"));
-
-	return $this->dao->guardarPedido($pedidoDTO);
+		return $this->pedidoDAO->guardarPedido($pedidoDTO);
 	}
 
 	/**
@@ -60,7 +55,26 @@ class PedidoServiceApp {
 	* @return array Un array asociativo con los datos del pedido, o null si no se encuentra.
 	*/
 	public function obtenerPedido($idPedido) {
-	return $this->dao->buscarPedido($idPedido);
+		return $this->pedidoDAO->buscarPedido($idPedido);
 	}
 
+	/**
+	* Actualiza el estado de un pedido.
+	* @param int $idPedido El ID del pedido.
+	* @param string $nuevoEstado El nuevo estado.
+	* @return bool True si se actualizó correctamente.
+	*/
+	public function actualizarEstado($idPedido, $nuevoEstado) {
+		return $this->pedidoDAO->actualizarEstado($idPedido, $nuevoEstado);
+    }
+	
+	/**
+	* Obtiene el historial completo de pedidos de un cliente.
+	* @param int $idCliente El ID del cliente.
+	* @return array Lista de pedidos.
+	*/
+	public function obtenerPedidosPorCliente($idCliente) {
+		return $this->pedidoDAO->obtenerPedidosPorCliente($idCliente);
+	}
 }
+?>

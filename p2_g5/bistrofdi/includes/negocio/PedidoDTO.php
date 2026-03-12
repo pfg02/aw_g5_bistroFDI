@@ -8,6 +8,7 @@ class PedidoDTO {
 
 	private $id;
 	private $clienteId;
+	private $numeroPedido;
 	private $tipo;
 	private $estado;
 	private $fecha;
@@ -15,63 +16,71 @@ class PedidoDTO {
 	private $total;
 
 	public function __construct() {
-	$this->productos = [];
+		$this->productos = [];
 	}
 
 	public function getId() {
-	return $this->id;
+		return $this->id;
 	}
 
 	public function setId($id) {
-	$this->id = $id;
+		$this->id = $id;
 	}
 
 	public function getClienteId() {
-	return $this->clienteId;
+		return $this->clienteId;
 	}
 
 	public function setClienteId($clienteId) {
-	$this->clienteId = $clienteId;
+		$this->clienteId = $clienteId;
+	}
+
+	public function getNumeroPedido() {
+		return $this->numeroPedido;
+	}
+
+	public function setNumeroPedido($numeroPedido) {
+		$this->numeroPedido = $numeroPedido;
 	}
 
 	public function getTipo() {
-	return $this->tipo;
+		return $this->tipo;
 	}
 
 	public function setTipo($tipo) {
-	$this->tipo = $tipo;
+		$this->tipo = $tipo;
 	}
 
 	public function getEstado() {
-	return $this->estado;
+		return $this->estado;
 	}
 
 	public function setEstado($estado) {
-	$this->estado = $estado;
+		$this->estado = $estado;
 	}
 
 	public function getFecha() {
-	return $this->fecha;
+		return $this->fecha;
 	}
 
 	public function setFecha($fecha) {
-	$this->fecha = $fecha;
+		$this->fecha = $fecha;
 	}
 
 	public function getProductos() {
-	return $this->productos;
+		return $this->productos;
 	}
 
 	public function setProductos($productos) {
-	$this->productos = $productos;
+		$this->productos = $productos;
 	}
 
 	public function getTotal() {
-	return $this->total;
+		return $this->total;
 	}
 
 	public function setTotal($total) {
-	$this->total = $total;
+		$this->total = $total;
 	}
-
 }
+?>
