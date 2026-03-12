@@ -51,8 +51,6 @@
 								<th>Detalles</th>
 							</tr>
 						</thead>
-						
-						// Recorremos el historial de pedidos y los mostramos en la tabla
 						<tbody>
 							<?php foreach ($historialPedidos as $pedido): ?>
 								<tr>

@@ -42,6 +42,8 @@
 								<a href="gestion_productos.php" class="btn-admin">Gestionar Catálogo</a>
 							<?php elseif ($rol === 'camarero'): ?>
             					<a href="panel_camarero.php" class="btn-admin">Panel de Sala (Camareros)</a>
+							<?php elseif ($rol === 'cocinero'): ?>
+								<a href="" class="btn-admin">Panel de Cocina (Cocineros)</a>
 							<?php else: ?>
 								<a href="perfil.php" class="btn-login">Ver mi Perfil</a>
 								<a href="pedido_inicio.php" class="btn-login">Hacer Pedido</a>

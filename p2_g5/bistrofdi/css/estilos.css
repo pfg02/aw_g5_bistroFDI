@@ -111,3 +111,6 @@ input, select, textarea { width: 100%; padding: 10px; border: 1px solid #ddd; bo
 .badge-success { background: #e7f3ff; color: #1877f2; }
 .badge-danger { background: #fde8e8; color: #e41e3f; }
 .precio-total { font-weight: bold; color: #28a745; font-size: 1.05em; }
+
+.form-actualizar-estado { display: flex; gap: 10px; justify-content: center; align-items: center; margin: 0; }
+.select-estado { padding: 5px; border-radius: 4px; width: auto; }

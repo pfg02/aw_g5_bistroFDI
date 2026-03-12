@@ -69,5 +69,13 @@ class PedidoController {
 	public function verPedidosCliente($idCliente) {
 		return $this->service->obtenerPedidosPorCliente($idCliente);
 	}
+
+	/**
+	* Obtiene todos los pedidos que no están entregados ni cancelados.
+	* @return array Lista de pedidos.
+	*/
+	public function verPedidosActivos() {
+        return $this->service->obtenerPedidosActivos();
+    }
 }
 ?>

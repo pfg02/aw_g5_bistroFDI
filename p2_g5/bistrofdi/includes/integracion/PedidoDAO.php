@@ -107,16 +107,16 @@ class PedidoDAO {
 		$conn = obtenerConexionBD();
 
 		$sql = "UPDATE pedidos SET estado = ? WHERE id = ?";
-        $stmt = $conn->prepare($sql);
+		$stmt = $conn->prepare($sql);
 		$stmt->bind_param("si", $nuevoEstado, $idPedido);
-        
+		
 		$exito = $stmt->execute();
 		$stmt->close();
 
 		return $exito;
-    }
+	}
 
-    /**
+	/**
 	* Obtiene todo el historial de pedidos de un cliente específico.
 	* * @param int $idCliente El ID autonumérico del usuario.
 	* @return array Un array de arrays asociativos con los datos de todos sus pedidos.
@@ -127,21 +127,42 @@ class PedidoDAO {
 
 		// Buscar los pedidos del cliente y ordenarlos del más reciente al más antiguo
 		$sql = "SELECT * FROM pedidos WHERE cliente_id = ? ORDER BY fecha DESC";
-        $stmt = $conn->prepare($sql);
+		$stmt = $conn->prepare($sql);
 		$stmt->bind_param("i", $idCliente);
 		$stmt->execute();
-        
+		
 		$result = $stmt->get_result();
 		$pedidos = [];
 
 		// Extraemos todas las filas encontradas en un array
 		while ($row = $result->fetch_assoc()) {
 			$pedidos[] = $row;
-        }
+		}
 
 		$stmt->close();
 		
 		return $pedidos;
-    }
+	}
+
+	/**
+	* Obtiene todos los pedidos que no estén entregados o cancelados.
+	*/
+	public function obtenerPedidosActivos() {
+
+		$conn = obtenerConexionBD();
+		// Traemos todos los pedidos del más antiguo al más nuevo
+		$sql = "SELECT p.*, u.nombre AS nombre_cliente, u.apellidos AS apellidos_cliente 
+                FROM pedidos p 
+                INNER JOIN usuarios u ON p.cliente_id = u.id 
+                WHERE p.estado NOT IN ('Entregado', 'Cancelado') 
+                ORDER BY p.fecha ASC";
+		$result = $conn->query($sql);
+		
+		$pedidos = [];
+		while ($row = $result->fetch_assoc()) {
+			$pedidos[] = $row;
+		}
+		return $pedidos;
+	}
 }
 ?>

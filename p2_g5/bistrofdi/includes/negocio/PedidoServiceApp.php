@@ -76,5 +76,13 @@ class PedidoServiceApp {
 	public function obtenerPedidosPorCliente($idCliente) {
 		return $this->pedidoDAO->obtenerPedidosPorCliente($idCliente);
 	}
+
+	/**
+	* Obtiene todos los pedidos que no están entregados ni cancelados.
+	* @return array Lista de pedidos.
+	*/
+	public function obtenerPedidosActivos() {
+        return $this->pedidoDAO->obtenerPedidosActivos();
+    }
 }
 ?>
