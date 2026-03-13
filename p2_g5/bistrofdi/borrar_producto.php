@@ -1,6 +1,6 @@
 <?php
 session_start();
-require_once '/includes/config.php'; // Asegúrate de que la ruta sea correcta
+require_once '/includes/config.php';
 
 if (!isset($_SESSION['rol']) || !tienePermiso('gerente')) {
 	die("Acceso denegado.");

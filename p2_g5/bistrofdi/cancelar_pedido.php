@@ -9,7 +9,7 @@
 	exigirLogin();
 	exigirRol('cliente');
 
-	// ESCENARIO A: Si viene por POST y trae un ID, cancelamos el pedido de la Base de Datos
+	// Si viene por POST y trae un ID, cancelamos el pedido de la Base de Datos
 	if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['id_pedido'])) {
 		
 		$idPedido = (int)$_POST['id_pedido'];
@@ -17,7 +17,7 @@
 		
 		$pedido = $controller->verPedido($idPedido);
 		
-		// Seguridad: Que sea suyo y esté en fase inicial
+		// Comprobamos que el pedido exista, sea del cliente y esté en estado "Recibido" para permitir la cancelación
 		if ($pedido && $pedido['cliente_id'] == $_SESSION['id_usuario'] && $pedido['estado'] === 'Recibido') {
 			
 			$exito = $controller->actualizarEstadoPedido($idPedido, 'Cancelado');
@@ -30,12 +30,11 @@
 			$_SESSION['mensaje_error'] = "No puedes cancelar este pedido porque ya está siendo preparado o no te pertenece.";
 		}
 		
-		// Lo devolvemos al historial
 		header("Location: mis_pedidos.php");
 		exit();
 	}
 
-	// ESCENARIO B: Si viene de un enlace normal, vaciamos el Carrito de la Sesión
+	// Si viene de un enlace normal, vaciamos el Carrito de la Sesión
 	if (isset($_SESSION['carrito'])) {
 		unset($_SESSION['carrito']);
 	}
