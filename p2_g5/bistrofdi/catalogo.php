@@ -31,8 +31,11 @@
 		}
 	}
 
-	// Calculamos cuántos artículos diferentes hay en el carrito ahora mismo
-	$itemsEnCarrito = count($_SESSION['carrito']);
+	// Calculamos cuántos artículos  hay en el carrito ahora mismo
+	$itemsEnCarrito = 0;
+	if (!empty($_SESSION['carrito'])) {
+    	$itemsEnCarrito = array_sum($_SESSION['carrito']); 
+	}
 ?>
 
 <!DOCTYPE html>
@@ -57,12 +60,22 @@
 				
 				<div class="divisor"></div>
 
+				<?php if (isset($_SESSION['mensaje_exito'])): ?>
+                <div class="alerta alerta-exito">
+                    <?php 
+                        echo htmlspecialchars($_SESSION['mensaje_exito']); 
+                        unset($_SESSION['mensaje_exito']);
+                    ?>
+                </div>
+            	<?php endif; ?>
+
 				<div class="contenedor-botones-index">
 					<a href="carrito.php" class="btn-admin">Ver mi carrito
 						<?php if ($itemsEnCarrito > 0): ?>
 							<span class="badge-carrito"><?php echo $itemsEnCarrito; ?></span>
 						<?php endif; ?>
 					</a>
+					<a href="pedido_inicio.php" class="btn-admin btn-cancelar">Cambiar tipo de pedido</a>
 				</div>
 				
 				<div class="mensaje-sesion">
@@ -85,9 +98,7 @@
 									
 									<form action="anadir_producto.php" method="POST" class="form-add-carrito">
 										<input type="hidden" name="productoId" value="<?php echo htmlspecialchars($p["id"]); ?>">
-										
 										<input type="number" name="cantidad" value="1" min="1" class="input-cantidad">
-										
 										<button type="submit" class="btn-login btn-accion">Añadir</button>
 									</form>
 								</div>
@@ -96,10 +107,6 @@
 						</div>
 
 					<?php endif; ?>
-				</div>
-
-				<div class="contenedor-volver">
-					<a href="pedido_inicio.php" class="btn-admin btn-cancelar">Cambiar tipo de pedido</a>
 				</div>
 
 			</section>
