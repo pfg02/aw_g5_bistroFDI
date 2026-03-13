@@ -76,7 +76,7 @@
 		</section>
 	</main>
 
-	<?php include __DIR__ . '/includes/footer.php'; ?>
+	<?php include __DIR__ . '/includes/vistas/footer.php'; ?>
 
 </body>
 </html>
