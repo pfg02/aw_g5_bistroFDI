@@ -20,11 +20,7 @@ if ($id <= 0) {
 	die("ID de producto no válido.");
 }
 
-// Ajusta aquí si tu clave primaria no es 'id'
 $campoId = "id";
-
-// Si en tu BD el campo es id_producto, cambia la línea anterior por:
-// $campoId = "id_producto";
 
 $sql = "
 	SELECT p.*, c.nombre AS categoria_nombre
