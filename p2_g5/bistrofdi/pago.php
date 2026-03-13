@@ -32,7 +32,7 @@ if (!$pedido || $pedido['cliente_id'] != $_SESSION['id_usuario']) {
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Pasarela de Pago - Bistró FDI</title>
-    <link rel="stylesheet" href="css/estilos.css">
+    <link rel="stylesheet" href="css/estilos.css?v=2.4">
 </head>
 <body class="body-inicio">
 
@@ -99,14 +99,23 @@ if (!$pedido || $pedido['cliente_id'] != $_SESSION['id_usuario']) {
 
                     <div class="caja-metodo-pago">
                         <h3 class="titulo-metodo">🙋‍♂️ Pagar en mesa / mostrador</h3>
-                        <p class="texto-ayuda" style="margin-bottom: 15px;">Avisa a nuestro personal para pagar en efectivo o con datáfono físico.</p>
+                        <p class="texto-ayuda">Avisa a nuestro personal para pagar en efectivo o con datáfono físico.</p>
                         
-                        <form action="procesar_pago.php" method="POST">
+                        <form action="procesar_pago.php" method="POST" class="form-confirmar">
                             <input type="hidden" name="id_pedido" value="<?php echo htmlspecialchars($idPedido); ?>">
                             <input type="hidden" name="metodo_pago" value="camarero">
                             
-                            <button type="submit" class="btn-confirmar-compra btn-camarero" style="width: 100%;">
+                            <button type="submit" class="btn-confirmar-compra btn-camarero">
                                 Solicitar cobro al personal
+                            </button>
+                        </form>
+                    </div>
+
+                    <div class="caja-metodo-pago" style="border: none; background: transparent; padding: 0; margin-top: 10px;">
+                        <form action="cancelar_pedido.php" method="POST" class="form-confirmar">
+                            <input type="hidden" name="id_pedido" value="<?php echo htmlspecialchars($idPedido); ?>">
+                            <button type="submit" class="btn-confirmar-compra btn-peligro" onclick="return confirm('¿Seguro que quieres cancelar este pedido definitivamente?');">
+                                ❌ Cancelar Pedido
                             </button>
                         </form>
                     </div>

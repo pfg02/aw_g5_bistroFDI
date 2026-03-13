@@ -1,27 +1,49 @@
 <?php
 /**
- * Cancela el pedido en curso vaciando el carrito.
+ * Script unificado: Cancela un pedido de la BD o vacía el carrito de la sesión.
 */
 
 	require_once __DIR__ . '/includes/sesion.php';
+	require_once __DIR__ . '/includes/negocio/PedidoController.php';
 
 	exigirLogin();
 	exigirRol('cliente');
 
-	// Borramos el carrito de la sesión
+	// ESCENARIO A: Si viene por POST y trae un ID, cancelamos el pedido de la Base de Datos
+	if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['id_pedido'])) {
+		
+		$idPedido = (int)$_POST['id_pedido'];
+		$controller = PedidoController::getInstance();
+		
+		$pedido = $controller->verPedido($idPedido);
+		
+		// Seguridad: Que sea suyo y esté en fase inicial
+		if ($pedido && $pedido['cliente_id'] == $_SESSION['id_usuario'] && $pedido['estado'] === 'Recibido') {
+			
+			$exito = $controller->actualizarEstadoPedido($idPedido, 'Cancelado');
+			if ($exito) {
+				$_SESSION['mensaje_exito'] = "Tu pedido #{$pedido['numero_pedido']} ha sido cancelado definitivamente.";
+			} else {
+				$_SESSION['mensaje_error'] = "Hubo un problema al intentar cancelar el pedido.";
+			}
+		} else {
+			$_SESSION['mensaje_error'] = "No puedes cancelar este pedido porque ya está siendo preparado o no te pertenece.";
+		}
+		
+		// Lo devolvemos al historial
+		header("Location: mis_pedidos.php");
+		exit();
+	}
+
+	// ESCENARIO B: Si viene de un enlace normal, vaciamos el Carrito de la Sesión
 	if (isset($_SESSION['carrito'])) {
 		unset($_SESSION['carrito']);
 	}
-
-	// Borramos también el tipo de pedido (Local/Llevar) para que empiece de cero
 	if (isset($_SESSION['tipoPedido'])) {
 		unset($_SESSION['tipoPedido']);
 	}
 
-	// Mandamos un mensaje para avisar al usuario
-	$_SESSION['mensaje_exito'] = "El carrito ha sido vaciado correctamente. Puedes empezar un nuevo pedido cuando quieras.";
-
-	// Devolvemos a la página del catálogo
-	header("Location: catalogo.php");
+	$_SESSION['mensaje_exito'] = "El carrito ha sido vaciado correctamente. Puedes empezar un nuevo pedido.";
+	header("Location: pedido_inicio.php");
 	exit();
 ?>

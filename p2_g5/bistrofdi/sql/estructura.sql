@@ -62,7 +62,7 @@ CREATE TABLE pedidos (
 	cliente_id int(11) NOT NULL,
 	numero_pedido INT NOT NULL,
 	tipo enum('LLevar','Local') NOT NULL,
-	estado varchar(20) NOT NULL,
+	estado enum('Nuevo','Recibido', 'Cocinando', 'Listo Cocina', 'Terminado', 'Entregado', 'Cancelado') NOT NULL DEFAULT 'Recibido',
 	fecha datetime NOT NULL,
 	total decimal(10,2) NOT NULL,
 	KEY `cliente_id` (`cliente_id`),

@@ -69,10 +69,11 @@
 												<input type="hidden" name="id_pedido" value="<?php echo htmlspecialchars($pedido['id']); ?>">
 												
 												<select name="nuevo_estado" class="select-estado">
-													<option value="Recibido" <?php if($pedido['estado'] == 'Recibido') echo 'selected'; ?>>Recibido</option>
-													<option value="En preparación" <?php if($pedido['estado'] == 'En preparación') echo 'selected'; ?>>En preparación</option>
+													<option value="Recibido" <?php if($pedido['estado'] == 'Recibido') echo 'selected'; ?>>Recibido (Pendiente pago)</option>
+													<option value="En preparación" <?php if($pedido['estado'] == 'En preparación') echo 'selected'; ?>>En preparación (Pagado)</option>
 													<option value="Listo cocina" <?php if($pedido['estado'] == 'Listo cocina') echo 'selected'; ?>>Listo cocina</option>
-													<option value="Entregado">Entregado / Cobrado</option>
+													<option value="Terminado" <?php if($pedido['estado'] == 'Terminado') echo 'selected'; ?>>Terminado (Listo para recoger)</option>
+													<option value="Entregado">Entregado al cliente</option>
 													<option value="Cancelado">Cancelar Pedido</option>
 												</select>
 												
