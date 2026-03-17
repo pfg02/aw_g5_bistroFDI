@@ -13,7 +13,7 @@ $producto = null;
 $error_msg = ""; // Variable para el mensaje de error
 
 if ($id) {
-    $stmt = $db->prepare("SELECT * FROM productos WHERE id = ?");
+    $stmt = $db->prepare("SELECT * FROM productos WHERE id = ?");  // Sentencias Preparadas
     $stmt->bind_param("i", $id);
     $stmt->execute();
     $producto = $stmt->get_result()->fetch_assoc();
