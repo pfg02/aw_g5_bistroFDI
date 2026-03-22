@@ -23,8 +23,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 	<link rel="stylesheet" href="css/estilos.css">
 </head>
 <body>
-	<?php include __DIR__ . '/includes/nav.php'; ?>
-
+<?php include __DIR__ . '/includes/vistas/comun/nav.php'; ?>
 	<h1>Iniciar sesión</h1>
 
 	<?php if ($mensajeError): ?>

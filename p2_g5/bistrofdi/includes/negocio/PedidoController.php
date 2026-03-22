@@ -26,12 +26,20 @@ class PedidoController {
 
 	/**
 	* Crea un nuevo pedido a partir de los datos proporcionados por la capa de presentación.
-	* @param PedidoDTO $PedidoDTO Un objeto que contiene toda la información necesaria para crear el pedido.
+	* @param int $clienteId El ID del cliente que realiza el pedido.
+	* @param string $tipo El tipo de pedido
+	* @param array $productos Un array asociativo donde las claves son los IDs de los productos y los valores son las cantidades.
 	* @return int El ID del pedido recién creado.
 	*/
-	public function crearPedido($PedidoDTO) {
+	public function crearPedido($clienteId, $tipo, $productos) {
 
-		return $this->service->crearPedido($PedidoDTO);
+		$pedido = new PedidoDTO();
+
+		$pedido->setClienteId($clienteId);
+		$pedido->setTipo($tipo);
+		$pedido->setProductos($productos);
+
+		return $this->service->crearPedido($pedido);
 	}
 
 	/**

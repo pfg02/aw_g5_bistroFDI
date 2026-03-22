@@ -16,7 +16,7 @@ $usuarios = listarUsuarios();
 	<link rel="stylesheet" href="css/estilos.css">
 </head>
 <body>
-<?php include __DIR__ . '/includes/nav.php'; ?>
+<?php include __DIR__ . '/includes/vistas/comun/nav.php'; ?>
 
 <h1>Gestión de usuarios</h1>
 

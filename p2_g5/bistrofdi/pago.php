@@ -1,126 +1,95 @@
 <?php
-/**
- * Vista de la pasarela de pago para un pedido recién creado.
-*/
+require_once __DIR__ . '/includes/config.php';
 
-	require_once __DIR__ . '/includes/sesion.php';
-	require_once __DIR__ . '/includes/config.php';
-	require_once __DIR__ . '/includes/negocio/PedidoController.php';
+session_start();
 
-	exigirLogin();
-	exigirRol('cliente');
+// Validar que el usuario está logueado
+if (!isset($_SESSION['id_usuario'])) {
+	header("Location: login.php");
+	exit();
+}
 
-	if (!isset($_GET['id'])) {
-		header("Location: index.php");
-		exit();
-	}
+// 2. Comprobar que nos llega un ID de pedido (suponiendo que lo pasas por la URL: pago.php?id=5)
+if (!isset($_GET['id'])) {
+	die("Error: No se ha especificado ningún pedido para pagar.");
+}
 
-	$idPedido = (int)$_GET['id'];
-	$controller = PedidoController::getInstance();
-	$pedido = $controller->verPedido($idPedido);
+$pedido_id = $_GET['id'];
 
-	if (!$pedido || $pedido['cliente_id'] != $_SESSION['id_usuario']) {
-		header("Location: index.php");
-		exit();
-	}
+$conn = obtenerConexionBD();
+$sql = "SELECT total FROM pedidos WHERE id IN ($pedido_id)";
+$total = $conn->query($sql);
+
+if ($total && $total->num_rows > 0) {
+	$fila = $total->fetch_assoc();
+	$total_pagar = $fila['total'];
+} else {
+	$total_pagar = "0.00";
+}
 ?>
 
 <!DOCTYPE html>
 <html lang="es">
-	<head>
-		<meta charset="UTF-8">
-		<meta name="viewport" content="width=device-width, initial-scale=1.0">
-		<title>Pasarela de Pago - Bistró FDI</title>
-		<link rel="stylesheet" href="css/estilos.css">
-	</head>
-	<body class="body-inicio">
+<head>
+	<meta charset="UTF-8">
+	<title>Pagar Pedido - Bistro FDI</title>
+	<style>
+	.tarjeta-detalles { display: none; margin-top: 15px; padding: 10px; border: 1px solid #ccc; }
+	</style>
+</head>
+<body>
 
-		<?php include __DIR__ . '/includes/nav.php'; ?>
+	<h2>Pasarela de Pago</h2>
+	<p>Pedido número: <strong>#<?php echo htmlspecialchars($pedido_id); ?></strong></p>
+	<p>Total a pagar: <strong><?php echo htmlspecialchars($total_pagar); ?> €</strong></p>
 
-		<main class="main-bienvenida">
-			<section class="tarjeta-presentacion">
-				
-				<h1>Pasarela de <span>Pago</span></h1>
-				<p class="lema">Elige cómo quieres abonar tu pedido</p>
-				<div class="divisor"></div>
+	<form action="confirmacion.php" method="POST">
+	<input type="hidden" name="pedido_id" value="<?php echo htmlspecialchars($pedido_id); ?>">
 
-				<div class="mensaje-sesion contenedor-pago">
-					
-					<div class="resumen-pago">
-						<p class="texto-resumen"><strong>Ticket:</strong> #<?php echo htmlspecialchars($pedido["numero_pedido"] ?? $pedido["id"]); ?></p>
-						<p class="texto-resumen"><strong>Modalidad:</strong> <?php echo htmlspecialchars($pedido["tipo"]); ?></p>
-						<div class="divisor-pago"></div>
-						<p class="total-pago-container">
-							Total a pagar: <strong class="total-pago-destacado"><?php echo number_format($pedido["total"], 2); ?> €</strong>
-						</p>
-					</div>
+	<h3>¿Cómo deseas pagar?</h3>
+	
+	<div>
+	<input type="radio" id="pago_camarero" name="metodo_pago" value="camarero" checked onclick="mostrarTarjeta(false)">
+	<label for="pago_camarero">Pagar al camarero en efectivo/tarjeta</label>
+	</div>
+	
+	<div>
+	<input type="radio" id="pago_tarjeta" name="metodo_pago" value="tarjeta" onclick="mostrarTarjeta(true)">
+	<label for="pago_tarjeta">Pagar ahora con Tarjeta de Crédito (Simulación)</label>
+	</div>
 
-					<div class="opciones-pago-container">
-						
-						<div class="caja-metodo-pago">
-							<h3 class="titulo-metodo">Pagar ahora con Tarjeta</h3>
-							
-							<form action="procesar_pago.php" method="POST" class="form-pedido-inicio">
-								<input type="hidden" name="id_pedido" value="<?php echo htmlspecialchars($idPedido); ?>">
-								<input type="hidden" name="metodo_pago" value="tarjeta">
-								
-								<div class="grupo-form-pedido">
-									<label for="tarjeta" class="label-pedido">Número de Tarjeta</label>
-									<input type="text" id="tarjeta" name="tarjeta" placeholder="1234567890123456" 
-										required pattern="\d{16}" maxlength="16" 
-										title="Introduce los 16 números de la tarjeta sin espacios" 
-										class="select-pedido input-pago">
-								</div>
-								
-								<div class="grid-tarjeta-datos">
-									<div class="grupo-form-pedido">
-										<label for="caducidad" class="label-pedido">Caducidad</label>
-										<input type="text" id="caducidad" name="caducidad" placeholder="MM/AA" 
-											required pattern="(0[1-9]|1[0-2])\/\d{2}" maxlength="5" 
-											title="Formato de fecha MM/AA (ejemplo: 12/25)" 
-											class="select-pedido input-pago">
-									</div>
-									
-									<div class="grupo-form-pedido">
-										<label for="cvv" class="label-pedido">CVV</label>
-										<input type="text" id="cvv" name="cvv" placeholder="123" 
-											required pattern="\d{3}" maxlength="3" 
-											title="Introduce los 3 números de seguridad de la parte trasera" 
-											class="select-pedido input-pago">
-									</div>
-								</div>
-								
-								<button type="submit" class="btn-confirmar-compra btn-pagar"> Procesar Pago Online </button>
-							</form>
-						</div>
+	<div id="detalles_tarjeta" class="tarjeta-detalles">
+	<label for="num_tarjeta">Número de tarjeta:</label><br>
+	<input type="text" id="num_tarjeta" name="num_tarjeta" pattern="\d{16}" title="Debe contener exactamente 16 números" maxlength="16" placeholder="1234567812345678"><br><br>
 
-						<div class="caja-metodo-pago">
-							<h3 class="titulo-metodo">Pagar en mesa / mostrador</h3>
-							<p class="texto-ayuda">Avisa a nuestro personal para pagar en efectivo o con datáfono físico.</p>
-							
-							<form action="procesar_pago.php" method="POST" class="form-confirmar">
-								<input type="hidden" name="id_pedido" value="<?php echo htmlspecialchars($idPedido); ?>">
-								<input type="hidden" name="metodo_pago" value="camarero">
-								
-								<button type="submit" class="btn-confirmar-compra btn-camarero"> Solicitar cobro al personal</button>
-							</form>
-						</div>
+	<label for="caducidad">Fecha de caducidad (MM/AA):</label><br>
+	<input type="text" id="caducidad" name="caducidad" pattern="(0[1-9]|1[0-2])\/[0-9]{2}" title="Formato MM/AA" maxlength="5" placeholder="12/26"><br><br>
 
-						<div class="caja-metodo-pago" style="border: none; background: transparent; padding: 0; margin-top: 10px;">
-							<form action="cancelar_pedido.php" method="POST" class="form-confirmar">
-								<input type="hidden" name="id_pedido" value="<?php echo htmlspecialchars($idPedido); ?>">
-								<button type="submit" class="btn-confirmar-compra btn-peligro"> Cancelar Pedido	</button>
-							</form>
-						</div>
+	<label for="cvv">CVV:</label><br>
+	<input type="text" id="cvv" name="cvv" pattern="\d{3}" title="Debe contener 3 números" maxlength="3" placeholder="123"><br>
+	</div>
 
-					</div>
+	<br>
+	<button type="submit">Confirmar Pago</button>
+	</form>
 
-				</div>
+	<script>
+	// Un pequeño script para ocultar/mostrar los campos de la tarjeta
+	function mostrarTarjeta(mostrar) {
+	const divTarjeta = document.getElementById('detalles_tarjeta');
+	const inputsTarjeta = divTarjeta.querySelectorAll('input');
+	
+	if (mostrar) {
+	divTarjeta.style.display = 'block';
+	// Hacemos obligatorios los campos si elige tarjeta
+	inputsTarjeta.forEach(input => input.required = true);
+	} else {
+	divTarjeta.style.display = 'none';
+	// Quitamos la obligación si elige pagar al camarero
+	inputsTarjeta.forEach(input => input.required = false);
+	}
+	}
+	</script>
 
-			</section>
-		</main>
-
-		<?php include __DIR__ . '/includes/footer.php'; ?>
-
-	</body>
+</body>
 </html>

@@ -2,9 +2,9 @@
 -- Base de datos: 'bistrofdi'
 -- --------------------------------------------------------
 
+DROP TABLE IF EXISTS categorias;
 DROP TABLE IF EXISTS pedido_productos;
 DROP TABLE IF EXISTS productos;
-DROP TABLE IF EXISTS categorias;
 DROP TABLE IF EXISTS pedidos;
 DROP TABLE IF EXISTS usuarios;
 
@@ -61,8 +61,8 @@ CREATE TABLE pedidos (
 	id int(11) AUTO_INCREMENT PRIMARY KEY,
 	cliente_id int(11) NOT NULL,
 	numero_pedido INT NOT NULL,
-	tipo enum('LLevar','Local') NOT NULL,
-	estado enum('Nuevo','Recibido', 'Cocinando', 'Listo Cocina', 'Terminado', 'Entregado', 'Cancelado') NOT NULL DEFAULT 'Recibido',
+	tipo varchar(20) NOT NULL,
+	estado varchar(20) NOT NULL,
 	fecha datetime NOT NULL,
 	total decimal(10,2) NOT NULL,
 	KEY `cliente_id` (`cliente_id`),

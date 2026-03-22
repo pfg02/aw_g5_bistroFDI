@@ -1,48 +1,23 @@
 <?php
+
 /**
- * Convierte el carrito en un pedido real en la BD.
-*/
+	* Controlador para confirmar un pedido en curso.
+	* @author Gabriel Omaña
+	*/
 
-	require_once __DIR__ . '/includes/sesion.php';
-	require_once __DIR__ . '/includes/negocio/PedidoController.php';
-	require_once __DIR__ . '/includes/negocio/PedidoDTO.php'; 
+session_start();
 
-	exigirLogin();
-	exigirRol('cliente');
+require_once __DIR__ . '/includes/negocio/PedidoController.php';
 
-	if (empty($_SESSION["carrito"])) {
-		header("Location: catalogo.php");
-		exit();
-	}
+$controller = PedidoController::getInstance();
 
-	if (!isset($_SESSION["tipoPedido"])) {
-		header("Location: pedido_inicio.php");
-		exit();
-	}
+$clienteId = $_SESSION["id_usuario"]; 
+$tipo = $_SESSION["tipoPedido"];
+$productos = $_SESSION["carrito"];
 
-	$controller = PedidoController::getInstance();
+$idPedido = $controller->crearPedido($clienteId, $tipo, $productos);
 
-	// Creamos el DTO con los datos del pedido
-	$pedidoDTO = new PedidoDTO();
-	$pedidoDTO->setClienteId($_SESSION["id_usuario"]);
-	$pedidoDTO->setTipo($_SESSION["tipoPedido"]);
-	$pedidoDTO->setProductos($_SESSION["carrito"]);
+unset($_SESSION["carrito"]);
 
-	// Intentamos crear el pedido en la BD
-	$idPedido = $controller->crearPedido($pedidoDTO);
-
-	// Comprobamos que se ha creado correctamente y redirigimos a la pasarela de pago
-	if ($idPedido) {
-		// Vaciamos el carrito y el tipo de pedido de la sesión
-		unset($_SESSION["carrito"]);
-		unset($_SESSION["tipoPedido"]);
-		
-		header("Location: pago.php?id=" . urlencode($idPedido));
-		exit();
-
-	} else {
-		$_SESSION['mensaje_error'] = "Hubo un problema al conectar con la cocina. Por favor, vuelve a intentarlo.";
-		header("Location: carrito.php");
-		exit();
-	}
-?>
+header("Location: confirmacion.php?id=" . $idPedido);
+exit();
