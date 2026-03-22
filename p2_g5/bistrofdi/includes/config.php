@@ -2,18 +2,18 @@
 // includes/config.php
 
 // Datos de conexión a MySQL
-define('BD_HOST', 'localhost');
-define('BD_USER', 'root');      
-define('BD_PASS', '');          
+define('BD_HOST', 'localhost');  // REQUISITO P2: Usar usuario específico en lugar de 'root'
+define('BD_USER', 'bistro_user'); 
+define('BD_PASS', 'bistro_pass'); // La contraseña que pusimos en estructura.sql
 define('BD_NAME', 'bistrofdi');
 
 function obtenerConexionBD(): mysqli {
-	$conn = new mysqli(BD_HOST, BD_USER, BD_PASS, BD_NAME);
-	if ($conn->connect_errno) {
-	die("Error de conexión a la base de datos: " . $conn->connect_error);
-	}
-	$conn->set_charset("utf8mb4");
-	return $conn;
+    $conn = new mysqli(BD_HOST, BD_USER, BD_PASS, BD_NAME);
+    if ($conn->connect_errno) {
+        die("Error de conexión a la base de datos: " . $conn->connect_error);
+    }
+    $conn->set_charset("utf8mb4");
+    return $conn;
 }
 
 // ==========================================
