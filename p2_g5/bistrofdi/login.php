@@ -47,3 +47,4 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 	<p><a href="olvidoPassword.php">He olvidado mi contraseña</a></p>
 </body>
 </html>
+// Revision P2

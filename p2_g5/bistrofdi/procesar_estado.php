@@ -28,3 +28,4 @@
 	header("Location: panel_camarero.php");
 	exit();
 ?>
+// Revision P2

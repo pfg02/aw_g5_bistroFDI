@@ -72,3 +72,5 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 	<p><a href="login.php">Ir a iniciar sesión</a></p>
 </body>
 </html>
+
+// Revision P2

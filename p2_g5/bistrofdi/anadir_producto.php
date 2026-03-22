@@ -18,3 +18,4 @@ $_SESSION["carrito"][$productoId] += $cantidad;
 
 header("Location: carrito.php");
 exit();
+// Revision P2

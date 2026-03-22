@@ -64,3 +64,4 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 	<p><a href="index.php">Volver al inicio</a></p>
 </body>
 </html>
+// Revision P2

@@ -67,3 +67,4 @@
         <?php include __DIR__ . '/includes/vistas/footer.php'; ?>
     </body>
 </html>
+// Revision P2
