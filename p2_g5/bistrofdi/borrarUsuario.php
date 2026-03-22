@@ -14,3 +14,5 @@ if ($id > 0 && $id !== $_SESSION['id_usuario']) {
 header('Location: gestionarUsuarios.php');
 exit;
 // Revision P2
+
+// Revision P2

@@ -22,3 +22,5 @@ unset($_SESSION["carrito"]);
 header("Location: confirmacion.php?id=" . $idPedido);
 exit();
 // Revision P2
+
+// Revision P2
