@@ -29,7 +29,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 </head>
 <body class="body-gestion">
 
-<?php include __DIR__ . '/includes/vistas/comun/nav.php'; ?>
+<?php include __DIR__ . '/includes/vistas/comun/nav.php'; ?> 
 	<main class="main-content">
 	<header class="header-gestion">
 	<h1>Mi Perfil</h1>
