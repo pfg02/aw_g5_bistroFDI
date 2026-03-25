@@ -1,0 +1,14 @@
+{
+    "name": "pfg02/aw_g5_bistrofdi",
+    "license": "MIT",
+    "authors": [
+        {
+            "name": "Gonzalo",
+            "email": "gonzar01@ucm.es"
+        }
+    ],
+    "minimum-stability": "stable",
+    "require": {
+        "vlucas/phpdotenv": "^5.6"
+    }
+}
