@@ -1,49 +1,45 @@
 <?php
-// includes/config.php
 
-// Datos de conexión a MySQL
-define('BD_HOST', 'localhost');  // REQUISITO P2: Usar usuario específico en lugar de 'root'
-define('BD_USER', 'bistro_user'); 
-define('BD_PASS', 'bistro_pass'); // La contraseña que pusimos en estructura.sql
-define('BD_NAME', 'bistrofdi');
+require_once __DIR__ . '/aplicacion.php';
 
-function obtenerConexionBD(): mysqli {
-    $conn = new mysqli(BD_HOST, BD_USER, BD_PASS, BD_NAME);
-    if ($conn->connect_errno) {
-        die("Error de conexión a la base de datos: " . $conn->connect_error);
-    }
-    $conn->set_charset("utf8mb4");
-    return $conn;
+ini_set('default_charset', 'UTF-8');
+date_default_timezone_set('Europe/Madrid');
+
+$bdDatosConexion = [
+    'host' => 'localhost',
+    'user' => 'bistro_user',
+    'pass' => 'bistro_pass',
+    'bd'   => 'bistrofdi',
+];
+
+$app = Aplicacion::getInstance();
+$app->init($bdDatosConexion);
+
+function obtenerConexionBD(): mysqli
+{
+    return Aplicacion::getInstance()->getConexionBd();
 }
 
-// ==========================================
-// PUENTE DE COMPATIBILIDAD PARA LA F1
-// ==========================================
-
-// 1. Variable global $db que usan tus archivos de F1 (gestion_productos.php, etc.)
+// Puente de compatibilidad con otras partes del proyecto
 $db = obtenerConexionBD();
 
-// 2. Función tienePermiso() que usabas en F1, ahora llama al sistema de la F0
 function tienePermiso($rolRequerido) {
-	// Para evitar errores si esta función se llama antes de iniciar la sesión
-	if (session_status() === PHP_SESSION_NONE) {
-	session_start();
-	}
-	
-	// Si no hay usuario logueado, devolvemos false directamente
-	if (!isset($_SESSION['rol'])) return false;
+    if (session_status() === PHP_SESSION_NONE) {
+        session_start();
+    }
 
-	$jerarquia = [
-	'cliente'  => 1,
-	'camarero' => 2,
-	'cocinero' => 3,
-	'gerente'  => 4
-	];
+    if (!isset($_SESSION['rol'])) return false;
 
-	$rolUsuario = $_SESSION['rol'];
-	$nivelUsuario = $jerarquia[$rolUsuario] ?? 0;
-	$nivelRequerido = $jerarquia[$rolRequerido] ?? 5;
+    $jerarquia = [
+        'cliente'  => 1,
+        'camarero' => 2,
+        'cocinero' => 3,
+        'gerente'  => 4
+    ];
 
-	return $nivelUsuario >= $nivelRequerido;
+    $rolUsuario = $_SESSION['rol'];
+    $nivelUsuario = $jerarquia[$rolUsuario] ?? 0;
+    $nivelRequerido = $jerarquia[$rolRequerido] ?? 5;
+
+    return $nivelUsuario >= $nivelRequerido;
 }
-?>

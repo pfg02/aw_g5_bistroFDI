@@ -1,18 +1,37 @@
 <?php
 require_once __DIR__ . '/includes/sesion.php';
-require_once __DIR__ . '/includes/funcionesUsuarios.php';
+require_once __DIR__ . '/includes/clases/RepositorioUsuarios.php';
+require_once __DIR__ . '/includes/formularios/FormBorrarUsuario.php';
 
-exigirLogin();
 exigirRol('gerente');
 
-$id = isset($_GET['id']) ? (int)$_GET['id'] : 0;
+$idUsuario = isset($_GET['id']) ? (int)$_GET['id'] : 0;
 
-if ($id > 0 && $id !== $_SESSION['id_usuario']) {
-	borrarUsuario($id);
+$repo = new RepositorioUsuarios();
+$usuario = $repo->buscarPorId($idUsuario);
+
+if (!$usuario) {
+    echo '<p>Usuario no encontrado.</p>';
+    exit;
 }
 
-header('Location: gestionarUsuarios.php');
-exit;
-// Revision P2
+$formBorrarUsuario = new FormBorrarUsuario($usuario);
+$htmlFormulario = $formBorrarUsuario->gestiona();
+?>
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <title>Borrar usuario - Bistro FDI</title>
+    <link rel="stylesheet" href="css/estilos.css">
+</head>
+<body>
+    <?php include __DIR__ . '/includes/vistas/comun/nav.php'; ?>
 
-// Revision P2
+    <h1>Borrar usuario</h1>
+
+    <?= $htmlFormulario ?>
+
+    <p><a href="gestionarUsuarios.php">Volver a gestión de usuarios</a></p>
+</body>
+</html>
