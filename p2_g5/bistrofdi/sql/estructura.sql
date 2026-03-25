@@ -8,6 +8,14 @@ DROP TABLE IF EXISTS productos;
 DROP TABLE IF EXISTS pedidos;
 DROP TABLE IF EXISTS usuarios;
 
+
+-- --------------------------------------------------------
+-- Creación de usuario con contaseña
+-- --------------------------------------------------------
+
+CREATE USER IF NOT EXISTS 'bistro_user'@'localhost' IDENTIFIED BY 'bistro_pass';
+GRANT ALL PRIVILEGES ON bistrofdi.* TO 'bistro_user'@'localhost';
+
 -- --------------------------------------------------------
 -- Estructura de tabla para la tabla 'categorias'
 -- --------------------------------------------------------

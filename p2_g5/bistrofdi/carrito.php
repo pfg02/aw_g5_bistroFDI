@@ -1,91 +1,135 @@
 <?php
-
 /**
-	* Vista del carrito de un pedido en curso.
-	* @author Gabriel Omaña
-	*/
+ * Vista del carrito de un pedido en curso.
+ */
 
-session_start();
-require_once __DIR__ . '/includes/config.php';
+	require_once __DIR__ . '/includes/sesion.php';
+	require_once __DIR__ . '/includes/config.php';
 
-$carrito = $_SESSION["carrito"] ?? [];
+	exigirLogin();
+	exigirRol('cliente');
 
-$productos = [];
-$total = 0;
+	$carrito = $_SESSION["carrito"] ?? [];
+	$tipoPedido = $_SESSION["tipoPedido"] ?? 'No definido';
 
-if (!empty($carrito)) {
+	$productos = [];
+	$total = 0;
 
-	$ids = implode(",", array_keys($carrito));
+	if (!empty($carrito)) {
+		$ids = implode(",", array_map('intval', array_keys($carrito)));
 
-	// esta consulta se debería hacer de acuerdo al modelo de 3 capas
-	$conn = obtenerConexionBD();
-	$sql = "SELECT id, nombre, precio_base FROM productos WHERE id IN ($ids)";
-	$result = $conn->query($sql);
+		$conn = obtenerConexionBD();
+		$sql = "SELECT id, nombre, precio_base, iva FROM productos WHERE id IN ($ids)";
+		$result = $conn->query($sql);
 
-	if ($result) {
-		while ($row = $result->fetch_assoc()) {
-			$productos[$row["id"]] = $row;
+		if ($result) {
+			while ($row = $result->fetch_assoc()) {
+				$productos[$row["id"]] = $row;
+			}
 		}
 	}
-}
-
 ?>
 
 <!DOCTYPE html>
-<html>
-<head>
-<meta charset="UTF-8">
-<title>Carrito</title>
-</head>
+<html lang="es">
+	<head>
+		<meta charset="UTF-8">
+		<meta name="viewport" content="width=device-width, initial-scale=1.0">
+		<title>Bistró FDI - Mi Carrito</title>
+		<link rel="stylesheet" href="css/estilos.css">
+	</head>
+	<body class="body-inicio">
 
-<body>
+		<?php include __DIR__ . '/includes/nav.php'; ?>
 
-<h2>Carrito</h2>
+		<main class="main-bienvenida">
+			<section class="tarjeta-presentacion tarjeta-ancha">
+				
+				<h1>Mi <span>Carrito</span></h1>
+				<p class="lema">Revisa tu pedido (<?php echo htmlspecialchars($tipoPedido); ?>)</p>
+				
+				<div class="divisor"></div>
 
-<?php if (empty($carrito)): ?>
+				<?php if (isset($_SESSION['mensaje_exito'])): ?>
+					<div class="alerta alerta-exito">
+						<?php echo htmlspecialchars($_SESSION['mensaje_exito']); unset($_SESSION['mensaje_exito']); ?>
+					</div>
+				<?php endif; ?>
 
-<p>El carrito está vacío.</p>
+				<div class="mensaje-sesion mensaje-sesion-ancho">
+					
+					<?php if (empty($carrito)): ?>
+						<p>Tu carrito está vacío ahora mismo.</p>
+						<div class="contenedor-botones-carrito">
+							<a href="catalogo.php" class="btn-login">Volver al Catálogo</a>
+						</div>
+					
+					<?php else: ?>
+						
+						<table class="tabla-pedidos">
+							<thead>
+								<tr>
+									<th>Producto</th>
+									<th>Precio (con IVA)</th>
+									<th>Cantidad</th>
+									<th>Subtotal</th>
+									<th>Quitar</th>
+								</tr>
+							</thead>
+							<tbody>
+								<?php 
+								foreach ($carrito as $productoId => $cantidad): 
+									if (!isset($productos[$productoId])) continue; 
 
-<?php else: ?>
+									$producto = $productos[$productoId];
+									$precioBase = $producto["precio_base"];
+									$porcentajeIva = $producto["iva"];
+									
+									$precioConIva = $precioBase + ($precioBase * ($porcentajeIva / 100));
+									$subtotal = $precioConIva * $cantidad;
+									$total += $subtotal;
+								?>
+								<tr>
+									<td><strong><?php echo htmlspecialchars($producto["nombre"]); ?></strong></td>
+									<td><?php echo number_format($precioConIva, 2); ?> €</td>
+									<td><?php echo $cantidad; ?></td>
+									<td><strong><?php echo number_format($subtotal, 2); ?> €</strong></td>
+									
+									<td>
+										<form action="eliminar_del_carrito.php" method="POST">
+											<input type="hidden" name="productoId" value="<?php echo htmlspecialchars($productoId); ?>">
+											<button type="submit" class="btn-accion btn-peligro" title="Eliminar del carrito">x</button>
+										</form>
+									</td>
+								</tr>
+								<?php endforeach; ?>
+							</tbody>
+						</table>
 
-<?php foreach ($carrito as $productoId => $cantidad): 
+						<div class="resumen-carrito">
+							<h3>Total a Pagar:</h3>
+							<div class="total-destacado"><?php echo number_format($total, 2); ?> €</div>
+						</div>
 
-$producto = $productos[$productoId];
-$subtotal = $producto["precio_base"] * $cantidad;
-$total += $subtotal;
+						<form action="confirmar_pedido.php" method="POST" class="form-confirmar">
+							<button type="submit" class="btn-confirmar-compra"> Confirmar y Procesar Pedido </button>
+						</form>
 
-?>
+					<?php endif; ?>
 
-<div>
+				</div>
 
-<strong><?php echo $producto["nombre"]; ?></strong><br>
+				<?php if (!empty($carrito)): ?>
+					<div class="contenedor-botones-carrito">
+						<a href="catalogo.php" class="btn-admin">Seguir comprando</a>
+						<a href="cancelar_pedido.php" class="btn-login btn-peligro">Vaciar Carrito</a>
+					</div>
+				<?php endif; ?>
 
-Cantidad: <?php echo $cantidad; ?><br>
+			</section>
+		</main>
 
-Precio: <?php echo $producto["precio_base"]; ?> €<br>
+		<?php include __DIR__ . '/includes/vistas/footer.php'; ?>
 
-Subtotal: <?php echo $subtotal; ?> €
-
-</div>
-
-<hr>
-
-<?php endforeach; ?>
-
-<h3>Total: <?php echo $total; ?> €</h3>
-
-<form action="confirmar_pedido.php" method="POST">
-<button type="submit">Confirmar pedido</button>
-</form>
-
-<?php endif; ?>
-
-<br>
-
-<a href="catalogo.php">Seguir comprando</a>
-
-</body>
+	</body>
 </html>
-// Revision P2
-
-// Revision P2

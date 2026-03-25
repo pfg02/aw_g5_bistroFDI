@@ -234,3 +234,28 @@ input, select, textarea { width: 100%; padding: 10px; border: 1px solid #ddd; bo
     display: block;
     margin: 0 auto;
 }
+
+/* =========================================
+   CATÁLOGO DE PRODUCTOS (GRID)
+   ========================================= */
+.catalogo-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 15px; width: 100%; margin-top: 20px; }
+
+.producto-card { border: 1px solid #ddd; border-radius: 8px; padding: 12px; text-align: center; background: #fff; box-shadow: 0 2px 5px rgba(0,0,0,0.05); display: flex; flex-direction: column; justify-content: space-between; }
+.producto-img-catalogo { width: 100%; height: 110px; object-fit: cover; border-radius: 4px; margin-bottom: 8px; border: 1px solid #eee; }
+.producto-nombre { font-weight: bold; font-size: 0.95rem; color: #333; margin-bottom: 5px; line-height: 1.2; }
+.producto-precio { color: #28a745; font-weight: bold; font-size: 1.1rem; margin-bottom: 10px; }
+
+.form-add-carrito { display: flex; justify-content: center; align-items: center; gap: 5px; }
+.input-cantidad { width: 50px; padding: 6px; text-align: center; }
+
+/* Utilidades para Layout de Pagos y Formularios */
+.opciones-pago-container { display: flex; flex-direction: column; gap: 20px; margin-top: 20px; }
+.grid-tarjeta-datos { display: grid; grid-template-columns: 1fr 1fr; gap: 15px; margin-top: 15px; }
+
+@media (max-width: 768px) {
+    .catalogo-grid { grid-template-columns: repeat(2, 1fr); }
+}
+@media (max-width: 480px) {
+    .catalogo-grid { grid-template-columns: 1fr; }
+    .grid-tarjeta-datos { grid-template-columns: 1fr; }
+}

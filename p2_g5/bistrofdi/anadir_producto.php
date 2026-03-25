@@ -1,23 +1,36 @@
 <?php
-
 /**
-	* Controlador para añadir un producto al carrito de un pedido en curso.
-	* @author Gabriel Omaña
-	*/
+ * Añade un producto al carrito en la sesión y devuelve al catálogo.
+ */
 
-session_start();
+	require_once __DIR__ . '/includes/sesion.php';
 
-$productoId = $_POST["productoId"];
-$cantidad = $_POST["cantidad"];
+	exigirLogin();
+	exigirRol('cliente');
 
-if (!isset($_SESSION["carrito"][$productoId])) {
-	$_SESSION["carrito"][$productoId] = 0;
-}
+	if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['productoId'], $_POST['cantidad'])) {
+		
+		$id = (int)$_POST['productoId'];
+		$cantidad = (int)$_POST['cantidad'];
 
-$_SESSION["carrito"][$productoId] += $cantidad;
+		if ($cantidad > 0) {
+			// Si el carrito no existe, lo creamos vacío
+			if (!isset($_SESSION['carrito'])) {
+				$_SESSION['carrito'] = [];
+			}
 
-header("Location: carrito.php");
-exit();
-// Revision P2
+			// Si el producto ya está en el carrito, sumamos su cantidad, sino, lo creamos.
+			if (isset($_SESSION['carrito'][$id])) {
+				$_SESSION['carrito'][$id] += $cantidad;
+			} else {
+				$_SESSION['carrito'][$id] = $cantidad;
+			}
+			
+			// Mensaje para que el usuario sepa que funcionó
+			$_SESSION['mensaje_exito'] = "Artículo añadido al carrito.";
+		}
+	}
 
-// Revision P2
+	header("Location: catalogo.php");
+	exit();
+?>
