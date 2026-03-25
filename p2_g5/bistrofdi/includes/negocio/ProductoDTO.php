@@ -18,7 +18,7 @@ class ProductoDTO {
         $this->nombre = $nombre; 
         $this->descripcion = $descripcion;
         $this->precio = (float)$precio; 
-        $this->stock = (int)$stock;
+        $this->stock = ($stock < 0) ? 0 : (int)$stock;        
         $this->imagen = $imagen; 
         $this->id_categoria = $id_categoria;
         $this->ofertado = (int)$ofertado; 
