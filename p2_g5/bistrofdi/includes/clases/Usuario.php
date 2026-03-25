@@ -69,9 +69,10 @@ class Usuario
     }
 
     public function iniciarSesion(): void
-    {
-        $_SESSION['id_usuario'] = $this->id;
-        $_SESSION['nombre_usuario'] = $this->nombreUsuario;
-        $_SESSION['rol'] = $this->rol;
-    }
+{
+    $_SESSION['id_usuario'] = $this->id;
+    $_SESSION['nombre_usuario'] = $this->nombreUsuario;
+    $_SESSION['rol'] = $this->rol;
+    $_SESSION['avatar'] = $this->avatar;
+}
 }

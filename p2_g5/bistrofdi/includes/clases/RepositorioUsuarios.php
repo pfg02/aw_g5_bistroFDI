@@ -134,4 +134,26 @@ class RepositorioUsuarios
 
         return $ok;
     }
+
+    public function buscarPorEmail(string $email): ?Usuario
+    {
+    $stmt = $this->conn->prepare('SELECT * FROM usuarios WHERE email = ?');
+    $stmt->bind_param('s', $email);
+    $stmt->execute();
+    $res = $stmt->get_result();
+    $fila = $res->fetch_assoc();
+    $stmt->close();
+
+    return $fila ? Usuario::crearDesdeFila($fila) : null;
+    }
+
+    public function actualizarAvatar(int $idUsuario, string $rutaAvatar): bool
+    {
+    $stmt = $this->conn->prepare('UPDATE usuarios SET avatar = ? WHERE id = ?');
+    $stmt->bind_param('si', $rutaAvatar, $idUsuario);
+    $ok = $stmt->execute();
+    $stmt->close();
+
+    return $ok;
+    }
 }
