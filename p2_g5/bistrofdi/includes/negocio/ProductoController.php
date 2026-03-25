@@ -1,6 +1,7 @@
 <?php
+// includes/presentacion/ProductoController.php
 require_once __DIR__ . '/../config.php';
-require_once __DIR__ . '/ProductoService.php';
+require_once __DIR__ . '/../negocio/ProductoService.php';
 
 class ProductoController {
     private $service;
@@ -13,20 +14,16 @@ class ProductoController {
         if ($accion === 'guardar') {
             $imagen_actual = $_POST['imagen_actual'] ?? '';
             $nuevas_fotos = $this->service->procesarImagenes($_FILES);
-            
             $imagen_final = $imagen_actual;
 
             if ($nuevas_fotos !== null) {
                 if (empty($imagen_actual)) {
                     $imagen_final = $nuevas_fotos;
                 } else {
-                    // Combinamos las viejas con las nuevas
-                    $lista_viejas = explode(',', $imagen_actual);
-                    $lista_nuevas = explode(',', $nuevas_fotos);
+                    $lista_viejas = array_filter(explode(',', $imagen_actual));
+                    $lista_nuevas = array_filter(explode(',', $nuevas_fotos));
                     $combinadas = array_merge($lista_viejas, $lista_nuevas);
-                    // Limitamos a un máximo de 3 imágenes totales
-                    $resultado = array_slice($combinadas, 0, 3);
-                    $imagen_final = implode(',', $resultado);
+                    $imagen_final = implode(',', array_slice($combinadas, 0, 3));
                 }
             }
 
@@ -38,8 +35,8 @@ class ProductoController {
                 $_POST['stock'],
                 $imagen_final,
                 $_POST['id_categoria'],
-                $_POST['ofertado'],
-                $_POST['iva']
+                $_POST['ofertado'] ?? 1,
+                $_POST['iva'] ?? 21
             );
 
             if ($this->service->guardarProducto($dto)) {
@@ -50,12 +47,12 @@ class ProductoController {
             exit();
         }
 
-        // Lógica de activar/eliminar (se mantiene igual)
         if ($accion === 'activar' || $accion === 'reactivar') {
             if ($id) $this->service->darDeAlta($id);
             header("Location: ../vistas/gestion_productos.php?msg=alta_ok");
             exit();
         }
+
         if ($accion === 'eliminar') {
             if ($id) $this->service->darDeBaja($id);
             header("Location: ../vistas/gestion_productos.php?msg=baja_ok");
@@ -63,5 +60,6 @@ class ProductoController {
         }
     }
 }
+
 $controller = new ProductoController($db);
 $controller->manejarPeticion();

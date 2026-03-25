@@ -9,19 +9,25 @@ class ProductoDAO {
         $this->db = $db;
     }
 
+    private function mapear($row) {
+        return new ProductoDTO(
+            $row['id'], $row['nombre'], $row['descripcion'], 
+            $row['precio_base'], $row['stock'], $row['imagen'], 
+            $row['id_categoria'], $row['ofertado'], $row['iva'] ?? 21
+        );
+    }
+
     public function listarTodos() {
         $productos = [];
         $sql = "SELECT p.*, c.nombre as cat_nombre FROM productos p 
                 LEFT JOIN categorias c ON p.id_categoria = c.id ORDER BY p.nombre ASC";
         $res = $this->db->query($sql);
-        while ($row = $res->fetch_assoc()) {
-            $p = new ProductoDTO(
-                $row['id'], $row['nombre'], $row['descripcion'], 
-                $row['precio_base'], $row['stock'], $row['imagen'], 
-                $row['id_categoria'], $row['ofertado'], $row['iva'] ?? 21
-            );
-            $p->categoria_nombre = $row['cat_nombre'] ?? 'Sin categoría';
-            $productos[] = $p;
+        if ($res) {
+            while ($row = $res->fetch_assoc()) {
+                $p = $this->mapear($row);
+                $p->categoria_nombre = $row['cat_nombre'] ?? 'Sin categoría';
+                $productos[] = $p;
+            }
         }
         return $productos;
     }
@@ -30,15 +36,9 @@ class ProductoDAO {
         $stmt = $this->db->prepare("SELECT * FROM productos WHERE id = ?");
         $stmt->bind_param("i", $id);
         $stmt->execute();
-        $row = $stmt->get_result()->fetch_assoc();
-        if ($row) {
-            return new ProductoDTO(
-                $row['id'], $row['nombre'], $row['descripcion'], 
-                $row['precio_base'], $row['stock'], $row['imagen'], 
-                $row['id_categoria'], $row['ofertado'], $row['iva'] ?? 21
-            );
-        }
-        return null;
+        $res = $stmt->get_result()->fetch_assoc();
+        $stmt->close();
+        return $res ? $this->mapear($res) : null;
     }
 
     public function guardar(ProductoDTO $p) {
@@ -51,12 +51,16 @@ class ProductoDAO {
             $stmt = $this->db->prepare($sql);
             $stmt->bind_param("ssdisiii", $p->nombre, $p->descripcion, $p->precio, $p->stock, $p->imagen, $p->id_categoria, $p->ofertado, $p->iva);
         }
-        return $stmt->execute();
+        $exito = $stmt->execute();
+        $stmt->close();
+        return $exito;
     }
 
     public function actualizarEstado($id, $estado) {
         $stmt = $this->db->prepare("UPDATE productos SET ofertado = ? WHERE id = ?");
         $stmt->bind_param("ii", $estado, $id);
-        return $stmt->execute();
+        $exito = $stmt->execute();
+        $stmt->close();
+        return $exito;
     }
 }

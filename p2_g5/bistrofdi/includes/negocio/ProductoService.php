@@ -7,45 +7,35 @@ class ProductoService {
     private $dao;
 
     public function __construct($db) {
-        // El Service inicializa su propio DAO
         $this->dao = new ProductoDAO($db);
     }
 
-    public function listarTodos() {
-        // Delega totalmente en el DAO
-        return $this->dao->listarTodos();
-    }
-
-    public function obtenerProducto($id) {
-        return $this->dao->obtenerPorId($id) ?? new ProductoDTO();
-    }
+    public function listarTodos() { return $this->dao->listarTodos(); }
+    public function obtenerProducto($id) { return $this->dao->obtenerPorId($id) ?? new ProductoDTO(); }
+    public function darDeBaja($id) { return $this->dao->actualizarEstado($id, 0); }
+    public function darDeAlta($id) { return $this->dao->actualizarEstado($id, 1); }
 
     public function guardarProducto(ProductoDTO $dto) {
-        // Aquí podrías añadir lógica de negocio, ej: validar precios
-        if ($dto->precio < 0) return false;
+        if (empty(trim($dto->nombre)) || $dto->precio < 0) return false;
         return $this->dao->guardar($dto);
     }
 
-    public function darDeBaja($id) {
-        return $this->dao->actualizarEstado($id, 0);
-    }
-
-    public function darDeAlta($id) {
-        return $this->dao->actualizarEstado($id, 1);
-    }
-
-    // He movido el procesamiento de imágenes aquí para centralizar la lógica
     public function procesarImagenes($files) {
         $nombres = [];
-        foreach ($files as $f) {
-            if ($f['error'] === UPLOAD_ERR_OK) {
-                $ext = pathinfo($f['name'], PATHINFO_EXTENSION);
-                $nuevo_nombre = time() . "_" . uniqid() . "." . $ext;
-                if (move_uploaded_file($f['tmp_name'], "../../img/productos/" . $nuevo_nombre)) {
+        $directorio = dirname(dirname(__DIR__)) . DIRECTORY_SEPARATOR . 'img' . DIRECTORY_SEPARATOR . 'productos' . DIRECTORY_SEPARATOR;
+
+        if (!is_dir($directorio)) mkdir($directorio, 0777, true);
+
+        for ($i = 1; $i <= 3; $i++) {
+            $clave = "foto" . $i;
+            if (isset($files[$clave]) && $files[$clave]['error'] === UPLOAD_ERR_OK) {
+                $ext = pathinfo($files[$clave]['name'], PATHINFO_EXTENSION);
+                $nuevo_nombre = time() . "_img" . $i . "_" . uniqid() . "." . $ext;
+                if (move_uploaded_file($files[$clave]['tmp_name'], $directorio . $nuevo_nombre)) {
                     $nombres[] = $nuevo_nombre;
                 }
             }
         }
-        return count($nombres) > 0 ? implode(',', $nombres) : null;
+        return !empty($nombres) ? implode(',', $nombres) : null;
     }
 }

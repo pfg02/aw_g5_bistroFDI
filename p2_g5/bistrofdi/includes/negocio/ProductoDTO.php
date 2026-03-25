@@ -5,12 +5,13 @@ class ProductoDTO {
     public $id; 
     public $nombre; 
     public $descripcion; 
-    public $precio; // En BD es precio_base
+    public $precio; 
     public $stock; 
     public $imagen; 
     public $id_categoria; 
     public $ofertado;
     public $iva; 
+    public $categoria_nombre;
 
     public function __construct($id=null, $nombre="", $descripcion="", $precio=0, $stock=0, $imagen=null, $id_categoria=null, $ofertado=1, $iva=21) {
         $this->id = $id; 
@@ -20,11 +21,10 @@ class ProductoDTO {
         $this->stock = (int)$stock;
         $this->imagen = $imagen; 
         $this->id_categoria = $id_categoria;
-        $this->ofertado = $ofertado; 
-        $this->iva = $iva;
+        $this->ofertado = (int)$ofertado; 
+        $this->iva = (int)$iva;
     }
 
-    // Métodos de lógica de negocio dentro del objeto (Pura POO)
     public function getPrecioFinal() {
         return $this->precio * (1 + ($this->iva / 100));
     }
