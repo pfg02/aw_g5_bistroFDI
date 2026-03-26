@@ -11,8 +11,7 @@ $idUsuario = isset($_GET['id']) ? (int)$_GET['id'] : 0;
 $usuario = $controller->obtenerUsuarioPorId($idUsuario);
 
 if (!$usuario) {
-    echo '<p>Usuario no encontrado.</p>';
-    exit;
+    die('Usuario no encontrado.');
 }
 
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
@@ -25,17 +24,10 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 
     $mensajeError = $texto;
 }
-?>
-<!DOCTYPE html>
-<html lang="es">
-<head>
-    <meta charset="UTF-8">
-    <title>Borrar usuario - Bistro FDI</title>
-    <link rel="stylesheet" href="css/estilos.css">
-</head>
-<body>
-    <?php include __DIR__ . '/includes/vistas/comun/nav.php'; ?>
 
+ob_start();
+?>
+<section class="contenedor-principal">
     <h1>Borrar usuario</h1>
 
     <?php if ($mensajeError): ?>
@@ -48,5 +40,9 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     </form>
 
     <p><a href="gestionarUsuarios.php">Volver a gestión de usuarios</a></p>
-</body>
-</html>
+</section>
+<?php
+$contenidoPrincipal = ob_get_clean();
+$tituloPagina = 'Borrar usuario - Bistro FDI';
+
+require __DIR__ . '/includes/vistas/comun/plantilla.php';

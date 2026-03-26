@@ -69,6 +69,13 @@ class UsuarioController
         return $this->usuarioService->actualizarAvatar($idUsuario, $rutaAvatar);
     }
 
+    public function procesarSolicitudRecuperacion(array $post): array
+    {
+        return $this->usuarioService->solicitarRecuperacionPassword(
+            $post['email'] ?? ''
+        );
+    }
+
     public function obtenerUsuarioPorId(int $idUsuario): ?UsuarioDTO
     {
         return $this->usuarioService->buscarUsuarioPorId($idUsuario);
@@ -77,12 +84,5 @@ class UsuarioController
     public function obtenerListaUsuarios(): array
     {
         return $this->usuarioService->listarUsuarios();
-    }
-
-    public function procesarSolicitudRecuperacion(array $post): array
-    {
-    return $this->usuarioService->solicitarRecuperacionPassword(
-        $post['email'] ?? ''
-    );
     }
 }

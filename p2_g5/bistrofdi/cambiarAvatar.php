@@ -11,8 +11,7 @@ $mensajeError = '';
 $usuario = $controller->obtenerUsuarioPorId((int)$_SESSION['id_usuario']);
 
 if (!$usuario) {
-    echo '<p>Usuario no encontrado.</p>';
-    exit;
+    die('Usuario no encontrado.');
 }
 
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
@@ -80,61 +79,54 @@ $avataresPredefinidos = [
     'gerente.png',
     'default.png'
 ];
+
+ob_start();
 ?>
-<!DOCTYPE html>
-<html lang="es">
-<head>
-    <meta charset="UTF-8">
-    <title>Cambiar avatar - Bistro FDI</title>
-    <link rel="stylesheet" href="css/estilos.css">
-</head>
-<body>
-    <?php include __DIR__ . '/includes/vistas/comun/nav.php'; ?>
+<section class="contenedor-principal">
+    <h1>Cambiar avatar</h1>
 
-    <div class="contenedor-principal">
-        <h1>Cambiar avatar</h1>
+    <?php if ($mensaje): ?>
+        <p style="color:green;"><?= htmlspecialchars($mensaje) ?></p>
+    <?php endif; ?>
 
-        <?php if ($mensaje): ?>
-            <p style="color:green;"><?= htmlspecialchars($mensaje) ?></p>
-        <?php endif; ?>
+    <?php if ($mensajeError): ?>
+        <p style="color:red;"><?= htmlspecialchars($mensajeError) ?></p>
+    <?php endif; ?>
 
-        <?php if ($mensajeError): ?>
-            <p style="color:red;"><?= htmlspecialchars($mensajeError) ?></p>
-        <?php endif; ?>
+    <p>Avatar actual:</p>
+    <img src="<?= htmlspecialchars($usuario->getAvatar()) ?>" alt="Avatar actual" width="120">
 
-        <p>Avatar actual:</p>
-        <img src="<?= htmlspecialchars($usuario->getAvatar()) ?>" alt="Avatar actual" width="120">
+    <form method="post" action="cambiarAvatar.php" enctype="multipart/form-data">
+        <hr>
+        <h2>Seleccionar avatar predefinido</h2>
+
+        <?php foreach ($avataresPredefinidos as $archivo): ?>
+            <label style="display:inline-block; margin-right:10px;">
+                <input type="radio" name="avatar_predefinido" value="<?= htmlspecialchars($archivo) ?>">
+                <img src="img/avatares/<?= htmlspecialchars($archivo) ?>" width="80" alt="">
+            </label>
+        <?php endforeach; ?>
+
+        <br><br>
+        <button type="submit" name="accion" value="predefinido">Guardar avatar predefinido</button>
 
         <hr>
 
-        <form method="post" action="cambiarAvatar.php" enctype="multipart/form-data">
-            <h2>Seleccionar avatar predefinido</h2>
+        <h2>Subir imagen propia</h2>
+        <input type="file" name="archivo" accept="image/*">
+        <br><br>
+        <button type="submit" name="accion" value="subir">Subir y usar esta imagen</button>
 
-            <?php foreach ($avataresPredefinidos as $archivo): ?>
-                <label style="display:inline-block; margin-right:10px;">
-                    <input type="radio" name="avatar_predefinido" value="<?= htmlspecialchars($archivo) ?>">
-                    <img src="img/avatares/<?= htmlspecialchars($archivo) ?>" width="80" alt="">
-                </label>
-            <?php endforeach; ?>
+        <hr>
 
-            <br><br>
-            <button type="submit" name="accion" value="predefinido">Guardar avatar predefinido</button>
+        <h2>Usar avatar por defecto</h2>
+        <button type="submit" name="accion" value="defecto">Restaurar avatar por defecto</button>
+    </form>
 
-            <hr>
+    <p><a href="perfil.php">Volver a mi perfil</a></p>
+</section>
+<?php
+$contenidoPrincipal = ob_get_clean();
+$tituloPagina = 'Cambiar avatar - Bistro FDI';
 
-            <h2>Subir imagen propia</h2>
-            <input type="file" name="archivo" accept="image/*">
-            <br><br>
-            <button type="submit" name="accion" value="subir">Subir y usar esta imagen</button>
-
-            <hr>
-
-            <h2>Usar avatar por defecto</h2>
-            <button type="submit" name="accion" value="defecto">Restaurar avatar por defecto</button>
-        </form>
-
-        <br>
-        <p><a href="perfil.php">Volver a mi perfil</a></p>
-    </div>
-</body>
-</html>
+require __DIR__ . '/includes/vistas/comun/plantilla.php';

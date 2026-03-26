@@ -7,11 +7,17 @@ $base_url = "/AW_G5_BISTROFDI/p2_g5/bistrofdi/";
 
 $estaLogueado = isset($_SESSION['id_usuario']);
 $avatar = $_SESSION['avatar'] ?? 'img/avatares/default.png';
+
+$avatarLimpio = ltrim($avatar, '/');
+$rutaFinalAvatar = (strpos($avatarLimpio, 'http://') === 0 || strpos($avatarLimpio, 'https://') === 0)
+    ? $avatarLimpio
+    : $base_url . $avatarLimpio;
 ?>
 
 <nav class="navegacion-principal">
     <div class="nav-contenedor">
         <a href="<?= $base_url ?>index.php" class="nav-logo">Bistró FDI</a>
+
         <ul class="nav-links">
             <li><a href="<?= $base_url ?>index.php">Inicio</a></li>
 
@@ -24,8 +30,11 @@ $avatar = $_SESSION['avatar'] ?? 'img/avatares/default.png';
             <?php if ($estaLogueado): ?>
                 <li>
                     <a href="<?= $base_url ?>perfil.php">
-                        <img src="<?= htmlspecialchars($base_url . ltrim($avatar, '/')) ?>" alt="Avatar"
-                             style="width: 24px; height: 24px; border-radius: 50%; vertical-align: middle; margin-right: 5px; object-fit: cover;">
+                        <img
+                            src="<?= htmlspecialchars($rutaFinalAvatar) ?>"
+                            alt="Avatar"
+                            style="width: 24px; height: 24px; border-radius: 50%; vertical-align: middle; margin-right: 5px; object-fit: cover;"
+                        >
                         Perfil (<?= htmlspecialchars($_SESSION['nombre_usuario'] ?? 'Usuario') ?>)
                     </a>
                 </li>

@@ -169,6 +169,28 @@ class UsuarioService
         return [true, 'Avatar actualizado correctamente.'];
     }
 
+    public function solicitarRecuperacionPassword(string $email): array
+    {
+        $email = trim($email);
+
+        if ($email === '') {
+            return [false, 'Debes introducir un correo electrónico.'];
+        }
+
+        if (!filter_var($email, FILTER_VALIDATE_EMAIL)) {
+            return [false, 'El correo electrónico no tiene un formato válido.'];
+        }
+
+        $usuario = $this->usuarioDAO->buscarPorEmail($email);
+
+        if ($usuario) {
+            // Aquí iría el envío real del correo.
+            // Para la práctica mostramos el flujo correcto sin revelar si existe o no.
+        }
+
+        return [true, 'Correo de recuperación de contraseña enviado: Revise su bandeja de entrada'];
+    }
+
     public function buscarUsuarioPorId(int $id): ?UsuarioDTO
     {
         return $this->usuarioDAO->buscarPorId($id);
@@ -178,25 +200,4 @@ class UsuarioService
     {
         return $this->usuarioDAO->listarTodos();
     }
-
-    public function solicitarRecuperacionPassword(string $email): array
-    {
-    $email = trim($email);
-
-    if ($email === '') {
-        return [false, 'Debes introducir un correo electrónico.'];
-    }
-
-    if (!filter_var($email, FILTER_VALIDATE_EMAIL)) {
-        return [false, 'El correo electrónico no tiene un formato válido.'];
-    }
-
-    $usuario = $this->usuarioDAO->buscarPorEmail($email);
-
-    if ($usuario) {
-    }
-
-    return [true, 'Correo de recuperación de contraseña enviado: Revise su bandeja de entrada'];
-    }
-
 }

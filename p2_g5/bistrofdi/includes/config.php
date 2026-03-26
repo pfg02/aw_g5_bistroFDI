@@ -17,12 +17,15 @@ if (!$db->set_charset('utf8mb4')) {
     die('Error al configurar UTF-8 en la base de datos: ' . $db->error);
 }
 
-function tienePermiso($rolRequerido) {
+function tienePermiso($rolRequerido): bool
+{
     if (session_status() === PHP_SESSION_NONE) {
         session_start();
     }
 
-    if (!isset($_SESSION['rol'])) return false;
+    if (!isset($_SESSION['rol'])) {
+        return false;
+    }
 
     $jerarquia = [
         'cliente'  => 1,

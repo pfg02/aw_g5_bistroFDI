@@ -27,17 +27,10 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 
     $mensajeError = $mensaje;
 }
-?>
-<!DOCTYPE html>
-<html lang="es">
-<head>
-    <meta charset="UTF-8">
-    <title>Registro - Bistro FDI</title>
-    <link rel="stylesheet" href="css/estilos.css">
-</head>
-<body>
-    <?php include __DIR__ . '/includes/vistas/comun/nav.php'; ?>
 
+ob_start();
+?>
+<section class="contenedor-principal">
     <h1>Registrarse</h1>
 
     <?php if ($mensajeError): ?>
@@ -74,5 +67,9 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 
     <p><a href="index.php">Volver al inicio</a></p>
     <p><a href="login.php">Ir a iniciar sesión</a></p>
-</body>
-</html>
+</section>
+<?php
+$contenidoPrincipal = ob_get_clean();
+$tituloPagina = 'Registro - Bistro FDI';
+
+require __DIR__ . '/includes/vistas/comun/plantilla.php';

@@ -6,21 +6,18 @@ exigirRol('gerente');
 
 $controller = new UsuarioController();
 $usuarios = $controller->obtenerListaUsuarios();
-?>
-<!DOCTYPE html>
-<html lang="es">
-<head>
-    <meta charset="UTF-8">
-    <title>Gestionar usuarios - Bistro FDI</title>
-    <link rel="stylesheet" href="css/estilos.css">
-</head>
-<body>
-    <?php include __DIR__ . '/includes/vistas/comun/nav.php'; ?>
 
+ob_start();
+?>
+<section class="contenedor-principal">
     <h1>Gestión de usuarios</h1>
 
     <?php include __DIR__ . '/includes/vistas/usuarios/tablaUsuarios.php'; ?>
 
     <p><a href="index.php">Volver al inicio</a></p>
-</body>
-</html>
+</section>
+<?php
+$contenidoPrincipal = ob_get_clean();
+$tituloPagina = 'Gestionar usuarios - Bistro FDI';
+
+require __DIR__ . '/includes/vistas/comun/plantilla.php';

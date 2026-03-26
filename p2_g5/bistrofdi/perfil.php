@@ -11,8 +11,7 @@ $mensajeError = '';
 $usuario = $controller->obtenerUsuarioPorId((int)$_SESSION['id_usuario']);
 
 if (!$usuario) {
-    echo '<p>Usuario no encontrado.</p>';
-    exit;
+    die('Usuario no encontrado.');
 }
 
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
@@ -28,17 +27,10 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         $usuario->setApellidos(trim($_POST['apellidos'] ?? $usuario->getApellidos()));
     }
 }
-?>
-<!DOCTYPE html>
-<html lang="es">
-<head>
-    <meta charset="UTF-8">
-    <title>Mi perfil - Bistro FDI</title>
-    <link rel="stylesheet" href="css/estilos.css">
-</head>
-<body>
-    <?php include __DIR__ . '/includes/vistas/comun/nav.php'; ?>
 
+ob_start();
+?>
+<section class="contenedor-principal">
     <h1>Mi perfil</h1>
 
     <?php if ($mensaje): ?>
@@ -75,5 +67,9 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     </form>
 
     <p><a href="index.php">Volver al inicio</a></p>
-</body>
-</html>
+</section>
+<?php
+$contenidoPrincipal = ob_get_clean();
+$tituloPagina = 'Mi perfil - Bistro FDI';
+
+require __DIR__ . '/includes/vistas/comun/plantilla.php';

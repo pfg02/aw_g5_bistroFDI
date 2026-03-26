@@ -6,10 +6,7 @@ $controller = new UsuarioController();
 
 $mensaje = '';
 $mensajeError = '';
-
-$datosFormulario = [
-    'email' => ''
-];
+$datosFormulario = ['email' => ''];
 
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     $datosFormulario['email'] = trim($_POST['email'] ?? '');
@@ -23,17 +20,10 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         $mensajeError = $texto;
     }
 }
-?>
-<!DOCTYPE html>
-<html lang="es">
-<head>
-    <meta charset="UTF-8">
-    <title>Recuperar contraseña - Bistro FDI</title>
-    <link rel="stylesheet" href="css/estilos.css">
-</head>
-<body>
-    <?php include __DIR__ . '/includes/vistas/comun/nav.php'; ?>
 
+ob_start();
+?>
+<section class="contenedor-principal">
     <h1>Recuperar contraseña</h1>
 
     <?php if ($mensaje): ?>
@@ -54,5 +44,9 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 
     <p><a href="login.php">Volver a iniciar sesión</a></p>
     <p><a href="index.php">Volver al inicio</a></p>
-</body>
-</html>
+</section>
+<?php
+$contenidoPrincipal = ob_get_clean();
+$tituloPagina = 'Recuperar contraseña - Bistro FDI';
+
+require __DIR__ . '/includes/vistas/comun/plantilla.php';

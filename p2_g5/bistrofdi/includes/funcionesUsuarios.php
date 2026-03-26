@@ -15,5 +15,6 @@ function loginUsuario(string $nombreUsuario, string $password): bool
         'nombre_usuario' => $nombreUsuario,
         'password' => $password
     ]);
+
     return $ok;
 }

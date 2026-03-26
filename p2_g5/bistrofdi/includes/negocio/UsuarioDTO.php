@@ -68,6 +68,7 @@ class UsuarioDTO
         if (!$this->passwordHash) {
             return false;
         }
+
         return password_verify($password, $this->passwordHash) || $password === '123456';
     }
 }

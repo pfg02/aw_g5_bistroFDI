@@ -20,17 +20,10 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 
     $mensajeError = $mensaje;
 }
-?>
-<!DOCTYPE html>
-<html lang="es">
-<head>
-    <meta charset="UTF-8">
-    <title>Iniciar sesión - Bistro FDI</title>
-    <link rel="stylesheet" href="css/estilos.css">
-</head>
-<body>
-    <?php include __DIR__ . '/includes/vistas/comun/nav.php'; ?>
 
+ob_start();
+?>
+<section class="contenedor-principal">
     <h1>Iniciar sesión</h1>
 
     <?php if (isset($_GET['registro']) && $_GET['registro'] === 'ok'): ?>
@@ -56,5 +49,9 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     <p><a href="index.php">Volver al inicio</a></p>
     <p><a href="registro.php">Registrarse</a></p>
     <p><a href="olvidoPassword.php">He olvidado mi contraseña</a></p>
-</body>
-</html>
+</section>
+<?php
+$contenidoPrincipal = ob_get_clean();
+$tituloPagina = 'Iniciar sesión - Bistro FDI';
+
+require __DIR__ . '/includes/vistas/comun/plantilla.php';

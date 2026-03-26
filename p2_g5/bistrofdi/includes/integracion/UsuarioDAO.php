@@ -129,6 +129,16 @@ class UsuarioDAO
         return $ok;
     }
 
+    public function actualizarPassword(int $idUsuario, string $passwordHash): bool
+    {
+        $stmt = $this->conn->prepare('UPDATE usuarios SET password_hash = ? WHERE id = ?');
+        $stmt->bind_param('si', $passwordHash, $idUsuario);
+        $ok = $stmt->execute();
+        $stmt->close();
+
+        return $ok;
+    }
+
     public function borrar(int $idUsuario): bool
     {
         $stmt = $this->conn->prepare('DELETE FROM usuarios WHERE id = ?');
@@ -150,15 +160,5 @@ class UsuarioDAO
 
         $res->free();
         return $usuarios;
-    }
-
-    public function actualizarPassword(int $idUsuario, string $passwordHash): bool
-    {
-    $stmt = $this->conn->prepare('UPDATE usuarios SET password_hash = ? WHERE id = ?');
-    $stmt->bind_param('si', $passwordHash, $idUsuario);
-    $ok = $stmt->execute();
-    $stmt->close();
-
-    return $ok;
     }
 }
