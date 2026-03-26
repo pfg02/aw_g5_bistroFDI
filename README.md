@@ -1,2 +1,2 @@
 # Proyecto BistroFDI
-Repositorio gestionado por RMGonzalo
+Repositorio gestionado por Grupo 5
