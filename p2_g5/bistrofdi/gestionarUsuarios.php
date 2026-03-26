@@ -1,11 +1,11 @@
 <?php
 require_once __DIR__ . '/includes/sesion.php';
-require_once __DIR__ . '/includes/clases/RepositorioUsuarios.php';
+require_once __DIR__ . '/includes/negocio/UsuarioController.php';
 
 exigirRol('gerente');
 
-$repo = new RepositorioUsuarios();
-$usuarios = $repo->listarTodos();
+$controller = new UsuarioController();
+$usuarios = $controller->obtenerListaUsuarios();
 ?>
 <!DOCTYPE html>
 <html lang="es">

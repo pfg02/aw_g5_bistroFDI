@@ -1,28 +1,19 @@
 <?php
 
-require_once __DIR__ . '/clases/RepositorioUsuarios.php';
+require_once __DIR__ . '/negocio/UsuarioController.php';
 
-function buscarUsuarioPorId(int $id): ?Usuario
+function buscarUsuarioPorId(int $id): ?UsuarioDTO
 {
-    $repo = new RepositorioUsuarios();
-    return $repo->buscarPorId($id);
-}
-
-function buscarUsuarioPorNombreUsuario(string $nombreUsuario): ?Usuario
-{
-    $repo = new RepositorioUsuarios();
-    return $repo->buscarPorNombreUsuario($nombreUsuario);
+    $controller = new UsuarioController();
+    return $controller->obtenerUsuarioPorId($id);
 }
 
 function loginUsuario(string $nombreUsuario, string $password): bool
 {
-    $repo = new RepositorioUsuarios();
-    $usuario = $repo->autenticar($nombreUsuario, $password);
-
-    if (!$usuario) {
-        return false;
-    }
-
-    $usuario->iniciarSesion();
-    return true;
+    $controller = new UsuarioController();
+    [$ok, $mensaje] = $controller->procesarLogin([
+        'nombre_usuario' => $nombreUsuario,
+        'password' => $password
+    ]);
+    return $ok;
 }

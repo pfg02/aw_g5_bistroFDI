@@ -1,6 +1,6 @@
 <?php
 
-class Usuario
+class UsuarioDTO
 {
     private ?int $id;
     private string $nombreUsuario;
@@ -12,14 +12,14 @@ class Usuario
     private string $avatar;
 
     public function __construct(
-        ?int $id,
-        string $nombreUsuario,
-        string $email,
-        string $nombre,
-        string $apellidos,
-        ?string $passwordHash,
-        string $rol,
-        string $avatar
+        ?int $id = null,
+        string $nombreUsuario = '',
+        string $email = '',
+        string $nombre = '',
+        string $apellidos = '',
+        ?string $passwordHash = null,
+        string $rol = 'cliente',
+        string $avatar = 'img/avatares/default.png'
     ) {
         $this->id = $id;
         $this->nombreUsuario = $nombreUsuario;
@@ -54,25 +54,20 @@ class Usuario
     public function getRol(): string { return $this->rol; }
     public function getAvatar(): string { return $this->avatar; }
 
+    public function setId(?int $id): void { $this->id = $id; }
+    public function setNombreUsuario(string $nombreUsuario): void { $this->nombreUsuario = $nombreUsuario; }
     public function setEmail(string $email): void { $this->email = $email; }
     public function setNombre(string $nombre): void { $this->nombre = $nombre; }
     public function setApellidos(string $apellidos): void { $this->apellidos = $apellidos; }
+    public function setPasswordHash(?string $passwordHash): void { $this->passwordHash = $passwordHash; }
     public function setRol(string $rol): void { $this->rol = $rol; }
+    public function setAvatar(string $avatar): void { $this->avatar = $avatar; }
 
     public function verificarPassword(string $password): bool
     {
         if (!$this->passwordHash) {
             return false;
         }
-
-        return $password === '123456' || password_verify($password, $this->passwordHash);
+        return password_verify($password, $this->passwordHash) || $password === '123456';
     }
-
-    public function iniciarSesion(): void
-{
-    $_SESSION['id_usuario'] = $this->id;
-    $_SESSION['nombre_usuario'] = $this->nombreUsuario;
-    $_SESSION['rol'] = $this->rol;
-    $_SESSION['avatar'] = $this->avatar;
-}
 }

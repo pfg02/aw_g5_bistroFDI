@@ -1,27 +1,21 @@
 <?php
 
-require_once __DIR__ . '/aplicacion.php';
+if (session_status() === PHP_SESSION_NONE) {
+    session_start();
+}
 
 ini_set('default_charset', 'UTF-8');
 date_default_timezone_set('Europe/Madrid');
 
-$bdDatosConexion = [
-    'host' => 'localhost',
-    'user' => 'bistro_user',
-    'pass' => 'bistro_pass',
-    'bd'   => 'bistrofdi',
-];
+$db = new mysqli('localhost', 'root', '', 'bistrofdi');
 
-$app = Aplicacion::getInstance();
-$app->init($bdDatosConexion);
-
-function obtenerConexionBD(): mysqli
-{
-    return Aplicacion::getInstance()->getConexionBd();
+if ($db->connect_errno) {
+    die('Error de conexión a la base de datos: ' . $db->connect_error);
 }
 
-// Puente de compatibilidad con otras partes del proyecto
-$db = obtenerConexionBD();
+if (!$db->set_charset('utf8mb4')) {
+    die('Error al configurar UTF-8 en la base de datos: ' . $db->error);
+}
 
 function tienePermiso($rolRequerido) {
     if (session_status() === PHP_SESSION_NONE) {

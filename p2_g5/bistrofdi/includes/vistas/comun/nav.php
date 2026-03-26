@@ -3,13 +3,10 @@ if (session_status() === PHP_SESSION_NONE) {
     session_start();
 }
 
-$base_url = "/aw_g5_bistroFDI/p2_g5/bistrofdi/";
+$base_url = "/AW_G5_BISTROFDI/p2_g5/bistrofdi/";
 
 $estaLogueado = isset($_SESSION['id_usuario']);
 $avatar = $_SESSION['avatar'] ?? 'img/avatares/default.png';
-
-$avatarLimpio = ltrim($avatar, '/');
-$rutaFinalAvatar = (strpos($avatarLimpio, 'http') === 0) ? $avatarLimpio : $base_url . $avatarLimpio;
 ?>
 
 <nav class="navegacion-principal">
@@ -27,7 +24,7 @@ $rutaFinalAvatar = (strpos($avatarLimpio, 'http') === 0) ? $avatarLimpio : $base
             <?php if ($estaLogueado): ?>
                 <li>
                     <a href="<?= $base_url ?>perfil.php">
-                        <img src="<?= htmlspecialchars($rutaFinalAvatar) ?>" alt="Avatar"
+                        <img src="<?= htmlspecialchars($base_url . ltrim($avatar, '/')) ?>" alt="Avatar"
                              style="width: 24px; height: 24px; border-radius: 50%; vertical-align: middle; margin-right: 5px; object-fit: cover;">
                         Perfil (<?= htmlspecialchars($_SESSION['nombre_usuario'] ?? 'Usuario') ?>)
                     </a>
