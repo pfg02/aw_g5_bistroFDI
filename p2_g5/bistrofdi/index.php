@@ -51,5 +51,6 @@ ob_start();
 <?php
 $contenidoPrincipal = ob_get_clean();
 $tituloPagina = 'Bistró FDI - Inicio';
+$bodyClass = 'f0-body';
 
 require __DIR__ . '/includes/vistas/comun/plantilla.php';

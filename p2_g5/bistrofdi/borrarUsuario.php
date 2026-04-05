@@ -27,22 +27,32 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 
 ob_start();
 ?>
-<section class="contenedor-principal">
-    <h1>Borrar usuario</h1>
+<section class="f0-page">
+    <h1 class="f0-page-title">Borrar usuario</h1>
 
-    <?php if ($mensajeError): ?>
-        <p style="color:red;"><?= htmlspecialchars($mensajeError) ?></p>
-    <?php endif; ?>
+    <div class="f0-page-content">
+        <div class="f0-confirm-box">
+            <?php if ($mensajeError): ?>
+                <div class="f0-msg-error"><?= htmlspecialchars($mensajeError) ?></div>
+            <?php endif; ?>
 
-    <form method="post" action="borrarUsuario.php?id=<?= urlencode((string)$idUsuario) ?>">
-        <p>¿Seguro que quieres borrar al usuario <strong><?= htmlspecialchars($usuario->getNombreUsuario()) ?></strong>?</p>
-        <button type="submit">Sí, borrar usuario</button>
-    </form>
+            <p class="f0-confirm-text">
+                ¿Seguro que quieres borrar al usuario
+                <strong><?= htmlspecialchars($usuario->getNombreUsuario()) ?></strong>?
+            </p>
 
-    <p><a href="gestionarUsuarios.php">Volver a gestión de usuarios</a></p>
+            <form method="post" action="borrarUsuario.php?id=<?= urlencode((string)$idUsuario) ?>" class="f0-form">
+                <div class="f0-form-actions" style="justify-content:center;">
+                    <button type="submit" class="f0-btn-danger">Sí, borrar usuario</button>
+                    <a href="gestionarUsuarios.php" class="f0-btn-secondary">Cancelar</a>
+                </div>
+            </form>
+        </div>
+    </div>
 </section>
 <?php
 $contenidoPrincipal = ob_get_clean();
 $tituloPagina = 'Borrar usuario - Bistro FDI';
+$bodyClass = 'f0-body';
 
 require __DIR__ . '/includes/vistas/comun/plantilla.php';

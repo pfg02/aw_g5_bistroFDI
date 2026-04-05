@@ -25,39 +25,54 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     $mensajeError = $texto;
 }
 
+$roles = ['cliente', 'camarero', 'cocinero', 'gerente'];
+$rolActual = $_POST['rol'] ?? $usuario->getRol();
+
+$descripciones = [
+    'cliente' => 'Acceso como cliente habitual y gestión de sus pedidos.',
+    'camarero' => 'Permisos de sala y gestión de entrega/cobro.',
+    'cocinero' => 'Permisos de preparación de pedidos en cocina.',
+    'gerente' => 'Control total del sistema y de usuarios.'
+];
+
 ob_start();
 ?>
-<section class="contenedor-principal">
-    <h1>Cambiar rol de usuario</h1>
+<section class="f0-page">
+    <h1 class="f0-page-title">Cambiar rol de usuario</h1>
 
-    <?php if ($mensajeError): ?>
-        <p style="color:red;"><?= htmlspecialchars($mensajeError) ?></p>
-    <?php endif; ?>
+    <div class="f0-page-content">
+        <?php if ($mensajeError): ?>
+            <div class="f0-msg-error"><?= htmlspecialchars($mensajeError) ?></div>
+        <?php endif; ?>
 
-    <form method="post" action="cambiarRol.php?id=<?= urlencode((string)$idUsuario) ?>">
-        <p><strong>Usuario:</strong> <?= htmlspecialchars($usuario->getNombreUsuario()) ?></p>
+        <div class="f0-card-soft" style="margin-bottom:18px;">
+            <p><strong>Usuario:</strong> <?= htmlspecialchars($usuario->getNombreUsuario()) ?></p>
+            <p><strong>Rol actual:</strong> <?= htmlspecialchars($usuario->getRol()) ?></p>
+        </div>
 
-        <label>Nuevo rol:
-            <select name="rol" required>
-                <?php
-                $roles = ['cliente', 'camarero', 'cocinero', 'gerente'];
-                $rolActual = $_POST['rol'] ?? $usuario->getRol();
-                foreach ($roles as $rol):
-                ?>
-                    <option value="<?= htmlspecialchars($rol) ?>" <?= $rol === $rolActual ? 'selected' : '' ?>>
-                        <?= htmlspecialchars(ucfirst($rol)) ?>
-                    </option>
+        <form method="post" action="cambiarRol.php?id=<?= urlencode((string)$idUsuario) ?>" class="f0-form">
+            <div class="f0-role-list">
+                <?php foreach ($roles as $rol): ?>
+                    <label class="f0-role-option">
+                        <input type="radio" name="rol" value="<?= htmlspecialchars($rol) ?>" <?= $rol === $rolActual ? 'checked' : '' ?> required>
+                        <span>
+                            <strong><?= htmlspecialchars(ucfirst($rol)) ?></strong>
+                            <small><?= htmlspecialchars($descripciones[$rol]) ?></small>
+                        </span>
+                    </label>
                 <?php endforeach; ?>
-            </select>
-        </label><br><br>
+            </div>
 
-        <button type="submit">Guardar rol</button>
-    </form>
-
-    <p><a href="gestionarUsuarios.php">Volver a gestión de usuarios</a></p>
+            <div class="f0-form-actions">
+                <button type="submit" class="f0-btn">Guardar rol</button>
+                <a href="gestionarUsuarios.php" class="f0-btn-secondary">Volver</a>
+            </div>
+        </form>
+    </div>
 </section>
 <?php
 $contenidoPrincipal = ob_get_clean();
 $tituloPagina = 'Cambiar rol - Bistro FDI';
+$bodyClass = 'f0-body';
 
 require __DIR__ . '/includes/vistas/comun/plantilla.php';

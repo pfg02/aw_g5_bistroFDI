@@ -1356,3 +1356,541 @@ body.admin-panel {
     filter: brightness(1.05);
     transform: translateY(-1px);
 }
+
+
+/* F0 - ESTILOS EXCLUSIVOS DE GESTIÓN DE USUARIOS */
+
+body.f0-body {
+    background:
+        linear-gradient(rgba(25, 17, 13, 0.50), rgba(25, 17, 13, 0.50)),
+        url('../img/fondoBistroFDI.jpeg') no-repeat center center fixed;
+    background-size: cover;
+}
+
+body.f0-body main {
+    width: min(1180px, calc(100% - 2rem));
+    margin: 0 auto;
+    padding: 30px 0 40px;
+}
+
+body.f0-body .f0-page {
+    background: rgba(255, 255, 255, 0.95);
+    border-radius: 22px;
+    box-shadow: 0 18px 45px rgba(0, 0, 0, 0.28);
+    overflow: hidden;
+}
+
+body.f0-body .f0-page-title {
+    margin: 0;
+    padding: 28px 24px 20px;
+    text-align: center;
+    font-size: clamp(2rem, 4vw, 3.2rem);
+    font-weight: 800;
+    color: #423833;
+    border-bottom: 1px solid rgba(69, 54, 47, 0.14);
+}
+
+body.f0-body .f0-page-content {
+    padding: 28px 24px 32px;
+}
+
+body.f0-body .f0-msg-ok,
+body.f0-body .f0-msg-error,
+body.f0-body .f0-msg-info {
+    padding: 12px 14px;
+    border-radius: 12px;
+    font-weight: 700;
+    margin-bottom: 16px;
+}
+
+body.f0-body .f0-msg-ok {
+    background: #edf8f0;
+    color: #1f6a3b;
+    border: 1px solid #bfe0ca;
+}
+
+body.f0-body .f0-msg-error {
+    background: #fdeeee;
+    color: #9a1f1f;
+    border: 1px solid #efc2c2;
+}
+
+body.f0-body .f0-msg-info {
+    background: #eef4ff;
+    color: #2c4f8f;
+    border: 1px solid #ccdaff;
+}
+
+body.f0-body .f0-links {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    align-items: center;
+    margin-top: 20px;
+}
+
+body.f0-body .f0-links a {
+    color: #2c3e50;
+    text-decoration: underline;
+    font-weight: 600;
+}
+
+body.f0-body .f0-btn,
+body.f0-body .f0-btn-secondary,
+body.f0-body .f0-btn-danger {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    min-height: 48px;
+    padding: 12px 22px;
+    border-radius: 12px;
+    text-decoration: none;
+    border: none;
+    cursor: pointer;
+    font-weight: 800;
+    transition: transform 0.2s ease, filter 0.2s ease;
+}
+
+body.f0-body .f0-btn:hover,
+body.f0-body .f0-btn-secondary:hover,
+body.f0-body .f0-btn-danger:hover {
+    transform: translateY(-1px);
+    filter: brightness(1.03);
+}
+
+body.f0-body .f0-btn {
+    background: linear-gradient(180deg, #2f7cf6, #1d56b3);
+    color: #fff;
+}
+
+body.f0-body .f0-btn-secondary {
+    background: #ece8e6;
+    color: #443b37;
+}
+
+body.f0-body .f0-btn-danger {
+    background: linear-gradient(180deg, #ca2d2d, #9d1f1f);
+    color: #fff;
+}
+
+/* AUTH */
+body.f0-body .f0-auth-wrap {
+    min-height: auto;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 34px 0 18px;
+}
+
+body.f0-body .f0-auth-card {
+    width: min(520px, 100%);
+    background:
+        linear-gradient(rgba(34, 21, 14, 0.50), rgba(17, 11, 8, 0.58)),
+        url('../img/fondoBistroFDI.jpeg') center center / cover no-repeat;
+    border-radius: 24px;
+    box-shadow: 0 20px 45px rgba(0,0,0,.35);
+    overflow: hidden;
+    color: white;
+}
+
+body.f0-body .f0-auth-body {
+    padding: 34px 26px 28px;
+}
+
+body.f0-body .f0-auth-title {
+    margin: 0 0 16px;
+    text-align: center;
+    font-size: clamp(2.2rem, 4vw, 3.3rem);
+    font-weight: 800;
+    color: #fff;
+    line-height: 1.05;
+}
+
+body.f0-body .f0-auth-divider {
+    height: 1px;
+    background: linear-gradient(to right, transparent, rgba(255,255,255,.7), transparent);
+    margin: 0 0 18px;
+}
+
+body.f0-body .f0-auth-text {
+    text-align: center;
+    color: rgba(255,255,255,.92);
+    margin-bottom: 18px;
+    font-weight: 500;
+}
+
+/* FORMULARIOS GENERALES F0 */
+body.f0-body .f0-form {
+    display: grid;
+    gap: 14px;
+}
+
+body.f0-body .f0-form label {
+    display: block;
+    margin: 0;
+    font-weight: 700;
+    color: #443933;
+    font-size: 1rem;
+}
+
+body.f0-body .f0-form input,
+body.f0-body .f0-form select {
+    width: 100%;
+    min-height: 54px;
+    padding: 12px 14px;
+    border: 1px solid #d9cfca;
+    border-radius: 10px;
+    background: rgba(255,255,255,.96);
+    color: #2e2926;
+    font: inherit;
+    box-sizing: border-box;
+}
+
+body.f0-body .f0-form input:focus,
+body.f0-body .f0-form select:focus {
+    outline: none;
+    border-color: #8f6a44;
+    box-shadow: 0 0 0 4px rgba(143,106,68,.14);
+}
+
+/* SOLO AUTH */
+body.f0-body .f0-auth-card .f0-form label {
+    color: transparent;
+    font-size: 0;
+    line-height: 0;
+}
+
+body.f0-body .f0-auth-card .f0-form input,
+body.f0-body .f0-auth-card .f0-form select {
+    border: 1px solid rgba(255,255,255,.20);
+    background: rgba(255,255,255,.96);
+    color: #2e2926 !important;
+    font-size: 1rem !important;
+    font-weight: 500;
+    line-height: 1.2;
+    caret-color: #2e2926;
+    -webkit-text-fill-color: #2e2926;
+}
+
+body.f0-body .f0-auth-card .f0-form input::placeholder,
+body.f0-body .f0-auth-card .f0-form select::placeholder {
+    color: #6f665f !important;
+    opacity: 1;
+}
+
+body.f0-body .f0-form-actions {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 12px;
+    margin-top: 8px;
+}
+
+body.f0-body .f0-form-actions > * {
+    flex: 1 1 180px;
+}
+
+body.f0-body .f0-auth-switch {
+    margin-top: 20px;
+    padding-top: 16px;
+    border-top: 1px solid rgba(255,255,255,.35);
+    text-align: center;
+    color: #fff;
+}
+
+body.f0-body .f0-auth-switch a {
+    color: #fff;
+    font-weight: 700;
+    text-decoration: underline;
+}
+
+/* PERFIL */
+body.f0-body .f0-profile-grid {
+    display: grid;
+    grid-template-columns: 280px minmax(0, 1fr);
+    gap: 24px;
+    align-items: start;
+}
+
+body.f0-body .f0-profile-aside {
+    text-align: center;
+    padding-right: 20px;
+    border-right: 1px solid #e8dfdb;
+}
+
+body.f0-body .f0-profile-avatar {
+    width: 170px;
+    height: 170px;
+    object-fit: cover;
+    border-radius: 50%;
+    margin: 0 auto 16px;
+    border: 6px solid #fff;
+    box-shadow: 0 10px 24px rgba(0,0,0,.18);
+}
+
+body.f0-body .f0-card-soft {
+    background: #f6f1ed;
+    border-radius: 16px;
+    padding: 16px;
+}
+
+body.f0-body .f0-card-soft p {
+    margin: 8px 0;
+}
+
+body.f0-body .f0-role-badge {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    min-width: 100px;
+    padding: 8px 14px;
+    border-radius: 999px;
+    font-size: 0.86rem;
+    font-weight: 800;
+    text-transform: capitalize;
+    margin-bottom: 14px;
+}
+
+body.f0-body .f0-role-cliente { background: #e7f4eb; color: #1e6b39; }
+body.f0-body .f0-role-camarero { background: #fff3d7; color: #9a6a0f; }
+body.f0-body .f0-role-cocinero { background: #ece9ff; color: #5a44ab; }
+body.f0-body .f0-role-gerente { background: #fde6e6; color: #9d2d2d; }
+
+body.f0-body .f0-form-grid {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 16px;
+}
+
+/* GESTIÓN USUARIOS */
+body.f0-body .f0-admin-top {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 16px;
+    flex-wrap: wrap;
+    margin-bottom: 18px;
+}
+
+body.f0-body .f0-table-wrap {
+    overflow-x: auto;
+    border-radius: 18px;
+    background: #fff;
+    box-shadow: inset 0 0 0 1px rgba(69,54,47,.08);
+}
+
+body.f0-body .f0-user-table {
+    width: 100%;
+    min-width: 760px;
+    border-collapse: collapse;
+    margin: 0;
+    background: white;
+}
+
+body.f0-body .f0-user-table th {
+    background: #342b27;
+    color: white;
+    text-transform: uppercase;
+    font-size: 0.85rem;
+    letter-spacing: 0.06em;
+    padding: 14px 12px;
+    text-align: left;
+}
+
+body.f0-body .f0-user-table td {
+    padding: 14px 12px;
+    border-bottom: 1px solid #efe6e2;
+    vertical-align: middle;
+}
+
+body.f0-body .f0-user-table tr:hover {
+    background: #fbf8f6;
+}
+
+body.f0-body .f0-user-pill {
+    display: inline-flex;
+    padding: 7px 12px;
+    border-radius: 999px;
+    background: #f3eeea;
+    font-weight: 700;
+}
+
+body.f0-body .f0-actions {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+}
+
+/* CAMBIAR ROL */
+body.f0-body .f0-role-list {
+    display: grid;
+    gap: 12px;
+    margin-top: 10px;
+}
+
+body.f0-body .f0-role-option {
+    display: grid;
+    grid-template-columns: auto 1fr;
+    gap: 12px;
+    align-items: center;
+    padding: 14px 16px;
+    border-radius: 14px;
+    border: 1px solid #e5dbd6;
+    background: #fff;
+}
+
+body.f0-body .f0-role-option input[type="radio"] {
+    width: 18px;
+    height: 18px;
+    margin: 0;
+}
+
+body.f0-body .f0-role-option strong {
+    display: block;
+    font-size: 1rem;
+    color: #332a26;
+}
+
+body.f0-body .f0-role-option small {
+    display: block;
+    color: #6d625b;
+    margin-top: 4px;
+}
+
+/* CAMBIAR AVATAR */
+body.f0-body .f0-avatar-grid {
+    display: grid;
+    grid-template-columns: 260px minmax(0, 1fr);
+    gap: 24px;
+    align-items: start;
+}
+
+body.f0-body .f0-avatar-aside {
+    text-align: center;
+    padding-right: 20px;
+    border-right: 1px solid #e8dfdb;
+}
+
+body.f0-body .f0-avatar-current {
+    width: 170px;
+    height: 170px;
+    object-fit: cover;
+    border-radius: 50%;
+    margin: 0 auto 16px;
+    border: 6px solid #fff;
+    box-shadow: 0 10px 24px rgba(0,0,0,.18);
+}
+
+body.f0-body .f0-avatar-gallery {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(90px, 1fr));
+    gap: 12px;
+    margin-top: 12px;
+}
+
+body.f0-body .f0-avatar-option {
+    border: 2px solid #e4dad4;
+    border-radius: 14px;
+    overflow: hidden;
+    background: #faf7f5;
+    cursor: pointer;
+    text-align: center;
+    padding-bottom: 8px;
+}
+
+body.f0-body .f0-avatar-option input {
+    margin: 10px auto 0;
+    width: 18px;
+    height: 18px;
+}
+
+body.f0-body .f0-avatar-option img {
+    width: 100%;
+    aspect-ratio: 1;
+    object-fit: cover;
+}
+
+body.f0-body .f0-avatar-section {
+    background: #f8f5f3;
+    border: 1px dashed #ccbdb4;
+    border-radius: 16px;
+    padding: 16px;
+    margin-top: 18px;
+}
+
+body.f0-body .f0-avatar-section h2 {
+    margin-top: 0;
+}
+
+/* BORRAR */
+body.f0-body .f0-confirm-box {
+    max-width: 720px;
+    margin: 0 auto;
+    text-align: center;
+}
+
+body.f0-body .f0-confirm-text {
+    font-size: 1.08rem;
+    color: #554843;
+    line-height: 1.5;
+    margin-bottom: 20px;
+}
+
+/* RESPONSIVE */
+@media (max-width: 900px) {
+    body.f0-body .f0-profile-grid,
+    body.f0-body .f0-avatar-grid {
+        grid-template-columns: 1fr;
+    }
+
+    body.f0-body .f0-profile-aside,
+    body.f0-body .f0-avatar-aside {
+        border-right: 0;
+        border-bottom: 1px solid #e8dfdb;
+        padding-right: 0;
+        padding-bottom: 18px;
+    }
+}
+
+@media (max-width: 760px) {
+    body.f0-body main {
+        width: min(100%, calc(100% - 1rem));
+        padding: 18px 0 24px;
+    }
+
+    body.f0-body .f0-auth-wrap {
+        padding-top: 20px;
+    }
+
+    body.f0-body .f0-auth-body {
+        padding: 24px 18px 22px;
+    }
+
+    body.f0-body .f0-auth-title {
+        font-size: 2.4rem;
+    }
+
+    body.f0-body .f0-page-title {
+        padding: 22px 16px 16px;
+        font-size: 2rem;
+    }
+
+    body.f0-body .f0-page-content {
+        padding: 18px 16px 22px;
+    }
+
+    body.f0-body .f0-form-grid {
+        grid-template-columns: 1fr;
+    }
+
+    body.f0-body .f0-user-table {
+        min-width: 640px;
+    }
+
+    body.f0-body .f0-form-actions {
+        flex-direction: column;
+    }
+
+    body.f0-body .f0-form-actions > * {
+        width: 100%;
+    }
+}

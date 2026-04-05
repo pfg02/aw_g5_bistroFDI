@@ -2,6 +2,7 @@
 $tituloPagina = $tituloPagina ?? 'Bistró FDI';
 $contenidoPrincipal = $contenidoPrincipal ?? '';
 $extraHead = $extraHead ?? '';
+$bodyClass = $bodyClass ?? '';
 ?>
 <!DOCTYPE html>
 <html lang="es">
@@ -12,7 +13,7 @@ $extraHead = $extraHead ?? '';
     <link rel="stylesheet" href="css/estilos.css">
     <?= $extraHead ?>
 </head>
-<body>
+<body class="<?= htmlspecialchars($bodyClass) ?>">
     <?php include __DIR__ . '/nav.php'; ?>
 
     <main>

@@ -28,48 +28,78 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     }
 }
 
+$rolClase = 'f0-role-' . $usuario->getRol();
+
 ob_start();
 ?>
-<section class="contenedor-principal">
-    <h1>Mi perfil</h1>
+<section class="f0-page">
+    <h1 class="f0-page-title">Mi perfil</h1>
 
-    <?php if ($mensaje): ?>
-        <p style="color:green;"><?= htmlspecialchars($mensaje) ?></p>
-    <?php endif; ?>
+    <div class="f0-page-content">
+        <div class="f0-profile-grid">
+            <aside class="f0-profile-aside">
+                <img src="<?= htmlspecialchars($usuario->getAvatar()) ?>" alt="Avatar" class="f0-profile-avatar">
 
-    <?php if ($mensajeError): ?>
-        <p style="color:red;"><?= htmlspecialchars($mensajeError) ?></p>
-    <?php endif; ?>
+                <div class="f0-role-badge <?= htmlspecialchars($rolClase) ?>">
+                    <?= htmlspecialchars($usuario->getRol()) ?>
+                </div>
 
-    <p><strong>Avatar actual:</strong></p>
-    <img src="<?= htmlspecialchars($usuario->getAvatar()) ?>" alt="Avatar" width="120">
+                <div class="f0-card-soft">
+                    <p><strong>Usuario:</strong> <?= htmlspecialchars($usuario->getNombreUsuario()) ?></p>
+                    <p><strong>Email:</strong> <?= htmlspecialchars($usuario->getEmail()) ?></p>
+                    <p><strong>Nombre:</strong> <?= htmlspecialchars($usuario->getNombre()) ?></p>
+                    <p><strong>Apellidos:</strong> <?= htmlspecialchars($usuario->getApellidos()) ?></p>
+                </div>
 
-    <p><a href="cambiarAvatar.php">Cambiar avatar</a></p>
+                <div class="f0-form-actions" style="margin-top:16px;">
+                    <a href="cambiarAvatar.php" class="f0-btn">Cambiar avatar</a>
+                </div>
+            </aside>
 
-    <form method="post" action="perfil.php">
-        <label>Nombre de usuario:
-            <input type="text" value="<?= htmlspecialchars($usuario->getNombreUsuario()) ?>" disabled>
-        </label><br><br>
+            <div>
+                <?php if ($mensaje): ?>
+                    <div class="f0-msg-ok"><?= htmlspecialchars($mensaje) ?></div>
+                <?php endif; ?>
 
-        <label>Email:
-            <input type="email" name="email" value="<?= htmlspecialchars($usuario->getEmail()) ?>" required>
-        </label><br><br>
+                <?php if ($mensajeError): ?>
+                    <div class="f0-msg-error"><?= htmlspecialchars($mensajeError) ?></div>
+                <?php endif; ?>
 
-        <label>Nombre:
-            <input type="text" name="nombre" value="<?= htmlspecialchars($usuario->getNombre()) ?>" required>
-        </label><br><br>
+                <form method="post" action="perfil.php" class="f0-form">
+                    <div class="f0-form-grid">
+                        <label>
+                            Nombre de usuario
+                            <input type="text" value="<?= htmlspecialchars($usuario->getNombreUsuario()) ?>" disabled>
+                        </label>
 
-        <label>Apellidos:
-            <input type="text" name="apellidos" value="<?= htmlspecialchars($usuario->getApellidos()) ?>" required>
-        </label><br><br>
+                        <label>
+                            Email
+                            <input type="email" name="email" value="<?= htmlspecialchars($usuario->getEmail()) ?>" required>
+                        </label>
 
-        <button type="submit">Guardar cambios</button>
-    </form>
+                        <label>
+                            Nombre
+                            <input type="text" name="nombre" value="<?= htmlspecialchars($usuario->getNombre()) ?>" required>
+                        </label>
 
-    <p><a href="index.php">Volver al inicio</a></p>
+                        <label>
+                            Apellidos
+                            <input type="text" name="apellidos" value="<?= htmlspecialchars($usuario->getApellidos()) ?>" required>
+                        </label>
+                    </div>
+
+                    <div class="f0-form-actions">
+                        <button type="submit" class="f0-btn">Guardar cambios</button>
+                        <a href="index.php" class="f0-btn-secondary">Volver al inicio</a>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
 </section>
 <?php
 $contenidoPrincipal = ob_get_clean();
 $tituloPagina = 'Mi perfil - Bistro FDI';
+$bodyClass = 'f0-body';
 
 require __DIR__ . '/includes/vistas/comun/plantilla.php';
