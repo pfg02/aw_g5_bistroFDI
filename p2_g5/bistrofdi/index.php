@@ -31,7 +31,7 @@ ob_start();
                         <a href="panel_camarero.php" class="btn-admin">Panel de Sala (Camareros)</a>
 
                     <?php elseif ($rol === 'cocinero'): ?>
-                        <a href="" class="btn-admin">Panel de Cocina (Cocineros)</a>
+                        <a href="panel_cocina.php" class="btn-admin">Panel de Cocina (Cocineros)</a>
 
                     <?php else: ?>
                         <a href="perfil.php" class="btn-login">Ver mi Perfil</a>

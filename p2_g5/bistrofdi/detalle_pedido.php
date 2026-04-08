@@ -7,7 +7,7 @@
 	require_once __DIR__ . '/includes/negocio/PedidoController.php';
 	
 	exigirLogin();
-	exigirRol('cliente');
+	exigirRol('cliente', 'admin');
 
 	// Validar que llega el ID por la URL
 	if (!isset($_GET['id']) || !is_numeric($_GET['id'])) {

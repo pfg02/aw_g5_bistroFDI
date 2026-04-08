@@ -3,17 +3,8 @@
 	require_once __DIR__ . '/includes/config.php';
 	require_once __DIR__ . '/includes/negocio/PedidoController.php';
 
-	// Si no hay sesión o el rol no es autorizado, lo echamos
-	if (!isset($_SESSION['id_usuario']) || !isset($_SESSION['rol'])) {
-		header("Location: login.php");
-		exit();
-	}
-
-	$rol = $_SESSION['rol'];
-	if ($rol !== 'camarero' && $rol !== 'gerente') {
-		header("Location: index.php");
-		exit();
-	}
+	exigirLogin();
+    exigirRol('camarero', 'admin');
 
 	$controller = PedidoController::getInstance();
 	$pedidosActivos = $controller->verPedidosActivos();
@@ -80,7 +71,6 @@
                     <thead>
                         <tr>
                             <th>Ticket</th>
-                            <th>Productos</th>
                             <th>Acción</th>
                         </tr>
                     </thead>
@@ -88,9 +78,6 @@
                         <?php foreach ($pedidosListosCocina as $p): ?>
                             <tr>
                                 <td><strong>#<?= $p['id'] ?></strong></td>
-                                <td>
-                                    <a href="detalle_pedido.php?id=<?= $p['id'] ?>" class="link-detalle">Ver Detalle</a>
-                                </td>
                                 <td>
                                     <form action="procesar_estado.php" method="POST">
                                         <input type="hidden" name="id_pedido" value="<?= $p['id'] ?>">
