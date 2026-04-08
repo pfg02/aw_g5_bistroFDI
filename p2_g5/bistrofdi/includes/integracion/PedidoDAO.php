@@ -19,6 +19,8 @@ class PedidoDAO {
 
 	/**
 	* Guarda un nuevo pedido en la base de datos.
+	* @param PedidoDTO $pedidoDTO El objeto con los datos del pedido a guardar.
+	* @return int El ID del pedido recién creado.
 	*/
 
 	public function guardarPedido($pedidoDTO) {
@@ -80,6 +82,8 @@ class PedidoDAO {
 
 	/**
 	* Busca un pedido por su ID.
+	* @param int $idPedido El ID del pedido a buscar.
+	* @return array Un array asociativo con los datos del pedido, o null si no se encuentra.
 	*/
 	public function buscarPedido($idPedido) {
 
@@ -98,6 +102,9 @@ class PedidoDAO {
 
 	/**
 	* Actualiza el estado de un pedido existente.
+	* * @param int $idPedido El ID autonumérico del pedido.
+	* @param string $nuevoEstado El nuevo estado (ej. 'En preparación', 'Terminado').
+	* @return bool True si se actualizó correctamente, False en caso de error.
 	*/
 	public function actualizarEstado($idPedido, $nuevoEstado) {
 
@@ -113,6 +120,8 @@ class PedidoDAO {
 
 	/**
 	* Obtiene todo el historial de pedidos de un cliente específico.
+	* * @param int $idCliente El ID autonumérico del usuario.
+	* @return array Un array de arrays asociativos con los datos de todos sus pedidos.
 	*/
 	public function obtenerPedidosPorCliente($idCliente) {
 
@@ -154,16 +163,13 @@ class PedidoDAO {
 		return $pedidos;
 	}
 
-	/**
-	 * Obtiene los productos asociados a un pedido específico, incluyendo detalles como nombre, precio y cantidad.
-	 */
 	public function obtenerProductosDePedido($idPedido) {
 		$sql = "SELECT pp.producto_id, pp.cantidad, p.nombre, p.precio_base, p.iva
 				FROM pedido_productos pp
 				INNER JOIN productos p ON pp.producto_id = p.id
 				WHERE pp.pedido_id = ?
 				GROUP BY p.id, p.nombre";
-				
+
 		$stmt = $this->db->prepare($sql);
 		$stmt->bind_param("i", $idPedido);
 		$stmt->execute();
