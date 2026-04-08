@@ -30,8 +30,11 @@
                     </td>
                     <td>
                         <div class="f0-actions">
-                            <a href="cambiarRol.php?id=<?= urlencode((string)$usuario->getId()) ?>" class="f0-btn">Editar</a>
-                            <a href="borrarUsuario.php?id=<?= urlencode((string)$usuario->getId()) ?>" class="f0-btn-danger">Borrar</a>
+                            <div class="f0-actions">
+                                 <a href="cambiarRol.php?id=<?= urlencode((string)$usuario->getId()) ?>" class="f0-btn">Editar </a>
+                                 <a href="mis_pedidos.php?id_cliente=<?= urlencode((string)$usuario->getId()) ?>" class="f0-btn">  Ver Pedidos </a>
+                                 <a href="borrarUsuario.php?id=<?= urlencode((string)$usuario->getId()) ?>" class="f0-btn-danger">Borrar</a>
+                            </div>
                         </div>
                     </td>
                 </tr>
