@@ -649,7 +649,11 @@ body.admin-panel {
 }
 
 .form-del-inline {
-    display: inline;
+    display: inline-block;
+    margin-top: 8px;
+    margin-bottom: 8px;
+    margin-left: 8px;
+    margin-right: 8px;
 }
 
 .txt-center {
