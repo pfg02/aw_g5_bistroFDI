@@ -4,7 +4,7 @@
 	require_once __DIR__ . '/includes/negocio/PedidoController.php';
 
 	exigirLogin();
-    exigirRol('camarero', 'admin');
+    exigirRol('camarero', 'gerente');
 
 	$controller = PedidoController::getInstance();
 	$pedidosActivos = $controller->verPedidosActivos();

@@ -6,7 +6,7 @@
     require_once __DIR__ . '/includes/negocio/PedidoController.php';
 
     exigirLogin();
-    exigirRol('cocinero', 'admin');
+    exigirRol('cocinero', 'gerente');
 
     $idCocinero = $_SESSION['id_usuario'];
     $controller = PedidoController::getInstance();

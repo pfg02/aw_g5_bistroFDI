@@ -4,6 +4,7 @@ if (session_status() === PHP_SESSION_NONE) {
 }
 
 $base_url = "/AW_G5_BISTROFDI/p2_g5/bistrofdi/";
+$img_url = "/AW_G5_BISTROFDI/p2_g5/bistrofdi/img/avatares/";
 
 $estaLogueado = isset($_SESSION['id_usuario']);
 $avatar = $_SESSION['avatar'] ?? 'img/avatares/default.png';
@@ -11,7 +12,7 @@ $avatar = $_SESSION['avatar'] ?? 'img/avatares/default.png';
 $avatarLimpio = ltrim($avatar, '/');
 $rutaFinalAvatar = (strpos($avatarLimpio, 'http://') === 0 || strpos($avatarLimpio, 'https://') === 0)
     ? $avatarLimpio
-    : $base_url . $avatarLimpio;
+    : $img_url . $avatarLimpio;
 ?>
 
 <nav class="navegacion-principal">
