@@ -607,7 +607,11 @@ body.admin-panel {
 }
 
 .form-del-inline {
-    display: inline;
+    display: inline-block;
+    margin-top: 14px;
+    margin-bottom: 14px;
+    margin-left: 14px;
+    margin-right: 14px;
 }
 
 .txt-center {
