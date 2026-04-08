@@ -99,6 +99,9 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
         </div>
     </main>
 
-    <?php include __DIR__ . '/comun/footer.php'; ?>
 </body>
 </html>
+<?php
+    $contenidoPrincipal = ob_get_clean();
+require_once __DIR__ . '/comun/plantilla.php';
+?>

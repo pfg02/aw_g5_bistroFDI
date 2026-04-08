@@ -91,11 +91,18 @@
                                     $precio_base = $p->precio ?? 0;
                                     $iva = $p->iva ?? 21;
                                     $precio_con_iva = $precio_base * (1 + ($iva / 100));
+                                    $fotos = !empty($p->imagen) ? explode(',', $p->imagen) : [];
+                                    $fotoPrincipal = !empty($fotos) && trim($fotos[0]) !== '' ? trim($fotos[0]) : 'default.png';
                                 ?>
                                     <article class="tarjeta-producto" data-nombre="<?= strtolower(htmlspecialchars($p->nombre)) ?>">
                                         
-										
-                                        
+                                        <div class="imagen-producto">
+                                            <img src="img/productos/<?= htmlspecialchars($fotoPrincipal) ?>"
+                                                 alt="<?= htmlspecialchars($p->nombre) ?>"
+                                                 class="img-catalogo"
+                                                 onerror="this.src='img/productos/default.png'">
+                                        </div>
+
 										<div class="info-producto">
                                             <h4><?= htmlspecialchars($p->nombre) ?></h4>
                                             <p><?= number_format($precio_con_iva, 2) ?> €</p>

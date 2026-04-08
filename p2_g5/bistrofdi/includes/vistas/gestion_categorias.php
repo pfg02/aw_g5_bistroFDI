@@ -2,7 +2,6 @@
 // 1. Configuración y Dependencias
 require_once __DIR__ . '/../config.php';
 require_once __DIR__ . '/../sesion.php';
-// Reemplazamos DAO por Service y DTO para cumplir con la lista de requisitos
 require_once __DIR__ . '/../negocio/CategoriaService.php';
 require_once __DIR__ . '/../negocio/CategoriaDTO.php';
 
@@ -12,16 +11,15 @@ if (!isset($_SESSION['rol']) || $_SESSION['rol'] !== 'gerente') {
     exit();
 }
 
-$service = new CategoriaService($db); // Usamos el Service
+$service = new CategoriaService($db);
 $mensaje = "";
 $clase_mensaje = "";
 
-// 3. CONTROLADOR DE ACCIONES (Mantenemos tu lógica exacta pero usando el Service)
+// 3. CONTROLADOR DE ACCIONES
 if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['accion'])) {
     if ($_POST['accion'] === 'eliminar') {
         $id_a_borrar = intval($_POST['id']);
-        
-        // El Service se encarga de la lógica de borrado
+
         if ($service->eliminarCategoria($id_a_borrar)) {
             $mensaje = "Categoría eliminada con éxito.";
             $clase_mensaje = "msg-exito";
@@ -32,72 +30,71 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['accion'])) {
     }
 }
 
-// 4. Datos para la Vista (Llamada al Service, no a la BD directamente)
+// 4. Datos para la Vista
 $categorias = $service->listarTodas();
+
+$tituloPagina = 'Gestión de Categorías - Bistró FDI';
+$bodyClass = 'admin-panel';
+$extraHead = '<link rel="stylesheet" href="../../css/estilos.css">';
+
+ob_start();
 ?>
-<!DOCTYPE html>
-<html lang="es">
-<head>
-    <meta charset="UTF-8">
-    <title>Gestión de Categorías - Bistró FDI</title>
-    <link rel="stylesheet" href="../../css/estilos.css">
-</head>
-<body class="admin-panel">
-    <?php include __DIR__ . '/comun/nav.php'; ?>
 
+<div class="container-gestion">
+    <header class="header-gestion">
+        <h1>Panel de Categorías</h1>
+        <a href="editar_categoria.php" class="btn-primario"> + Nueva Categoría</a>
+    </header>
 
-    <main class="container-gestion">
-        <header class="header-gestion">
-            <h1>Panel de Categorías</h1>
-            <a href="editar_categoria.php" class="btn-primario"> + Nueva Categoría</a>
-        </header>
+    <?php if ($mensaje): ?>
+        <div class="alerta-sistema <?= $clase_mensaje ?>">
+            <?= htmlspecialchars($mensaje) ?>
+        </div>
+    <?php endif; ?>
 
-        <?php if ($mensaje): ?>
-            <div class="alerta-sistema <?= $clase_mensaje ?>">
-                <?= htmlspecialchars($mensaje) ?>
-            </div>
-        <?php endif; ?>
-
-        <section class="seccion-tabla">
-            <table class="tabla-categorias">
-                <thead>
+    <section class="seccion-tabla">
+        <table class="tabla-categorias">
+            <thead>
+                <tr>
+                    <th>Imagen</th>
+                    <th>Nombre</th>
+                    <th>Descripción</th>
+                    <th class="txt-center">Acciones</th>
+                </tr>
+            </thead>
+            <tbody>
+                <?php if (empty($categorias)): ?>
+                    <tr><td colspan="4">No se han encontrado categorías.</td></tr>
+                <?php else: ?>
+                    <?php foreach ($categorias as $cat): ?>
                     <tr>
-                        <th>Imagen</th>
-                        <th>Nombre</th>
-                        <th>Descripción</th>
-                        <th class="txt-center">Acciones</th>
+                        <td>
+                            <img src="../../img/categorias/<?= htmlspecialchars($cat->imagen) ?>" 
+                                 class="img-tabla-cat" alt="icono">
+                        </td>
+                        <td class="cat-nombre"><?= htmlspecialchars($cat->nombre) ?></td>
+                        <td class="cat-desc"><?= htmlspecialchars($cat->descripcion) ?></td>
+                        <td class="cat-acciones">
+                            <a href="editar_categoria.php?id=<?= $cat->id ?>" class="btn-editar">Editar</a>
+                            
+                            <form action="gestion_categorias.php" method="POST" class="form-del-inline">
+                                <input type="hidden" name="id" value="<?= $cat->id ?>">
+                                <input type="hidden" name="accion" value="eliminar">
+                                <button type="submit" class="btn-eliminar" 
+                                        onclick="return confirm('¿Deseas eliminar permanentemente esta categoría?')">
+                                    Eliminar
+                                </button>
+                            </form>
+                        </td>
                     </tr>
-                </thead>
-                <tbody>
-                    <?php if (empty($categorias)): ?>
-                        <tr><td colspan="4">No se han encontrado categorías.</td></tr>
-                    <?php else: ?>
-                        <?php foreach ($categorias as $cat): ?>
-                        <tr>
-                            <td>
-                                <img src="../../img/categorias/<?= htmlspecialchars($cat->imagen) ?>" 
-                                class="img-tabla-cat" alt="icono">
-                            </td>
-                            <td class="cat-nombre"><?= htmlspecialchars($cat->nombre) ?></td>
-                            <td class="cat-desc"><?= htmlspecialchars($cat->descripcion) ?></td>
-                            <td class="cat-acciones">
-                                <a href="editar_categoria.php?id=<?= $cat->id ?>" class="btn-editar">Editar</a>
-                                
-                                <form action="gestion_categorias.php" method="POST" class="form-del-inline">
-                                    <input type="hidden" name="id" value="<?= $cat->id ?>">
-                                    <input type="hidden" name="accion" value="eliminar">
-                                    <button type="submit" class="btn-eliminar" 
-                                            onclick="return confirm('¿Deseas eliminar permanentemente esta categoría?')">
-                                        Eliminar
-                                    </button>
-                                </form>
-                            </td>
-                        </tr>
-                        <?php endforeach; ?>
-                    <?php endif; ?>
-                </tbody>
-            </table>
-        </section>
-    </main>
-</body>
-</html>
+                    <?php endforeach; ?>
+                <?php endif; ?>
+            </tbody>
+        </table>
+    </section>
+</div>
+
+<?php
+$contenidoPrincipal = ob_get_clean();
+require_once __DIR__ . '/comun/plantilla.php';
+?>
