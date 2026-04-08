@@ -111,4 +111,4 @@ ob_start();
 <?php
 $contenidoPrincipal = ob_get_clean();
 require_once __DIR__ . '/comun/plantilla.php';
-?>
+?> 
