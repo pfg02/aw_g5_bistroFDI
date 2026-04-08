@@ -65,7 +65,7 @@
             </div>
         <?php endif; ?>
 
-        <div class="contenedor-botones-index" style="margin-bottom: 20px;">
+        <div class="contenedor-botones-index">
             <a href="carrito.php" class="btn-admin">Ver mi carrito
                 <?php if ($itemsEnCarrito > 0): ?>
                     <span class="badge-carrito"><?= $itemsEnCarrito ?></span>
@@ -133,7 +133,7 @@
         <span id="cerrarModal" class="modal-cerrar">&times;</span>
         
         <h2 id="modalNombre">Nombre Producto</h2>
-        <div class="divisor" style="margin: 15px 0;"></div>
+        <div class="divisor"></div>
         
         <p id="modalDescripcion">Descripción del producto irá aquí...</p>
         
