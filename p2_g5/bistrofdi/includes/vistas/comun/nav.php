@@ -3,7 +3,7 @@ if (session_status() === PHP_SESSION_NONE) {
     session_start();
 }
 
-$base_url = "/AW_G5_BISTROFDI/p2_g5/bistrofdi/";
+$base_url = "/AW_G5_BISTROFDI/p2_g5/bistrofdi/img/avatares/";
 
 $estaLogueado = isset($_SESSION['id_usuario']);
 $avatar = $_SESSION['avatar'] ?? 'img/avatares/default.png';
