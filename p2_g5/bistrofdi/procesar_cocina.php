@@ -1,6 +1,7 @@
 <?php
 /**
- * Procesa las acciones de los cocineros en su tablet.
+ * Procesa las acciones de la cocina SIN modificar estructura de BD.
+ * Versión Definitiva.
  */
 require_once __DIR__ . '/includes/sesion.php';
 require_once __DIR__ . '/includes/negocio/PedidoController.php';
@@ -12,44 +13,44 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['accion'], $_POST['id_
     
     $accion = $_POST['accion'];
     $idPedido = (int)$_POST['id_pedido'];
-	$idCocinero = $_SESSION['id_usuario'];
+    $idCocinero = $_SESSION['id_usuario'];
     $controller = PedidoController::getInstance();
-
-	// Inicializar el array en la sesión si no existe
+    
+    // Inicializar las "libretas" de memoria en la sesión si no existen
     if (!isset($_SESSION['preparados'])) {
         $_SESSION['preparados'] = [];
     }
-	if (!isset($_SESSION['pedido_activo_cocinero'])) {
+    if (!isset($_SESSION['pedido_activo_cocinero'])) {
         $_SESSION['pedido_activo_cocinero'] = [];
     }
 
-   	if ($accion === 'reclamar') { 
-        // 'En preparación' a 'Cocinando'
+    // ACCIÓN 1: Reclamar pedido nuevo
+    if ($accion === 'reclamar') {
         $controller->actualizarEstadoPedido($idPedido, 'Cocinando');
-		$_SESSION['pedido_activo_cocinero'][$idCocinero] = $idPedido;
+        $_SESSION['pedido_activo_cocinero'][$idCocinero] = $idPedido;
         
+    // ACCIÓN 2: Marcar un producto unificado como preparado
     } elseif ($accion === 'marcar_plato' && isset($_POST['id_producto'])) {
-        // Guardamos que este producto está listo
         $idProducto = (int)$_POST['id_producto'];
         $_SESSION['preparados'][$idPedido][$idProducto] = true;
 
+    // ACCIÓN 3: Finalizar y mandar al camarero
     } elseif ($accion === 'finalizar_pedido') {
-        // Pasa el pedido de 'Cocinando' a 'Listo cocina'
-        $controller->actualizarEstadoPedido($idPedido, 'Listo cocina');
-
-		// Limpiamos la sesión del cocinero para ese pedido
-        if (isset($_SESSION['pedido_activo_cocinero'][$idCocinero])) {
-            unset($_SESSION['pedido_activo_cocinero'][$idCocinero]);
+        $actualizado = $controller->actualizarEstadoPedido($idPedido, 'Listo cocina');
+        
+        // Limpiamos la memoria solo si la base de datos se actualizó bien
+        if ($actualizado) {
+            if (isset($_SESSION['pedido_activo_cocinero'][$idCocinero])) {
+                unset($_SESSION['pedido_activo_cocinero'][$idCocinero]);
+            }
+            if (isset($_SESSION['preparados'][$idPedido])) {
+                unset($_SESSION['preparados'][$idPedido]);
+            }
         }
-		// Limpiamos la sesión de platos preparados para ese pedido
-		if (isset($_SESSION['preparados'][$idPedido])) {
-            unset($_SESSION['preparados'][$idPedido]);
-        }
-
     }
 }
 
-// Redirige de vuelta a la tablet de forma casi invisible
+// Volver al panel como si nada hubiera pasado
 header("Location: panel_cocina.php");
 exit();
 ?>
