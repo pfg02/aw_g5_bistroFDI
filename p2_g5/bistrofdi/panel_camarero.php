@@ -18,6 +18,11 @@
 	$controller = PedidoController::getInstance();
 	$pedidosActivos = $controller->verPedidosActivos();
 
+	// Clasificamos los pedidos por su estado para las vistas diferenciadas
+    $pedidosRecibidos = array_filter($pedidosActivos, fn($p) => $p['estado'] == 'Recibido');
+    $pedidosListosCocina = array_filter($pedidosActivos, fn($p) => $p['estado'] == 'Listo cocina');
+    $pedidosTerminados = array_filter($pedidosActivos, fn($p) => $p['estado'] == 'Terminado');
+
 	$tituloPagina = 'Panel de Sala - Bistró FDI';
 	$bodyClass    = 'f0-body';
 
@@ -25,65 +30,119 @@
 ?>
 
 <div class="main-bienvenida">
-	<section class="tarjeta-presentacion tarjeta-ancha">
-		
-		<h1>Panel de <span>Sala</span></h1>
-		<p class="lema">Gestión de pedidos activos (Vista Camarero)</p>
-		
+    <section class="tarjeta-presentacion tarjeta-ancha">
+        <h1>Panel de <span>Sala</span></h1>
+        <p class="lema">Gestión de flujo de pedidos</p>
+        <div class="divisor"></div>
+
+        <div class="seccion-camarero">
+            <h2 class="titulo-seccion">Pedidos Pendientes de Cobro (Recibidos)</h2>
+            <?php if (empty($pedidosRecibidos)): ?>
+                <p class="p-vacio">No hay pedidos por cobrar.</p>
+            <?php else: ?>
+                <table class="tabla-pedidos">
+                    <thead>
+                        <tr>
+                            <th>Ticket</th>
+                            <th>Cliente / Mesa</th>
+                            <th>Total</th>
+                            <th>Acción</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <?php foreach ($pedidosRecibidos as $p): ?>
+                            <tr>
+                                <td><strong>#<?= $p['id'] ?></strong></td>
+                                <td><?= htmlspecialchars($p['nombre_cliente'] . ' ' . $p['apellidos_cliente']) ?></td>
+                                <td><?= number_format($p['total'], 2) ?> €</td>
+                                <td>
+                                    <form action="procesar_estado.php" method="POST">
+                                        <input type="hidden" name="id_pedido" value="<?= $p['id'] ?>">
+                                        <input type="hidden" name="accion" value="cobrar">
+                                        <button type="submit" class="btn-accion btn-cobrar">Marcar como Pagado</button>
+                                    </form>
+                                </td>
+                            </tr>
+                        <?php endforeach; ?>
+                    </tbody>
+                </table>
+            <?php endif; ?>
+        </div>
+
 		<div class="divisor"></div>
-		
-		<div class="mensaje-sesion">
-			<?php if (empty($pedidosActivos)): ?>
-				<p>No hay pedidos activos en este momento. ¡Buen trabajo!</p>
-			<?php else: ?>
-				<table class="tabla-pedidos">
-					<thead>
-						<tr>
-							<th>Nº Pedido</th>
-							<th>Cliente</th>
-							<th>Tipo</th>
-							<th>Estado Actual</th>
-							<th>Total</th>
-							<th>Actualizar Estado</th>
-						</tr>
-					</thead>
-					<tbody>
-						<?php foreach ($pedidosActivos as $pedido): ?>
-							<tr>
-								<td><strong>#<?php echo htmlspecialchars($pedido['numero_pedido']); ?></strong></td>
-								<td><?php echo htmlspecialchars($pedido['nombre_cliente'] . ' ' . $pedido['apellidos_cliente']); ?></td>
-								<td><?php echo htmlspecialchars($pedido['tipo']); ?></td>
-								<td><strong><?php echo htmlspecialchars($pedido['estado']); ?></strong></td>
-								<td><?php echo number_format($pedido['total'], 2); ?> €</td>
-								
-								<td>
-									<form action="procesar_estado.php" method="POST">
-										<input type="hidden" name="id_pedido" value="<?php echo htmlspecialchars($pedido['id']); ?>">
-										
-										<select name="nuevo_estado" class="select-estado">
-											<option value="Recibido" <?php if($pedido['estado'] == 'Recibido') echo 'selected'; ?>>Recibido (Pendiente pago)</option>
-											<option value="En preparación" <?php if($pedido['estado'] == 'En preparación') echo 'selected'; ?>>En preparación (Pagado)</option>
-											<option value="Listo cocina" <?php if($pedido['estado'] == 'Listo cocina') echo 'selected'; ?>>Listo cocina</option>
-											<option value="Terminado" <?php if($pedido['estado'] == 'Terminado') echo 'selected'; ?>>Terminado (Listo para recoger)</option>
-											<option value="Entregado">Entregado al cliente</option>
-											<option value="Cancelado">Cancelar Pedido</option>
-										</select>
-										
-										<button type="submit" class="btn-accion">Actualizar</button>
-									</form>
-								</td>
-							</tr>
-						<?php endforeach; ?>
-					</tbody>
-				</table>
-			<?php endif; ?>
-		</div>
 
-		<div class="contenedor-volver">
-			<a href="index.php" class="btn-login">Volver al Inicio</a>
-		</div>
+        <div class="seccion-camarero">
+            <h2 class="titulo-seccion">Listos en Cocina (Para recoger)</h2>
+            <?php if (empty($pedidosListosCocina)): ?>
+                <p class="p-vacio">No hay platos listos para recoger.</p>
+            <?php else: ?>
+                <table class="tabla-pedidos">
+                    <thead>
+                        <tr>
+                            <th>Ticket</th>
+                            <th>Productos</th>
+                            <th>Acción</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <?php foreach ($pedidosListosCocina as $p): ?>
+                            <tr>
+                                <td><strong>#<?= $p['id'] ?></strong></td>
+                                <td>
+                                    <a href="detalle_pedido.php?id=<?= $p['id'] ?>" class="link-detalle">Ver Detalle</a>
+                                </td>
+                                <td>
+                                    <form action="procesar_estado.php" method="POST">
+                                        <input type="hidden" name="id_pedido" value="<?= $p['id'] ?>">
+                                        <input type="hidden" name="accion" value="terminar">
+                                        <button type="submit" class="btn-accion btn-servir">Pasar a Terminado</button>
+                                    </form>
+                                </td>
+                            </tr>
+                        <?php endforeach; ?>
+                    </tbody>
+                </table>
+            <?php endif; ?>
+        </div>
 
-	</section>
+		<div class="divisor"></div>
+
+        <div class="seccion-camarero">
+            <h2 class="titulo-seccion">Pedidos Terminados (Para entregar)</h2>
+            <?php if (empty($pedidosTerminados)): ?>
+                <p class="p-vacio">No hay pedidos pendientes de entrega final.</p>
+            <?php else: ?>
+                <table class="tabla-pedidos">
+                    <thead>
+                        <tr>
+                            <th>Ticket</th>
+                            <th>Cliente</th>
+                            <th>Acción</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <?php foreach ($pedidosTerminados as $p): ?>
+                            <tr>
+                                <td><strong>#<?= $p['id'] ?></strong></td>
+                                <td><?= htmlspecialchars($p['nombre_cliente']) ?></td>
+                                <td>
+                                    <form action="procesar_estado.php" method="POST">
+                                        <input type="hidden" name="id_pedido" value="<?= $p['id'] ?>">
+                                        <input type="hidden" name="accion" value="entregar">
+                                        <button type="submit" class="btn-accion btn-entregar">Marcar como Entregado</button>
+                                    </form>
+                                </td>
+                            </tr>
+                        <?php endforeach; ?>
+                    </tbody>
+                </table>
+            <?php endif; ?>
+        </div>
+
+        <div class="contenedor-volver">
+            <a href="index.php" class="btn-login">Volver al Inicio</a>
+        </div>
+    </section>
 </div>
 
 <?php
