@@ -1,6 +1,12 @@
 <?php
+
+/**
+	* Clase de acceso a datos para categorías.
+*/
+
 class CategoriaDAO {
-    private $db;
+    
+	private $db;
 
     public function __construct($db) {
         $this->db = $db;

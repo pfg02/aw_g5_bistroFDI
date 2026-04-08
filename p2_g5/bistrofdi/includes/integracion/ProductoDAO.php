@@ -1,11 +1,17 @@
 <?php
+
+/**
+	* Clase de acceso a datos para productos.
+*/
+
 // includes/integracion/ProductoDAO.php
 require_once __DIR__ . '/../negocio/ProductoDTO.php';
 
 class ProductoDAO {
     private $db;
 
-    public function __construct($db) {
+    public function __construct() {
+        global $db;
         $this->db = $db;
     }
 
@@ -62,5 +68,27 @@ class ProductoDAO {
         $exito = $stmt->execute();
         $stmt->close();
         return $exito;
+    }
+
+	/**
+     * Obtiene solo los productos visibles para los clientes en la carta.
+     */
+    public function listarOfertados() {
+        $productos = [];
+        // Filtramos por ofertado = 1 y comprobamos que haya stock
+        $sql = "SELECT p.*, c.nombre as cat_nombre FROM productos p 
+                LEFT JOIN categorias c ON p.id_categoria = c.id 
+                WHERE p.ofertado = 1 AND p.stock > 0 
+                ORDER BY c.nombre ASC, p.nombre ASC";
+                
+        $res = $this->db->query($sql);
+        if ($res) {
+            while ($row = $res->fetch_assoc()) {
+                $p = $this->mapear($row);
+                $p->categoria_nombre = $row['cat_nombre'] ?? 'Sin categoría';
+                $productos[] = $p;
+            }
+        }
+        return $productos;
     }
 }

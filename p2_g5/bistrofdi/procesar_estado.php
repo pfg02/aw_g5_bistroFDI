@@ -1,6 +1,6 @@
 <?php
-require_once __DIR__ . '/includes/sesion.php';
-require_once __DIR__ . '/includes/negocio/PedidoController.php';
+	require_once __DIR__ . '/includes/sesion.php';
+	require_once __DIR__ . '/includes/negocio/PedidoController.php';
 
 	exigirLogin();
 	exigirRol('camarero', 'gerente');
@@ -40,5 +40,6 @@ require_once __DIR__ . '/includes/negocio/PedidoController.php';
     	}
 	}
 
-header('Location: panel_camarero.php');
-exit;
+	header("Location: panel_camarero.php");
+	exit();
+?>
