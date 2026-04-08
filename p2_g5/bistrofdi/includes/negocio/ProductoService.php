@@ -5,7 +5,7 @@ require_once __DIR__ . '/ProductoDTO.php';
 
 class ProductoService {
     private $dao;
-    public function __construct($db) { $this->dao = new ProductoDAO($db); }
+    public function __construct() { $this->dao = new ProductoDAO(); }
 
     public function listarTodos() { return $this->dao->listarTodos(); }
     public function obtenerProducto($id) { return $this->dao->obtenerPorId($id) ?? new ProductoDTO(); }

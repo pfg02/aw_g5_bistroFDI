@@ -1,89 +1,145 @@
 <?php
-require_once __DIR__ . '/includes/sesion.php';
-exigirLogin();
+/**
+ * Vista del carrito de un pedido en curso.
+ */
 
-if (!isset($_SESSION['carrito'])) {
-    $_SESSION['carrito'] = [];
-}
+	require_once __DIR__ . '/includes/sesion.php';
+	require_once __DIR__ . '/includes/integracion/ProductoDAO.php';
 
-if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['actualizar_carrito'])) {
-    foreach ($_POST['cantidades'] ?? [] as $idProducto => $cantidad) {
-        $idProducto = (int)$idProducto;
-        $cantidad = (int)$cantidad;
+	exigirLogin();
+	exigirRol('cliente');
 
-        if ($cantidad <= 0) {
-            unset($_SESSION['carrito'][$idProducto]);
-        } else {
-            $_SESSION['carrito'][$idProducto] = $cantidad;
-        }
-    }
-    header('Location: carrito.php');
-    exit;
-}
+	$carrito = $_SESSION["carrito"] ?? [];
+	$tipoPedido = $_SESSION["tipoPedido"] ?? 'No definido';
 
-$carrito = $_SESSION['carrito'];
-$productos = [];
-$total = 0;
+	$productoDAO = new ProductoDAO();
 
-if (!empty($carrito)) {
-    $conn = obtenerConexionBD();
-    $ids = implode(',', array_map('intval', array_keys($carrito)));
+	$productos = [];
+	$total = 0;
 
-    $sql = "SELECT id, nombre, descripcion, precio_base, iva, imagen FROM productos WHERE id IN ($ids)";
-    $result = $conn->query($sql);
+	if (!empty($carrito)) {
+		foreach ($carrito as $id_producto => $cantidad) {
+        $productoDTO = $productoDAO->obtenerPorId($id_producto);
+        
+			if ($productoDTO) {
+				$productos[$id_producto] = [
+					"nombre"      => $productoDTO->nombre,
+					"precio_base" => $productoDTO->precio,
+					"iva"         => $productoDTO->iva ?? 21
+				];
+        	}
+		}
+	}
 
-    while ($row = $result->fetch_assoc()) {
-        $cantidad = $carrito[$row['id']];
-        $precioFinal = $row['precio_base'] * (1 + $row['iva'] / 100);
-        $subtotal = $precioFinal * $cantidad;
+	$tituloPagina = 'Bistró FDI - Mi Carrito';
+	$bodyClass    = 'f0-body';
 
-        $row['cantidad'] = $cantidad;
-        $row['precio_final'] = $precioFinal;
-        $row['subtotal'] = $subtotal;
-
-        $productos[] = $row;
-        $total += $subtotal;
-    }
-}
-
-ob_start();
+	ob_start();
 ?>
-<section class="contenedor-principal">
-    <h1>Carrito</h1>
 
-    <?php if (empty($productos)): ?>
-        <p>Tu carrito está vacío.</p>
-        <p><a href="catalogo.php">Ir al catálogo</a></p>
-    <?php else: ?>
-        <form method="post" action="carrito.php">
-            <?php foreach ($productos as $producto): ?>
-                <article style="border:1px solid #ccc; padding:10px; margin:10px 0;">
-                    <h3><?= htmlspecialchars($producto['nombre']) ?></h3>
-                    <p><?= htmlspecialchars($producto['descripcion']) ?></p>
-                    <p>Precio unitario: <?= number_format($producto['precio_final'], 2) ?> €</p>
 
-                    <label>Cantidad:
-                        <input type="number" name="cantidades[<?= (int)$producto['id'] ?>]" min="0" value="<?= (int)$producto['cantidad'] ?>">
-                    </label>
+<div class="main-bienvenida">
+	<section class="tarjeta-presentacion tarjeta-ancha">
+		
+		<h1>Mi <span>Carrito</span></h1>
+		<p class="lema">Revisa tu pedido (<?php echo htmlspecialchars($tipoPedido); ?>)</p>
+		
+		<div class="divisor"></div>
 
-                    <p>Subtotal: <?= number_format($producto['subtotal'], 2) ?> €</p>
-                    <p><a href="eliminar_del_carrito.php?id=<?= (int)$producto['id'] ?>">Eliminar producto</a></p>
-                </article>
-            <?php endforeach; ?>
+		<?php if (isset($_SESSION['mensaje_exito'])): ?>
+			<div class="alerta alerta-exito">
+				<?php echo htmlspecialchars($_SESSION['mensaje_exito']); unset($_SESSION['mensaje_exito']); ?>
+			</div>
+		<?php endif; ?>
 
-            <button type="submit" name="actualizar_carrito" value="1">Actualizar carrito</button>
-        </form>
+		<div class="mensaje-sesion mensaje-sesion-ancho">
+			
+			<?php if (empty($carrito)): ?>
+				<p>Tu carrito está vacío ahora mismo.</p>
+				<div class="contenedor-botones-carrito">
+					<a href="catalogo.php" class="btn-login">Volver al Catálogo</a>
+				</div>
+			
+			<?php else: ?>
+				
+				<table class="tabla-pedidos">
+					<thead>
+						<tr>
+							<th>Producto</th>
+							<th>Precio (con IVA)</th>
+							<th>Cantidad</th>
+							<th>Subtotal</th>
+							<th>Quitar</th>
+						</tr>
+					</thead>
+					<tbody>
+						<?php 
+						foreach ($carrito as $productoId => $cantidad): 
+							if (!isset($productos[$productoId])) continue; 
 
-        <h2>Total: <?= number_format($total, 2) ?> €</h2>
+							$producto = $productos[$productoId];
+							$precioBase = $producto["precio_base"];
+							$porcentajeIva = $producto["iva"];
+							
+							$precioConIva = $precioBase + ($precioBase * ($porcentajeIva / 100));
+							$subtotal = $precioConIva * $cantidad;
+							$total += $subtotal;
+						?>
+						<tr>
+							<td><strong><?php echo htmlspecialchars($producto["nombre"]); ?></strong></td>
+							<td><?php echo number_format($precioConIva, 2); ?> €</td>
+							<td><?php echo $cantidad; ?></td>
+							<td><strong><?php echo number_format($subtotal, 2); ?> €</strong></td>
+							
+							<td>
+								<form action="eliminar_del_carrito.php" method="POST">
+									<input type="hidden" name="productoId" value="<?php echo htmlspecialchars($productoId); ?>">
+									<button type="submit" class="btn-accion btn-peligro" title="Eliminar del carrito">x</button>
+								</form>
+							</td>
+						</tr>
+						<?php endforeach; ?>
+					</tbody>
+				</table>
 
-        <form method="post" action="confirmar_pedido.php" style="display:inline-block; margin-right:10px;">
-            <button type="submit">Confirmar pedido</button>
-        </form>
+				<div class="resumen-carrito">
+					<h3>Total a Pagar:</h3>
+					<div class="total-destacado"><?php echo number_format($total, 2); ?> €</div>
+				</div>
 
-        <a href="cancelar_pedido.php?carrito=1">Cancelar pedido</a>
-    <?php endif; ?>
-</section>
+				<div>
+					<h3>¿Cómo quieres abonar tu pedido?</h3>
+                
+					<div class="botones-pago-horizontal">
+						<form action="confirmar_pedido.php" method="POST">
+                        	<input type="hidden" name="id" value="<?= htmlspecialchars($id_pedido) ?>">
+                        	<button type="submit" class="btn-confirmar-compra">Pagar con Tarjeta</button>
+                    	</form>
+
+						<form action="confirmar_pedido.php" method="POST" class="form-confirmar">
+							<input type="hidden" name="id_pedido" value="<?php echo htmlspecialchars($idPedido); ?>">
+							<input type="hidden" name="metodo_pago" value="camarero">
+						
+							<button type="submit" class="btn-confirmar-compra btn-camarero"> Solicitar cobro al personal</button>
+						</form>
+					</div>
+				</div>
+
+			<?php endif; ?>
+
+		</div>
+
+		<?php if (!empty($carrito)): ?>
+			<div class="contenedor-botones-carrito">
+				<a href="catalogo.php" class="btn-admin">Seguir comprando</a>
+				<a href="cancelar_pedido.php" class="btn-login btn-peligro">Vaciar Carrito</a>
+			</div>
+		<?php endif; ?>
+
+	</section>
+</div>
+
 <?php
-$contenidoPrincipal = ob_get_clean();
-$tituloPagina = 'Carrito - Bistro FDI';
-require __DIR__ . '/includes/vistas/comun/plantilla.php';
+	$contenidoPrincipal = ob_get_clean();
+	require_once __DIR__ . '/includes/vistas/comun/plantilla.php';
+?>

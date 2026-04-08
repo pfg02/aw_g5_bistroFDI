@@ -1,60 +1,99 @@
 <?php
-require_once __DIR__ . '/includes/sesion.php';
-require_once __DIR__ . '/includes/negocio/PedidoController.php';
+	/**
+	 * Vista para mostrar el ticket detallado de un pedido.
+	 */
 
-exigirLogin();
+	require_once __DIR__ . '/includes/sesion.php';
+	require_once __DIR__ . '/includes/negocio/PedidoController.php';
+	
+	exigirLogin();
+	exigirRol('cliente');
 
-$idPedido = (int)($_GET['id'] ?? 0);
-$controller = PedidoController::getInstance();
-$pedido = $controller->verPedido($idPedido);
-$lineas = $controller->verLineasPedido($idPedido);
+	// Validar que llega el ID por la URL
+	if (!isset($_GET['id']) || !is_numeric($_GET['id'])) {
+		header("Location: mis_pedidos.php");
+		exit();
+	}
 
-if (!$pedido) {
-    die('Pedido no encontrado.');
-}
+	$id_pedido = (int)$_GET['id'];
+	$id_usuario = $_SESSION['id_usuario'];
 
-$rol = $_SESSION['rol'] ?? 'cliente';
-$esPropio = (int)$pedido['cliente_id'] === (int)$_SESSION['id_usuario'];
-$esStaff = in_array($rol, ['camarero', 'gerente', 'cocinero'], true);
+	$controller = PedidoController::getInstance();
+	$pedido = $controller->verPedido($id_pedido);
 
-if (!$esPropio && !$esStaff) {
-    die('No tienes permisos para ver este pedido.');
-}
+	// Validamos que el pedido exista y pertenezca al usuario que ha iniciado sesión
+	if (!$pedido || $pedido['cliente_id'] != $id_usuario) {
+		$_SESSION['mensaje_error'] = "Acceso denegado o pedido no encontrado.";
+		header("Location: mis_pedidos.php");
+		exit();
+	}
 
-ob_start();
+	$lineas_pedido = $controller->obtenerProductosDePedido($id_pedido);
+
+	$tituloPagina = 'Bistró FDI - Pedido';
+	$bodyClass    = 'f0-body';
+
+	ob_start();
 ?>
-<section class="contenedor-principal">
-    <h1>Detalle del pedido</h1>
 
-    <p><strong>Nº pedido:</strong> <?= (int)$pedido['numero_pedido'] ?></p>
-    <p><strong>Cliente:</strong> <?= htmlspecialchars(($pedido['nombre_cliente'] ?? '') . ' ' . ($pedido['apellidos_cliente'] ?? '')) ?></p>
-    <p><strong>Fecha:</strong> <?= htmlspecialchars($pedido['fecha']) ?></p>
-    <p><strong>Tipo:</strong> <?= htmlspecialchars($pedido['tipo']) ?></p>
-    <p><strong>Estado:</strong> <?= htmlspecialchars($pedido['estado']) ?></p>
-    <p><strong>Total:</strong> <?= number_format($pedido['total'], 2) ?> €</p>
+<div class="main-bienvenida">
+    <section class="tarjeta-presentacion tarjeta-ancha">
+        
+        <h1>Detalle del <span>Pedido</span></h1>
+        <div class="divisor"></div>
 
-    <h2>Productos</h2>
-    <ul>
-        <?php foreach ($lineas as $linea): ?>
-            <li>
-                <?= htmlspecialchars($linea['nombre']) ?>
-                — Cantidad: <?= (int)$linea['cantidad'] ?>
-                — Precio final unidad: <?= number_format($linea['precio_base'] * (1 + $linea['iva'] / 100), 2) ?> €
-            </li>
-        <?php endforeach; ?>
-    </ul>
+        <div class="mensaje-sesion">
+            
+            <div>
+                <div>
+                    <h3>Ticket #<?= $pedido['numero_pedido'] ?></h3>
+                    <p>
+                        <?= date('d/m/Y H:i', strtotime($pedido['fecha'])) ?> | <strong><?= htmlspecialchars($pedido['tipo']) ?></strong>
+                    </p>
+                </div>
+                <div>
+                    <span><?= htmlspecialchars($pedido['estado']) ?></span>
+                </div>
+            </div>
+            
+            <table class="tabla-pedidos">
+                <thead>
+                    <tr>
+                        <th style="text-align: left;">Producto</th>
+                        <th>Precio Ud.</th>
+                        <th>Cant.</th>
+                        <th>Subtotal</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <?php foreach ($lineas_pedido as $linea): 
+                        $subtotal_linea = $linea['precio_base'] * $linea['cantidad'];
+                    ?>
+                    <tr>
+                        <td><strong><?= htmlspecialchars($linea['nombre']) ?></strong></td>
+                        <td><?= number_format($linea['precio_base'], 2) ?> €</td>
+                        <td><?= $linea['cantidad'] ?></td>
+                        <td><strong><?= number_format($subtotal_linea, 2) ?> €</strong></td>
+                    </tr>
+                    <?php endforeach; ?>
+                </tbody>
+            </table>
 
-    <?php if ($rol === 'camarero' && $pedido['estado'] === 'Listo cocina'): ?>
-        <form method="post" action="procesar_estado.php">
-            <input type="hidden" name="id_pedido" value="<?= (int)$pedido['id'] ?>">
-            <input type="hidden" name="accion" value="terminar">
-            <button type="submit">Pasar a Terminado</button>
-        </form>
-    <?php endif; ?>
+            <div class="modal-footer">
+                <h3>Total:</h3>
+                <div class="precio-modal">
+                    <?= number_format($pedido['total'], 2) ?> €
+                </div>
+            </div>
 
-    <p><a href="<?= $rol === 'camarero' ? 'panel_camarero.php' : 'mis_pedidos.php' ?>">Volver</a></p>
-</section>
+            <div class="contenedor-botones-index">
+                <a href="mis_pedidos.php" class="btn-login">Volver a Mis Pedidos</a>
+            </div>
+        </div>
+    </section>
+</div>
+
 <?php
-$contenidoPrincipal = ob_get_clean();
-$tituloPagina = 'Detalle del pedido';
-require __DIR__ . '/includes/vistas/comun/plantilla.php';
+	$contenidoPrincipal = ob_get_clean();
+	require_once __DIR__ . '/includes/vistas/comun/plantilla.php';
+?>

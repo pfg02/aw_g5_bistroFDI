@@ -5,7 +5,7 @@ require_once __DIR__ . '/../negocio/ProductoService.php';
 
 class ProductoController {
     private $service;
-    public function __construct($db) { $this->service = new ProductoService($db); }
+    public function __construct() { $this->service = new ProductoService(); }
 
     public function manejarPeticion() {
         $accion = $_REQUEST['accion'] ?? '';
