@@ -1,76 +1,100 @@
 <?php
-require_once __DIR__ . '/includes/sesion.php';
-require_once __DIR__ . '/includes/negocio/PedidoController.php';
+	require_once __DIR__ . '/includes/sesion.php';
+	require_once __DIR__ . '/includes/config.php';
+	require_once __DIR__ . '/includes/negocio/PedidoController.php';
 
-exigirRol('camarero');
+	// Si no hay sesión o el rol no es autorizado, lo echamos
+	if (!isset($_SESSION['id_usuario']) || !isset($_SESSION['rol'])) {
+		header("Location: login.php");
+		exit();
+	}
 
-$controller = PedidoController::getInstance();
-$pedidosRecibidos = $controller->verPedidosPorEstado('Recibido');
-$pedidosListoCocina = $controller->verPedidosPorEstado('Listo cocina');
-$pedidosTerminados = $controller->verPedidosPorEstado('Terminado');
+	$rol = $_SESSION['rol'];
+	if ($rol !== 'camarero' && $rol !== 'gerente') {
+		header("Location: index.php");
+		exit();
+	}
 
-ob_start();
+	$controller = PedidoController::getInstance();
+	$pedidosActivos = $controller->verPedidosActivos();
 ?>
-<section class="contenedor-principal">
-    <h1>Panel de camarero</h1>
 
-    <p>
-        <img src="<?= htmlspecialchars($_SESSION['avatar'] ?? 'img/avatares/default.png') ?>" alt="Avatar" width="48">
-        <strong><?= htmlspecialchars($_SESSION['nombre_usuario'] ?? '') ?></strong>
-    </p>
+<!DOCTYPE html>
+<html lang="es">
+	<head>
+		<meta charset="UTF-8">
+		<meta name="viewport" content="width=device-width, initial-scale=1.0">
+		<title>Bistró FDI - Panel de Sala</title>
+		<link rel="stylesheet" href="css/estilos.css">
+	</head>
 
-    <h2>Pedidos en estado "Recibido"</h2>
-    <?php if (empty($pedidosRecibidos)): ?>
-        <p>No hay pedidos en estado Recibido.</p>
-    <?php else: ?>
-        <?php foreach ($pedidosRecibidos as $pedido): ?>
-            <article style="border:1px solid #ccc; padding:10px; margin:10px 0;">
-                <p><strong>Nº pedido:</strong> <?= (int)$pedido['numero_pedido'] ?></p>
-                <p><strong>Cliente:</strong> <?= htmlspecialchars($pedido['nombre_cliente'] . ' ' . $pedido['apellidos_cliente']) ?></p>
-                <p><strong>Total:</strong> <?= number_format($pedido['total'], 2) ?> €</p>
-                <p><a href="detalle_pedido.php?id=<?= (int)$pedido['id'] ?>">Ver detalle</a></p>
+	<body class="body-inicio">
 
-                <form method="post" action="procesar_estado.php">
-                    <input type="hidden" name="id_pedido" value="<?= (int)$pedido['id'] ?>">
-                    <input type="hidden" name="accion" value="cobrar">
-                    <button type="submit">Cobrar y pasar a "En preparación"</button>
-                </form>
-            </article>
-        <?php endforeach; ?>
-    <?php endif; ?>
+		<?php include __DIR__ . '/includes/nav.php'; ?>
 
-    <h2>Pedidos en estado "Listo cocina"</h2>
-    <?php if (empty($pedidosListoCocina)): ?>
-        <p>No hay pedidos en estado Listo cocina.</p>
-    <?php else: ?>
-        <?php foreach ($pedidosListoCocina as $pedido): ?>
-            <article style="border:1px solid #ccc; padding:10px; margin:10px 0;">
-                <p><strong>Nº pedido:</strong> <?= (int)$pedido['numero_pedido'] ?></p>
-                <p><strong>Cliente:</strong> <?= htmlspecialchars($pedido['nombre_cliente'] . ' ' . $pedido['apellidos_cliente']) ?></p>
-                <p><a href="detalle_pedido.php?id=<?= (int)$pedido['id'] ?>">Consultar detalle y pasar a "Terminado"</a></p>
-            </article>
-        <?php endforeach; ?>
-    <?php endif; ?>
+		<main class="main-bienvenida">
+			<section class="tarjeta-presentacion tarjeta-ancha">
+				
+				<h1>Panel de <span>Sala</span></h1>
+				<p class="lema">Gestión de pedidos activos (Vista Camarero)</p>
+				
+				<div class="divisor"></div>
+				
+				<div class="mensaje-sesion">
+					<?php if (empty($pedidosActivos)): ?>
+						<p>No hay pedidos activos en este momento. ¡Buen trabajo!</p>
+					<?php else: ?>
+						<table class="tabla-pedidos">
+							<thead>
+								<tr>
+									<th>Nº Pedido</th>
+									<th>Cliente</th>
+									<th>Tipo</th>
+									<th>Estado Actual</th>
+									<th>Total</th>
+									<th>Actualizar Estado</th>
+								</tr>
+							</thead>
+							<tbody>
+								<?php foreach ($pedidosActivos as $pedido): ?>
+									<tr>
+										<td><strong>#<?php echo htmlspecialchars($pedido['numero_pedido']); ?></strong></td>
+										<td><?php echo htmlspecialchars($pedido['nombre_cliente'] . ' ' . $pedido['apellidos_cliente']); ?></td>
+										<td><?php echo htmlspecialchars($pedido['tipo']); ?></td>
+										<td><strong><?php echo htmlspecialchars($pedido['estado']); ?></strong></td>
+										<td><?php echo number_format($pedido['total'], 2); ?> €</td>
+										
+										<td>
+											<form action="procesar_estado.php" method="POST">
+												<input type="hidden" name="id_pedido" value="<?php echo htmlspecialchars($pedido['id']); ?>">
+												
+												<select name="nuevo_estado" class="select-estado">
+													<option value="Recibido" <?php if($pedido['estado'] == 'Recibido') echo 'selected'; ?>>Recibido (Pendiente pago)</option>
+													<option value="En preparación" <?php if($pedido['estado'] == 'En preparación') echo 'selected'; ?>>En preparación (Pagado)</option>
+													<option value="Listo cocina" <?php if($pedido['estado'] == 'Listo cocina') echo 'selected'; ?>>Listo cocina</option>
+													<option value="Terminado" <?php if($pedido['estado'] == 'Terminado') echo 'selected'; ?>>Terminado (Listo para recoger)</option>
+													<option value="Entregado">Entregado al cliente</option>
+													<option value="Cancelado">Cancelar Pedido</option>
+												</select>
+												
+												<button type="submit" class="btn-accion">Actualizar</button>
+											</form>
+										</td>
+									</tr>
+								<?php endforeach; ?>
+							</tbody>
+						</table>
+					<?php endif; ?>
+				</div>
 
-    <h2>Pedidos en estado "Terminado"</h2>
-    <?php if (empty($pedidosTerminados)): ?>
-        <p>No hay pedidos en estado Terminado.</p>
-    <?php else: ?>
-        <?php foreach ($pedidosTerminados as $pedido): ?>
-            <article style="border:1px solid #ccc; padding:10px; margin:10px 0;">
-                <p><strong>Nº pedido:</strong> <?= (int)$pedido['numero_pedido'] ?></p>
-                <p><strong>Cliente:</strong> <?= htmlspecialchars($pedido['nombre_cliente'] . ' ' . $pedido['apellidos_cliente']) ?></p>
+				<div class="contenedor-volver">
+					<a href="index.php" class="btn-login">Volver al Inicio</a>
+				</div>
 
-                <form method="post" action="procesar_estado.php">
-                    <input type="hidden" name="id_pedido" value="<?= (int)$pedido['id'] ?>">
-                    <input type="hidden" name="accion" value="entregar">
-                    <button type="submit">Marcar como "Entregado"</button>
-                </form>
-            </article>
-        <?php endforeach; ?>
-    <?php endif; ?>
-</section>
-<?php
-$contenidoPrincipal = ob_get_clean();
-$tituloPagina = 'Panel camarero';
-require __DIR__ . '/includes/vistas/comun/plantilla.php';
+			</section>
+		</main>
+
+		<?php include __DIR__ . '/includes/vistas/footer.php'; ?>
+
+	</body>
+</html>	

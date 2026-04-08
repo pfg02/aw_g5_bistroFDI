@@ -17,12 +17,6 @@ if (!$db->set_charset('utf8mb4')) {
     die('Error al configurar UTF-8 en la base de datos: ' . $db->error);
 }
 
-function obtenerConexionBD(): mysqli
-{
-    global $db;
-    return $db;
-}
-
 function tienePermiso($rolRequerido): bool
 {
     if (session_status() === PHP_SESSION_NONE) {

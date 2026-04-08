@@ -1,62 +1,81 @@
 <?php
 
-require_once __DIR__ . '/PedidoServiceApp.php';
+/**
+	* Controlador de pedidos, actúa como intermediario entre la capa de presentación y el servicio de negocio.
+*/
 
-class PedidoController
-{
-    private static ?PedidoController $instance = null;
-    private PedidoServiceApp $service;
+require_once __DIR__ . "/PedidoServiceApp.php";
+require_once __DIR__ . "/PedidoDTO.php";
 
-    private function __construct()
-    {
-        $this->service = new PedidoServiceApp();
+class PedidoController {
+
+	private static $instance = null;
+	private $service;
+
+	// controlador singleton
+	private function __construct() {
+		$this->service = new PedidoServiceApp();
+	}
+
+	public static function getInstance() {
+		if (self::$instance === null) {
+			self::$instance = new PedidoController();
+		}
+		return self::$instance;
+	}
+
+	/**
+	* Crea un nuevo pedido a partir de los datos proporcionados por la capa de presentación.
+	* @param int $clienteId El ID del cliente que realiza el pedido.
+	* @param string $tipo El tipo de pedido
+	* @param array $productos Un array asociativo donde las claves son los IDs de los productos y los valores son las cantidades.
+	* @return int El ID del pedido recién creado.
+	*/
+	public function crearPedido($clienteId, $tipo, $productos) {
+
+		$pedido = new PedidoDTO();
+
+		$pedido->setClienteId($clienteId);
+		$pedido->setTipo($tipo);
+		$pedido->setProductos($productos);
+
+		return $this->service->crearPedido($pedido);
+	}
+
+	/**
+	* Obtiene los datos de un pedido por su ID.
+	* @param int $idPedido El ID del pedido a obtener.
+	* @return array Un array asociativo con los datos del pedido, o null si no se encuentra.
+	*/
+	public function verPedido($idPedido) {
+		return $this->service->obtenerPedido($idPedido);
+	}
+
+	/**
+	* Actualiza el estado de un pedido.
+	* @param int $idPedido El ID del pedido.
+	* @param string $nuevoEstado El nuevo estado
+	* @return bool True si se ha actualizado, false en caso contrario.
+	*/
+	public function actualizarEstadoPedido($idPedido, $nuevoEstado) {
+		return $this->service->actualizarEstado($idPedido, $nuevoEstado);
     }
 
-    public static function getInstance(): PedidoController
-    {
-        if (self::$instance === null) {
-            self::$instance = new PedidoController();
-        }
-        return self::$instance;
-    }
+	/**
+	* Obtiene el historial de pedidos de un cliente concreto.
+	* @param int $idCliente El ID del cliente.
+	* @return array Array de pedidos.
+	*/
+	public function verPedidosCliente($idCliente) {
+		return $this->service->obtenerPedidosPorCliente($idCliente);
+	}
 
-    public function crearPedido(int $clienteId, string $tipo, array $productos): int
-    {
-        return $this->service->crearPedido($clienteId, $tipo, $productos);
-    }
-
-    public function verPedido(int $idPedido): ?array
-    {
-        return $this->service->obtenerPedido($idPedido);
-    }
-
-    public function verLineasPedido(int $idPedido): array
-    {
-        return $this->service->obtenerLineasPedido($idPedido);
-    }
-
-    public function verPedidosCliente(int $idCliente): array
-    {
-        return $this->service->obtenerPedidosPorCliente($idCliente);
-    }
-
-    public function verPedidosPorEstado(string $estado): array
-    {
-        return $this->service->obtenerPedidosPorEstado($estado);
-    }
-
-    public function pagarConTarjeta(int $idPedido, int $clienteId): bool
-    {
-        return $this->service->pagarConTarjeta($idPedido, $clienteId);
-    }
-
-    public function cancelarPedidoCliente(int $idPedido, int $clienteId): bool
-    {
-        return $this->service->cancelarPedidoCliente($idPedido, $clienteId);
-    }
-
-    public function accionCamarero(int $idPedido, string $accion): bool
-    {
-        return $this->service->accionCamarero($idPedido, $accion);
+	/**
+	* Obtiene todos los pedidos que no están entregados ni cancelados.
+	* @return array Lista de pedidos.
+	*/
+	public function verPedidosActivos() {
+        return $this->service->obtenerPedidosActivos();
     }
 }
+?>

@@ -1,163 +1,168 @@
 <?php
 
+/**
+	* Clase de acceso a datos para pedidos.
+*/
+
 require_once __DIR__ . '/../negocio/PedidoDTO.php';
 require_once __DIR__ . '/../config.php';
 
-class PedidoDAO
-{
-    public function guardarPedido(PedidoDTO $pedidoDTO): int
-    {
-        $conn = obtenerConexionBD();
-        $conn->begin_transaction();
+class PedidoDAO {
 
-        try {
-            $clienteId = $pedidoDTO->getClienteId();
-            $tipo = $pedidoDTO->getTipo();
-            $estado = $pedidoDTO->getEstado();
-            $fecha = $pedidoDTO->getFecha();
-            $total = $pedidoDTO->getTotal();
+	/**
+	* Guarda un nuevo pedido en la base de datos.
+	* @param PedidoDTO $pedidoDTO El objeto con los datos del pedido a guardar.
+	* @return int El ID del pedido recién creado.
+	*/
 
-            $hoy = date('Y-m-d');
-            $sqlNum = "SELECT MAX(numero_pedido) as max_num FROM pedidos WHERE DATE(fecha) = ?";
-            $stmtNum = $conn->prepare($sqlNum);
-            $stmtNum->bind_param("s", $hoy);
-            $stmtNum->execute();
-            $resNum = $stmtNum->get_result()->fetch_assoc();
-            $numeroPedido = ($resNum['max_num'] !== null) ? ((int)$resNum['max_num'] + 1) : 1;
-            $stmtNum->close();
+	public function guardarPedido($pedidoDTO) {
 
-            $sqlPedido = "INSERT INTO pedidos (cliente_id, numero_pedido, tipo, estado, fecha, total)
-                          VALUES (?, ?, ?, ?, ?, ?)";
-            $stmtPedido = $conn->prepare($sqlPedido);
-            $stmtPedido->bind_param("iisssd", $clienteId, $numeroPedido, $tipo, $estado, $fecha, $total);
-            $stmtPedido->execute();
-            $pedidoId = $conn->insert_id;
-            $stmtPedido->close();
+		$conn = obtenerConexionBD();
 
-            $productos = $pedidoDTO->getProductos();
-            $sqlProductos = "INSERT INTO pedido_productos (pedido_id, producto_id, cantidad) VALUES (?, ?, ?)";
-            $stmtProductos = $conn->prepare($sqlProductos);
+		$conn->begin_transaction();
 
-            foreach ($productos as $productoId => $cantidad) {
-                $stmtProductos->bind_param("iii", $pedidoId, $productoId, $cantidad);
-                $stmtProductos->execute();
-            }
-            $stmtProductos->close();
+		try {
+			// Extraemos los datos del DTO
+			$pedidoId = $pedidoDTO->getId();
+			$clienteId = $pedidoDTO->getClienteId();
+			$tipo = $pedidoDTO->getTipo();
+			$estado = $pedidoDTO->getEstado();
+			$fecha = $pedidoDTO->getFecha();
+			$total = $pedidoDTO->getTotal();
 
-            $conn->commit();
-            return $pedidoId;
-        } catch (Exception $e) {
-            $conn->rollback();
-            throw $e;
-        }
-    }
+			// Calcular el numero de pedido diario
+			$hoy = date('Y-m-d');
+			$sqlNum = "SELECT MAX(numero_pedido) as max_num FROM pedidos WHERE DATE(fecha) = ?";
+			$stmtNum = $conn->prepare($sqlNum);
+			$stmtNum->bind_param("s", $hoy);
+			$stmtNum->execute();
+			$resNum = $stmtNum->get_result()->fetch_assoc();
 
-    public function buscarPedido(int $idPedido): ?array
-    {
-        $conn = obtenerConexionBD();
+			// Si hay pedidos hoy, sumamos 1 al máximo. Si no, es el pedido 1 del día.
+			$numeroPedido = ($resNum['max_num'] !== null) ? $resNum['max_num'] + 1 : 1;
+			$stmtNum->close();
 
-        $sql = "SELECT p.*, u.nombre AS nombre_cliente, u.apellidos AS apellidos_cliente
-                FROM pedidos p
-                INNER JOIN usuarios u ON p.cliente_id = u.id
-                WHERE p.id = ?";
-        $stmt = $conn->prepare($sql);
-        $stmt->bind_param("i", $idPedido);
-        $stmt->execute();
-        $pedido = $stmt->get_result()->fetch_assoc();
-        $stmt->close();
+			$sqlPedido = "INSERT INTO pedidos (cliente_id, numero_pedido, tipo, estado, fecha, total) VALUES (?, ?, ?, ?, ?, ?)";
+			$stmtPedido = $conn->prepare($sqlPedido);
+			$stmtPedido->bind_param("iisssd", $clienteId, $numeroPedido, $tipo, $estado, $fecha, $total);
+			$stmtPedido->execute();
 
-        return $pedido ?: null;
-    }
+			// Capturamos el ID autonumérico que MySQL ha dado al nuevo pedido
+			$pedidoId = $conn->insert_id;
+			$stmtPedido->close();
 
-    public function obtenerLineasPedido(int $idPedido): array
-    {
-        $conn = obtenerConexionBD();
+			// Guardar los productos en la tabla intermedia
+			$productos = $pedidoDTO->getProductos();
+			$sqlProductos = "INSERT INTO pedido_productos (pedido_id, producto_id, cantidad) VALUES (?, ?, ?)";
+			$stmtProductos = $conn->prepare($sqlProductos);
 
-        $sql = "SELECT pp.producto_id, pp.cantidad, p.nombre, p.descripcion, p.imagen, p.precio_base, p.iva
-                FROM pedido_productos pp
-                INNER JOIN productos p ON pp.producto_id = p.id
-                WHERE pp.pedido_id = ?
-                ORDER BY p.nombre ASC";
-        $stmt = $conn->prepare($sql);
-        $stmt->bind_param("i", $idPedido);
-        $stmt->execute();
-        $result = $stmt->get_result();
+			foreach ($productos as $productoId => $cantidad) {
+				$stmtProductos->bind_param("iii", $pedidoId, $productoId, $cantidad);
+				$stmtProductos->execute();
+			}
+			$stmtProductos->close();
 
-        $lineas = [];
-        while ($row = $result->fetch_assoc()) {
-            $lineas[] = $row;
-        }
-        $stmt->close();
+			// Confirmamos los cambios en la BD
+			$conn->commit();
 
-        return $lineas;
-    }
+			return $pedidoId;
 
-    public function actualizarEstado(int $idPedido, string $nuevoEstado): bool
-    {
-        $conn = obtenerConexionBD();
+		} catch (Exception $e) {
+			// Si algo falla, revertimos los cambios
+			$conn->rollback();
+			throw $e; // Re-lanzamos la excepción para que el controlador pueda manejarla
+		}
+	}
 
-        $sql = "UPDATE pedidos SET estado = ? WHERE id = ?";
-        $stmt = $conn->prepare($sql);
-        $stmt->bind_param("si", $nuevoEstado, $idPedido);
-        $ok = $stmt->execute();
-        $stmt->close();
+	/**
+	* Busca un pedido por su ID.
+	* @param int $idPedido El ID del pedido a buscar.
+	* @return array Un array asociativo con los datos del pedido, o null si no se encuentra.
+	*/
+	public function buscarPedido($idPedido) {
 
-        return $ok;
-    }
+		$conn = obtenerConexionBD();
 
-    public function obtenerPedidosPorCliente(int $idCliente): array
-    {
-        $conn = obtenerConexionBD();
+		$sql = "SELECT * FROM pedidos WHERE id = ?";
+		$stmt = $conn->prepare($sql);
+		$stmt->bind_param("i", $idPedido);
+		$stmt->execute();
+		
+		$result = $stmt->get_result();
+		$pedido = $result->fetch_assoc();
 
-        $sql = "SELECT * FROM pedidos WHERE cliente_id = ? ORDER BY fecha DESC";
-        $stmt = $conn->prepare($sql);
-        $stmt->bind_param("i", $idCliente);
-        $stmt->execute();
-        $result = $stmt->get_result();
+		$stmt->close();
 
-        $pedidos = [];
-        while ($row = $result->fetch_assoc()) {
-            $pedidos[] = $row;
-        }
-        $stmt->close();
+		return $pedido;
+	}
 
-        return $pedidos;
-    }
+	/**
+	* Actualiza el estado de un pedido existente.
+	* * @param int $idPedido El ID autonumérico del pedido.
+	* @param string $nuevoEstado El nuevo estado (ej. 'En preparación', 'Terminado').
+	* @return bool True si se actualizó correctamente, False en caso de error.
+	*/
+	public function actualizarEstado($idPedido, $nuevoEstado) {
+		
+		$conn = obtenerConexionBD();
 
-    public function obtenerPedidosPorEstado(string $estado): array
-    {
-        $conn = obtenerConexionBD();
+		$sql = "UPDATE pedidos SET estado = ? WHERE id = ?";
+		$stmt = $conn->prepare($sql);
+		$stmt->bind_param("si", $nuevoEstado, $idPedido);
+		
+		$exito = $stmt->execute();
+		$stmt->close();
 
-        $sql = "SELECT p.*, u.nombre AS nombre_cliente, u.apellidos AS apellidos_cliente, u.avatar
-                FROM pedidos p
-                INNER JOIN usuarios u ON p.cliente_id = u.id
-                WHERE p.estado = ?
+		return $exito;
+	}
+
+	/**
+	* Obtiene todo el historial de pedidos de un cliente específico.
+	* * @param int $idCliente El ID autonumérico del usuario.
+	* @return array Un array de arrays asociativos con los datos de todos sus pedidos.
+	*/
+	public function obtenerPedidosPorCliente($idCliente) {
+
+		$conn = obtenerConexionBD();
+
+		// Buscar los pedidos del cliente y ordenarlos del más reciente al más antiguo
+		$sql = "SELECT * FROM pedidos WHERE cliente_id = ? ORDER BY fecha DESC";
+		$stmt = $conn->prepare($sql);
+		$stmt->bind_param("i", $idCliente);
+		$stmt->execute();
+		
+		$result = $stmt->get_result();
+		$pedidos = [];
+
+		// Extraemos todas las filas encontradas en un array
+		while ($row = $result->fetch_assoc()) {
+			$pedidos[] = $row;
+		}
+
+		$stmt->close();
+		
+		return $pedidos;
+	}
+
+	/**
+	* Obtiene todos los pedidos que no estén entregados o cancelados.
+	*/
+	public function obtenerPedidosActivos() {
+
+		$conn = obtenerConexionBD();
+		// Traemos todos los pedidos del más antiguo al más nuevo
+		$sql = "SELECT p.*, u.nombre AS nombre_cliente, u.apellidos AS apellidos_cliente 
+                FROM pedidos p 
+                INNER JOIN usuarios u ON p.cliente_id = u.id 
+                WHERE p.estado NOT IN ('Entregado', 'Cancelado') 
                 ORDER BY p.fecha ASC";
-        $stmt = $conn->prepare($sql);
-        $stmt->bind_param("s", $estado);
-        $stmt->execute();
-        $result = $stmt->get_result();
-
-        $pedidos = [];
-        while ($row = $result->fetch_assoc()) {
-            $pedidos[] = $row;
-        }
-        $stmt->close();
-
-        return $pedidos;
-    }
-
-    public function borrarPedidoCliente(int $idPedido, int $clienteId): bool
-    {
-        $conn = obtenerConexionBD();
-
-        $sql = "DELETE FROM pedidos WHERE id = ? AND cliente_id = ? AND estado IN ('Nuevo', 'Recibido')";
-        $stmt = $conn->prepare($sql);
-        $stmt->bind_param("ii", $idPedido, $clienteId);
-        $ok = $stmt->execute();
-        $afectadas = $stmt->affected_rows;
-        $stmt->close();
-
-        return $ok && $afectadas > 0;
-    }
+		$result = $conn->query($sql);
+		
+		$pedidos = [];
+		while ($row = $result->fetch_assoc()) {
+			$pedidos[] = $row;
+		}
+		return $pedidos;
+	}
 }
+?>
