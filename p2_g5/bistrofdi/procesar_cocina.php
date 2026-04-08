@@ -1,7 +1,6 @@
 <?php
 /**
  * Procesa las acciones de la cocina SIN modificar estructura de BD.
- * Versión Definitiva.
  */
 require_once __DIR__ . '/includes/sesion.php';
 require_once __DIR__ . '/includes/negocio/PedidoController.php';
@@ -24,17 +23,17 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['accion'], $_POST['id_
         $_SESSION['pedido_activo_cocinero'] = [];
     }
 
-    // ACCIÓN 1: Reclamar pedido nuevo
+    // Reclamar pedido nuevo
     if ($accion === 'reclamar') {
         $controller->actualizarEstadoPedido($idPedido, 'Cocinando');
         $_SESSION['pedido_activo_cocinero'][$idCocinero] = $idPedido;
         
-    // ACCIÓN 2: Marcar un producto unificado como preparado
+    // Marcar un producto unificado como preparado
     } elseif ($accion === 'marcar_plato' && isset($_POST['id_producto'])) {
         $idProducto = (int)$_POST['id_producto'];
         $_SESSION['preparados'][$idPedido][$idProducto] = true;
 
-    // ACCIÓN 3: Finalizar y mandar al camarero
+    // Finalizar y mandar al camarero
     } elseif ($accion === 'finalizar_pedido') {
         $actualizado = $controller->actualizarEstadoPedido($idPedido, 'Listo cocina');
         

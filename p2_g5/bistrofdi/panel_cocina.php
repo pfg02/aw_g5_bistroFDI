@@ -34,33 +34,17 @@
     if ($miPedido) {
         $idPedidoActivo = $miPedido['id'];
         
-        // Obtenemos los platos tal y como vengan de la BD
-        $platosCrudos = $controller->obtenerProductosDePedido($idPedidoActivo);
-        
-        // Juntamos los productos repetidos
-        $platosAgrupados = [];
-        if (!empty($platosCrudos)) {
-            foreach ($platosCrudos as $plato) {
-                $idProd = $plato['producto_id'] ?? $plato['id_producto'] ?? $plato['id'];
-                
-                if (isset($platosAgrupados[$idProd])) {
-                    $platosAgrupados[$idProd]['cantidad'] += $plato['cantidad'];
-                } else {
-                    $platosAgrupados[$idProd] = $plato;
-                    $platosAgrupados[$idProd]['producto_id'] = $idProd; 
-                }
-            }
-        }
-        
-        $platos = array_values($platosAgrupados);
+        // El DAO ya te los da agrupados y sumados gracias a tu nueva consulta SQL
+        $platos = $controller->obtenerProductosDePedido($idPedidoActivo);
         
         // Comprobamos los Ticks en la sesión
         if (!empty($platos)) {
             $todosPreparados = true;
             foreach ($platos as &$plato) {
+                // Usamos el ID del producto normal
                 $idProd = $plato['producto_id'];
                 
-                // Miramos si este producto único está marcado como listo
+                // Miramos en la sesión si este producto está marcado
                 $estaPreparado = isset($_SESSION['preparados'][$idPedidoActivo][$idProd]) && $_SESSION['preparados'][$idPedidoActivo][$idProd] === true;
                 
                 $plato['preparado'] = $estaPreparado; 
@@ -69,8 +53,9 @@
                     $todosPreparados = false;
                 }
             }
+			unset($plato);
         }
-    }
+	}
 
     $tituloPagina = 'Bistró FDI - Cocina';
     $bodyClass    = 'f0-body';

@@ -164,11 +164,11 @@ class PedidoDAO {
 	}
 
 	public function obtenerProductosDePedido($idPedido) {
-		$sql = "SELECT pp.producto_id, pp.cantidad, p.nombre, p.precio_base, p.iva
-				FROM pedido_productos pp
-				INNER JOIN productos p ON pp.producto_id = p.id
-				WHERE pp.pedido_id = ?
-				GROUP BY p.id, p.nombre";
+		$sql = "SELECT p.id AS producto_id, SUM(pp.cantidad) AS cantidad, p.nombre, p.precio_base, p.iva
+                FROM pedido_productos pp
+                INNER JOIN productos p ON pp.producto_id = p.id
+                WHERE pp.pedido_id = ?
+                GROUP BY p.nombre";
 
 		$stmt = $this->db->prepare($sql);
 		$stmt->bind_param("i", $idPedido);
