@@ -25,18 +25,19 @@
 	}
 
     if ($pedido) {
-        // Solo dejamos cancelar si no está completado
-        if (strtolower($pedido['estado']) == 'en preparación' || strtolower($pedido['estado']) == 'recibido') {
-            
-			$actualizado = $controller->actualizarEstadoPedido($id_pedido, 'Cancelado');            
-            
-			if ($actualizado) {
+        // Los pedidos cancelados no deben almacenarse en la BD.
+        // Por eso, si todavía está en estado Recibido, lo eliminamos físicamente.
+        if (strtolower($pedido['estado']) === 'recibido') {
+
+			$eliminado = $controller->eliminarPedido($id_pedido);
+
+			if ($eliminado) {
             	$_SESSION['mensaje_exito'] = "El pedido ha sido cancelado correctamente.";
 			} else {
 				$_SESSION['mensaje_error'] = "Hubo un error en la base de datos al cancelar el pedido.";
 			}
         } else {
-            $_SESSION['mensaje_error'] = "No puedes cancelar un pedido que ya está completado.";
+            $_SESSION['mensaje_error'] = "Solo puedes cancelar pedidos en estado 'Recibido'.";
         }
     } else {
         $_SESSION['mensaje_error'] = "Acción no permitida o pedido no encontrado.";

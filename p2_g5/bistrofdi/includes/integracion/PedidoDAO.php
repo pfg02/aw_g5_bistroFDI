@@ -19,8 +19,6 @@ class PedidoDAO {
 
 	/**
 	* Guarda un nuevo pedido en la base de datos.
-	* @param PedidoDTO $pedidoDTO El objeto con los datos del pedido a guardar.
-	* @return int El ID del pedido recién creado.
 	*/
 
 	public function guardarPedido($pedidoDTO) {
@@ -82,8 +80,6 @@ class PedidoDAO {
 
 	/**
 	* Busca un pedido por su ID.
-	* @param int $idPedido El ID del pedido a buscar.
-	* @return array Un array asociativo con los datos del pedido, o null si no se encuentra.
 	*/
 	public function buscarPedido($idPedido) {
 
@@ -102,9 +98,6 @@ class PedidoDAO {
 
 	/**
 	* Actualiza el estado de un pedido existente.
-	* * @param int $idPedido El ID autonumérico del pedido.
-	* @param string $nuevoEstado El nuevo estado (ej. 'En preparación', 'Terminado').
-	* @return bool True si se actualizó correctamente, False en caso de error.
 	*/
 	public function actualizarEstado($idPedido, $nuevoEstado) {
 
@@ -119,13 +112,26 @@ class PedidoDAO {
 	}
 
 	/**
+	* Elimina un pedido de la base de datos.
+	*/
+	public function eliminarPedido($idPedido) {
+
+		$sql = "DELETE FROM pedidos WHERE id = ?";
+		$stmt = $this->db->prepare($sql);
+		$stmt->bind_param("i", $idPedido);
+
+		$exito = $stmt->execute();
+		$stmt->close();
+
+		return $exito;
+	}
+
+	/**
 	* Obtiene todo el historial de pedidos de un cliente específico.
-	* * @param int $idCliente El ID autonumérico del usuario.
-	* @return array Un array de arrays asociativos con los datos de todos sus pedidos.
 	*/
 	public function obtenerPedidosPorCliente($idCliente) {
 
-		// Buscar los pedidos del cliente y ordenarlos del más reciente al más antiguo
+		// Busca los pedidos del cliente y los ordena del más reciente al más antiguo
 		$sql = "SELECT * FROM pedidos WHERE cliente_id = ? ORDER BY fecha DESC";
 		$stmt = $this->db->prepare($sql);
 		$stmt->bind_param("i", $idCliente);
