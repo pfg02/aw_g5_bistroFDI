@@ -2,20 +2,6 @@
 require_once __DIR__ . '/includes/sesion.php';
 require_once __DIR__ . '/includes/negocio/PedidoController.php';
 
-<<<<<<< HEAD
-exigirRol('camarero');
-
-$idPedido = (int)($_POST['id_pedido'] ?? 0);
-$accion = $_POST['accion'] ?? '';
-
-if ($idPedido <= 0 || $accion === '') {
-    header('Location: panel_camarero.php');
-    exit;
-}
-
-$controller = PedidoController::getInstance();
-$controller->accionCamarero($idPedido, $accion);
-=======
 	exigirLogin();
 	exigirRol('camarero', 'gerente');
 
@@ -53,7 +39,6 @@ $controller->accionCamarero($idPedido, $accion);
 			}
     	}
 	}
->>>>>>> cd2ee5df9656ed01f92af55382c3f638b842a97d
 
 header('Location: panel_camarero.php');
 exit;
