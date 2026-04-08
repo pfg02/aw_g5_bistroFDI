@@ -1,15 +1,14 @@
 <?php
 
 require_once __DIR__ . '/../negocio/UsuarioDTO.php';
-require_once __DIR__ . '/../config.php';
 
 class UsuarioDAO
 {
     private mysqli $conn;
 
-    public function __construct()
+   public function __construct()
     {
-        global $db;
+		global $db;
         $this->conn = $db;
     }
 

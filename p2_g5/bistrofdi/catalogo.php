@@ -1,10 +1,10 @@
 <?php
 	/**
-	* Catálogo de productos para añadir a un pedido.
-	*/
+	 * Catálogo de productos para añadir a un pedido.
+	 */
 
 	require_once __DIR__ . '/includes/sesion.php';
-	require_once __DIR__ . '/includes/config.php';
+	require_once __DIR__ . '/includes/integracion/ProductoDAO.php';
 
 	// Exigimos inicio de sesión y rol de cliente
 	exigirLogin();
@@ -18,101 +18,137 @@
 	if ($_SERVER["REQUEST_METHOD"] === "POST" && isset($_POST["tipo"])) {
 		$_SESSION["tipoPedido"] = $_POST["tipo"];
 	}
+	$tipo_pedido = $_SESSION['tipoPedido'] ?? 'Local';
 
-	// Obtener productos ofertados desde la base de datos
-	$productos = [];
-	$conn = obtenerConexionBD();
-	$sql = "SELECT id, nombre, precio_base, imagen FROM productos WHERE ofertado = 1";
-	$result = $conn->query($sql);
+	// ARREGLADO: Inyectamos la conexión global $db al DAO
+	global $db;
+	$productoDAO = new ProductoDAO($db);
+	$productosDTO = $productoDAO->listarOfertados();
 
-	if ($result) {
-		while ($row = $result->fetch_assoc()) {
-			$productos[] = $row;
-		}
+	// Agrupar los objetos ProductoDTO por su nombre de categoría
+	$menu_agrupado = [];
+	foreach ($productosDTO as $producto) {
+		$categoria = $producto->categoria_nombre ?? 'Otros';
+		$menu_agrupado[$categoria][] = $producto;
 	}
 
-	// Calculamos cuántos artículos  hay en el carrito ahora mismo
+	// Calculamos cuántos artículos hay en el carrito ahora mismo
 	$itemsEnCarrito = 0;
 	if (!empty($_SESSION['carrito'])) {
-    	$itemsEnCarrito = array_sum($_SESSION['carrito']); 
+		$itemsEnCarrito = array_sum($_SESSION['carrito']); 
 	}
+
+	$tituloPagina = 'Bistró FDI - Catálogo';
+	$bodyClass    = 'f0-body';
+
+	ob_start();
 ?>
 
-<!DOCTYPE html>
-<html lang="es">
-	<head>
-		<meta charset="UTF-8">
-		<meta name="viewport" content="width=device-width, initial-scale=1.0">
-		<title>Bistró FDI - Catálogo</title>
-		<link rel="stylesheet" href="css/estilos.css">
-	</head>
-	<body class="body-inicio">
+<div class="main-bienvenida">
+    <section class="tarjeta-presentacion tarjeta-ancha">
+        
+        <h1>Nuestro <span>Catálogo</span></h1>
+        <p class="lema">
+            Tipo de Pedido: <strong><?= htmlspecialchars($tipo_pedido) ?></strong>
+        </p>
+        
+        <div class="divisor"></div>
 
-		<?php include __DIR__ . '/includes/nav.php'; ?>
+        <div>   
+            <input type="text" id="buscadorProductos" placeholder="Buscar producto...">
+        </div>
 
-		<main class="main-bienvenida">
-			<section class="tarjeta-presentacion tarjeta-ancha">
-				
-				<h1>Nuestro <span>Catálogo</span></h1>
-				<p class="lema">
-					Tipo de Pedido: <strong><?php echo htmlspecialchars($_SESSION["tipoPedido"] ?? 'No definido'); ?></strong>
-				</p>
-				
-				<div class="divisor"></div>
+        <?php if (isset($_SESSION['mensaje_exito'])): ?>
+            <div class="alerta alerta-exito">
+                <?= htmlspecialchars($_SESSION['mensaje_exito']); ?>
+                <?php unset($_SESSION['mensaje_exito']); ?>
+            </div>
+        <?php endif; ?>
 
-				<?php if (isset($_SESSION['mensaje_exito'])): ?>
-                <div class="alerta alerta-exito">
-                    <?php 
-                        echo htmlspecialchars($_SESSION['mensaje_exito']); 
-                        unset($_SESSION['mensaje_exito']);
-                    ?>
+        <div class="contenedor-botones-index" style="margin-bottom: 20px;">
+            <a href="carrito.php" class="btn-admin">Ver mi carrito
+                <?php if ($itemsEnCarrito > 0): ?>
+                    <span class="badge-carrito"><?= $itemsEnCarrito ?></span>
+                <?php endif; ?>
+            </a>
+            <a href="pedido_inicio.php" class="btn-admin btn-cancelar">Cambiar tipo de pedido</a>
+        </div>
+        
+        <div class="mensaje-sesion">
+            
+            <?php if (empty($menu_agrupado)): ?>
+                <p>Lo sentimos, no hay productos disponibles en este momento.</p>
+            <?php else: ?>
+                
+                <div class="catalogo-grid">
+                    <?php foreach ($menu_agrupado as $categoria => $productos_cat): ?>
+                        
+                        <div class="bloque-categoria">
+                            <h3><?= htmlspecialchars($categoria) ?></h3>
+                            
+                            <div class="lista-productos">
+                                <?php foreach ($productos_cat as $p): 
+                                    $precio_base = $p->precio ?? 0;
+                                    $iva = $p->iva ?? 21;
+                                    $precio_con_iva = $precio_base * (1 + ($iva / 100));
+                                ?>
+                                    <article class="tarjeta-producto" data-nombre="<?= strtolower(htmlspecialchars($p->nombre)) ?>">
+                                        
+										
+                                        
+										<div class="info-producto">
+                                            <h4><?= htmlspecialchars($p->nombre) ?></h4>
+                                            <p><?= number_format($precio_con_iva, 2) ?> €</p>
+                                            
+                                            <button type="button" class="btn-abrir-modal" 
+                                                    data-nombre="<?= htmlspecialchars($p->nombre) ?>"
+                                                    data-descripcion="<?= htmlspecialchars($p->descripcion ?? 'Este producto no tiene descripción adicional.') ?>"
+                                                    data-precio="<?= number_format($precio_con_iva, 2) ?>">
+                                                Ver producto
+                                            </button>
+                                        </div>
+                                        
+                                        <form action="anadir_producto.php" method="POST" class="form-anadir-carrito">
+                                            <input type="hidden" name="accion" value="agregar">
+                                            <input type="hidden" name="id_producto" value="<?= $p->id ?>"> 
+                                            <input type="number" name="cantidad" value="1" min="1" max="20">
+                                            <button type="submit" class="btn-login">Añadir</button>
+                                        </form>
+                                    </article>
+                                <?php endforeach; ?>
+                            </div>
+                        </div>
+
+                    <?php endforeach; ?>
                 </div>
-            	<?php endif; ?>
 
-				<div class="contenedor-botones-index">
-					<a href="carrito.php" class="btn-admin">Ver mi carrito
-						<?php if ($itemsEnCarrito > 0): ?>
-							<span class="badge-carrito"><?php echo $itemsEnCarrito; ?></span>
-						<?php endif; ?>
-					</a>
-					<a href="pedido_inicio.php" class="btn-admin btn-cancelar">Cambiar tipo de pedido</a>
-				</div>
-				
-				<div class="mensaje-sesion">
-					
-					<?php if (empty($productos)): ?>
-						<p>Lo sentimos, no hay productos disponibles en este momento.</p>
-					<?php else: ?>
-						
-						<div class="catalogo-grid">
-							<?php foreach ($productos as $p): ?>
-								
-								<div class="producto-card">
-									<img src="img/productos/<?php echo htmlspecialchars($p['imagen'] ?? 'default_prod.png'); ?>" 
-										alt="<?php echo htmlspecialchars($p['nombre']); ?>" 
-										class="producto-img-catalogo"
-										onerror="this.src='img/productos/default_prod.png'">
-									
-									<div class="producto-nombre"><?php echo htmlspecialchars($p["nombre"]); ?></div>
-									<div class="producto-precio"><?php echo number_format($p["precio_base"], 2); ?> €</div>
-									
-									<form action="anadir_producto.php" method="POST" class="form-add-carrito">
-										<input type="hidden" name="productoId" value="<?php echo htmlspecialchars($p["id"]); ?>">
-										<input type="number" name="cantidad" value="1" min="1" class="input-cantidad">
-										<button type="submit" class="btn-login btn-accion">Añadir</button>
-									</form>
-								</div>
+            <?php endif; ?>
+        </div>
+    </section>
+</div>
 
-							<?php endforeach; ?>
-						</div>
+<div id="modalDetalle" class="modal-fondo">
+	<div class="modal-contenido">
+        
+        <span id="cerrarModal" class="modal-cerrar">&times;</span>
+        
+        <h2 id="modalNombre">Nombre Producto</h2>
+        <div class="divisor" style="margin: 15px 0;"></div>
+        
+        <p id="modalDescripcion">Descripción del producto irá aquí...</p>
+        
+        <div class="modal-footer">
+            <span class="precio-modal">
+                Precio: <span id="modalPrecio">0.00</span> €
+            </span>
+        </div>
+        
+    </div>
+</div>
 
-					<?php endif; ?>
-				</div>
+<script src="js/catalogo.js"></script>
 
-			</section>
-		</main>
-
-		<?php include __DIR__ . '/includes/vistas/footer.php'; ?>
-
-	</body>
-</html>
+<?php
+    $contenidoPrincipal = ob_get_clean();
+    require_once __DIR__ . '/includes/vistas/comun/plantilla.php';
+?>

@@ -77,5 +77,10 @@ class PedidoController {
 	public function verPedidosActivos() {
         return $this->service->obtenerPedidosActivos();
     }
+
+	public function obtenerProductosDePedido($idPedido) {
+		return $this->service->obtenerProductosDePedido($idPedido);
+	}
+
 }
 ?>

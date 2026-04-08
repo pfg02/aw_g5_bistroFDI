@@ -1,6 +1,6 @@
 <?php
 require_once __DIR__ . '/../integracion/CategoriaDAO.php';
-require_once __DIR__ . '/CategoriaDTO.php';
+require_once __DIR__ . '/../negocio/CategoriaDTO.php';
 
 class CategoriaService {
     private $dao;

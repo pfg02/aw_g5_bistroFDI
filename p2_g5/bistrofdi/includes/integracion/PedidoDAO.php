@@ -5,9 +5,17 @@
 */
 
 require_once __DIR__ . '/../negocio/PedidoDTO.php';
-require_once __DIR__ . '/../config.php';
 
 class PedidoDAO {
+
+	private $db;
+
+	// Constructor que recibe la conexión
+    public function __construct() {
+       	global $db;
+		$this->db = $db;
+    }
+
 
 	/**
 	* Guarda un nuevo pedido en la base de datos.
@@ -17,9 +25,7 @@ class PedidoDAO {
 
 	public function guardarPedido($pedidoDTO) {
 
-		$conn = obtenerConexionBD();
-
-		$conn->begin_transaction();
+		$this->db->begin_transaction();
 
 		try {
 			// Extraemos los datos del DTO
@@ -33,7 +39,7 @@ class PedidoDAO {
 			// Calcular el numero de pedido diario
 			$hoy = date('Y-m-d');
 			$sqlNum = "SELECT MAX(numero_pedido) as max_num FROM pedidos WHERE DATE(fecha) = ?";
-			$stmtNum = $conn->prepare($sqlNum);
+			$stmtNum = $this->db->prepare($sqlNum);
 			$stmtNum->bind_param("s", $hoy);
 			$stmtNum->execute();
 			$resNum = $stmtNum->get_result()->fetch_assoc();
@@ -43,18 +49,18 @@ class PedidoDAO {
 			$stmtNum->close();
 
 			$sqlPedido = "INSERT INTO pedidos (cliente_id, numero_pedido, tipo, estado, fecha, total) VALUES (?, ?, ?, ?, ?, ?)";
-			$stmtPedido = $conn->prepare($sqlPedido);
+			$stmtPedido = $this->db->prepare($sqlPedido);
 			$stmtPedido->bind_param("iisssd", $clienteId, $numeroPedido, $tipo, $estado, $fecha, $total);
 			$stmtPedido->execute();
 
 			// Capturamos el ID autonumérico que MySQL ha dado al nuevo pedido
-			$pedidoId = $conn->insert_id;
+			$pedidoId = $this->db->insert_id;
 			$stmtPedido->close();
 
 			// Guardar los productos en la tabla intermedia
 			$productos = $pedidoDTO->getProductos();
 			$sqlProductos = "INSERT INTO pedido_productos (pedido_id, producto_id, cantidad) VALUES (?, ?, ?)";
-			$stmtProductos = $conn->prepare($sqlProductos);
+			$stmtProductos = $this->db->prepare($sqlProductos);
 
 			foreach ($productos as $productoId => $cantidad) {
 				$stmtProductos->bind_param("iii", $pedidoId, $productoId, $cantidad);
@@ -63,13 +69,13 @@ class PedidoDAO {
 			$stmtProductos->close();
 
 			// Confirmamos los cambios en la BD
-			$conn->commit();
+			$this->db->commit();
 
 			return $pedidoId;
 
 		} catch (Exception $e) {
 			// Si algo falla, revertimos los cambios
-			$conn->rollback();
+			$this->db->rollback();
 			throw $e; // Re-lanzamos la excepción para que el controlador pueda manejarla
 		}
 	}
@@ -81,10 +87,8 @@ class PedidoDAO {
 	*/
 	public function buscarPedido($idPedido) {
 
-		$conn = obtenerConexionBD();
-
 		$sql = "SELECT * FROM pedidos WHERE id = ?";
-		$stmt = $conn->prepare($sql);
+		$stmt = $this->db->prepare($sql);
 		$stmt->bind_param("i", $idPedido);
 		$stmt->execute();
 		
@@ -103,11 +107,9 @@ class PedidoDAO {
 	* @return bool True si se actualizó correctamente, False en caso de error.
 	*/
 	public function actualizarEstado($idPedido, $nuevoEstado) {
-		
-		$conn = obtenerConexionBD();
 
 		$sql = "UPDATE pedidos SET estado = ? WHERE id = ?";
-		$stmt = $conn->prepare($sql);
+		$stmt = $this->db->prepare($sql);
 		$stmt->bind_param("si", $nuevoEstado, $idPedido);
 		
 		$exito = $stmt->execute();
@@ -123,11 +125,9 @@ class PedidoDAO {
 	*/
 	public function obtenerPedidosPorCliente($idCliente) {
 
-		$conn = obtenerConexionBD();
-
 		// Buscar los pedidos del cliente y ordenarlos del más reciente al más antiguo
 		$sql = "SELECT * FROM pedidos WHERE cliente_id = ? ORDER BY fecha DESC";
-		$stmt = $conn->prepare($sql);
+		$stmt = $this->db->prepare($sql);
 		$stmt->bind_param("i", $idCliente);
 		$stmt->execute();
 		
@@ -148,21 +148,41 @@ class PedidoDAO {
 	* Obtiene todos los pedidos que no estén entregados o cancelados.
 	*/
 	public function obtenerPedidosActivos() {
-
-		$conn = obtenerConexionBD();
 		// Traemos todos los pedidos del más antiguo al más nuevo
 		$sql = "SELECT p.*, u.nombre AS nombre_cliente, u.apellidos AS apellidos_cliente 
                 FROM pedidos p 
                 INNER JOIN usuarios u ON p.cliente_id = u.id 
                 WHERE p.estado NOT IN ('Entregado', 'Cancelado') 
                 ORDER BY p.fecha ASC";
-		$result = $conn->query($sql);
+		$result = $this->db->query($sql);
 		
 		$pedidos = [];
 		while ($row = $result->fetch_assoc()) {
 			$pedidos[] = $row;
 		}
 		return $pedidos;
+	}
+
+	public function obtenerProductosDePedido($idPedido) {
+		$sql = "SELECT pp.producto_id, pp.cantidad, p.nombre, p.precio_base, p.iva
+				FROM pedido_productos pp
+				INNER JOIN productos p ON pp.producto_id = p.id
+				WHERE pp.pedido_id = ?";
+		$stmt = $this->db->prepare($sql);
+		$stmt->bind_param("i", $idPedido);
+		$stmt->execute();
+		
+		$result = $stmt->get_result();
+		$productos = [];
+
+		while ($row = $result->fetch_assoc()) {
+			$productos[] = $row;
+		}
+
+		$stmt->close();
+
+		return $productos;
+
 	}
 }
 ?>

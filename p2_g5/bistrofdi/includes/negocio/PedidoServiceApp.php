@@ -5,14 +5,17 @@
 */
 
 require_once __DIR__ . '/../integracion/PedidoDAO.php';
+require_once __DIR__ . '/../integracion/ProductoDAO.php';
 require_once __DIR__ . '/../config.php';
 
 class PedidoServiceApp {
 
 	private $pedidoDAO;
+	private $productoDAO;
 
 	public function __construct() {
 		$this->pedidoDAO = new PedidoDAO();
+		$this->productoDAO = new ProductoDAO();
 	}
 
 	/**
@@ -25,21 +28,15 @@ class PedidoServiceApp {
 		$productos = $pedidoDTO->getProductos();
 		$total = 0;
 
-		// lo ideal sería tener un DAO de productos para acceder al precio de los productos...
-		$conn = obtenerConexionBD();
-		$ids = implode(",", array_keys($productos));
-		$sql = "SELECT id, precio_base, iva FROM productos WHERE id IN ($ids)";
-		$result = $conn->query($sql);
-
-		while ($row = $result->fetch_assoc()) {
-			$cantidad = $productos[$row["id"]];
-            $precioBase = $row["precio_base"];
-            $porcentajeIva = $row["iva"];
-
-			// Calcular el precio con IVA incluido
-			$precioConIva = $precioBase * (1 + $porcentajeIva / 100);
-			$total += $precioConIva * $cantidad;
-	}
+		foreach ($productos as $idProducto => $cantidad) {
+			$producto = $this->productoDAO->obtenerPorId($idProducto);
+			if ($producto) {
+				$precioBase = $producto->precio; 
+                $porcentajeIva = $producto->iva;
+				$precioConIva = $precioBase * (1 + ($porcentajeIva / 100));
+                $total += $precioConIva * $cantidad;
+			}
+		}
 
 		// Completamos los datos del pedidoDTO antes de guardarlo
 		$pedidoDTO->setTotal($total);
@@ -84,5 +81,9 @@ class PedidoServiceApp {
 	public function obtenerPedidosActivos() {
         return $this->pedidoDAO->obtenerPedidosActivos();
     }
+
+	public function obtenerProductosDePedido($idPedido) {
+		return $this->pedidoDAO->obtenerProductosDePedido($idPedido);
+	}
 }
 ?>

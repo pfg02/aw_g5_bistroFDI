@@ -20,11 +20,6 @@ $bodyClass = $bodyClass ?? '';
         <?= $contenidoPrincipal ?>
     </main>
 
-    <?php
-    $rutaFooter = dirname(__DIR__) . '/footer.php';
-    if (file_exists($rutaFooter)) {
-        include $rutaFooter;
-    }
-    ?>
+    <?php include __DIR__ . '/footer.php'; ?>
 </body>
 </html>

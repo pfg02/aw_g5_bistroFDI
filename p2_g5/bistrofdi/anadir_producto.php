@@ -8,9 +8,9 @@
 	exigirLogin();
 	exigirRol('cliente');
 
-	if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['productoId'], $_POST['cantidad'])) {
+	if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['id_producto'], $_POST['cantidad'])) {
 		
-		$id = (int)$_POST['productoId'];
+		$id = (int)$_POST['id_producto'];
 		$cantidad = (int)$_POST['cantidad'];
 
 		if ($cantidad > 0) {

@@ -4,7 +4,7 @@
 */
 
 	require_once __DIR__ . '/includes/sesion.php';
-	require_once __DIR__ . '/includes/negocio/PedidoController.php';
+	require_once __DIR__ . '/includes/negocio/PedidoServiceApp.php';
 	require_once __DIR__ . '/includes/negocio/PedidoDTO.php'; 
 
 	exigirLogin();
@@ -20,7 +20,7 @@
 		exit();
 	}
 
-	$controller = PedidoController::getInstance();
+	$pedidoService = new PedidoServiceApp();
 
 	// Creamos el DTO con los datos del pedido
 	$pedidoDTO = new PedidoDTO();
@@ -29,16 +29,27 @@
 	$pedidoDTO->setProductos($_SESSION["carrito"]);
 
 	// Intentamos crear el pedido en la BD
-	$idPedido = $controller->crearPedido($pedidoDTO);
-
+	$idPedido = $pedidoService->crearPedido($pedidoDTO);
+	
 	// Comprobamos que se ha creado correctamente y redirigimos a la pasarela de pago
 	if ($idPedido) {
 		// Vaciamos el carrito y el tipo de pedido de la sesión
 		unset($_SESSION["carrito"]);
 		unset($_SESSION["tipoPedido"]);
 		
-		header("Location: pago.php?id=" . urlencode($idPedido));
-		exit();
+		$metodoPago = $_POST['metodo_pago'] ?? null;
+
+        if ($metodoPago === 'camarero') {
+            // Si el cliente eligió cobro en local, le damos el éxito y le mandamos a sus pedidos
+            $_SESSION['mensaje_exito'] = "¡Pedido registrado! Avisa al camarero o en mostrador para pagar.";
+            header("Location: mis_pedidos.php");
+            exit();
+            
+        } else {
+            // Si el método es tarjeta (o no eligió aún), le mandamos a la pasarela de pago
+            header("Location: pago.php?id=" . urlencode($idPedido));
+            exit();
+        }
 
 	} else {
 		$_SESSION['mensaje_error'] = "Hubo un problema al conectar con la cocina. Por favor, vuelve a intentarlo.";
