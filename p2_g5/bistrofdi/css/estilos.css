@@ -124,10 +124,16 @@ input, select, textarea { width: 100%; padding: 10px; border: 1px solid #ddd; bo
 #buscadorProductos { width: 100%; padding: 12px; font-size: 1.05rem; border-radius: 6px; border: 1px solid #ccc; margin-bottom: 20px; box-sizing: border-box; }
 .badge-carrito { background: #e74c3c; padding: 2px 8px; border-radius: 50%; color: white; font-size: 0.85em; margin-left: 5px; vertical-align: text-top; }
 .alerta-exito { background: #d4edda; color: #155724; padding: 15px; border-radius: 6px; margin-bottom: 20px; border-left: 5px solid #28a745; font-weight: bold; }
-.bloque-categoria { width: 100%; overflow: hidden; }
+.bloque-categoria { width: 100%; }
 .bloque-categoria h3 { background-color: #2c3e50; color: white; padding: 10px 15px; border-radius: 6px; margin-bottom: 15px; }
-.catalogo-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); gap: 20px; width: 100%; box-sizing: border-box; padding: 10px; }
-.lista-productos { display: flex; flex-direction: column; gap: 15px; }
+.catalogo-grid { display: flex;
+    flex-direction: column;
+    gap: 28px;
+    width: 100%;
+    margin-top: 20px; }
+.lista-productos {  display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 15px; }
 .tarjeta-producto { border: 1px solid #eee; padding: 15px; border-radius: 8px; background: #fff; display: flex; flex-direction: column; justify-content: space-between; align-items: flex-start; transition: box-shadow 0.2s, border-color 0.2s; box-sizing: border-box; height: 100%; }
 .tarjeta-producto:hover { box-shadow: 0 4px 12px rgba(0,0,0,0.08); border-color: #ddd; }
 .info-producto { width: 100%; text-align: left; margin-bottom: 15px; flex-grow: 1; }
@@ -280,7 +286,9 @@ input, select, textarea { width: 100%; padding: 10px; border: 1px solid #ddd; bo
 /* =========================================
    CATÁLOGO DE PRODUCTOS (GRID)
    ========================================= */
-.catalogo-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 15px; width: 100%; margin-top: 20px; }
+.catalogo-grid { display: block;
+    width: 100%;
+    margin-top: 20px; }
 
 .producto-card { border: 1px solid #ddd; border-radius: 8px; padding: 12px; text-align: center; background: #fff; box-shadow: 0 2px 5px rgba(0,0,0,0.05); display: flex; flex-direction: column; justify-content: space-between; }
 .producto-img-catalogo { width: 100%; height: 110px; object-fit: cover; border-radius: 4px; margin-bottom: 8px; border: 1px solid #eee; }
@@ -1939,4 +1947,22 @@ body.f0-body .f0-confirm-text {
     body.f0-body .f0-form-actions > * {
         width: 100%;
     }
+}
+
+/* IMÁGENES CATÁLOGO */
+
+.imagen-producto {
+    width: 100%;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    margin-bottom: 12px;
+}
+
+.img-catalogo {
+    width: 130px;
+    height: 130px;
+    object-fit: contain;
+    display: block;
+    margin: 0 auto;
 }
