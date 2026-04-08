@@ -167,7 +167,9 @@ class PedidoDAO {
 		$sql = "SELECT pp.producto_id, pp.cantidad, p.nombre, p.precio_base, p.iva
 				FROM pedido_productos pp
 				INNER JOIN productos p ON pp.producto_id = p.id
-				WHERE pp.pedido_id = ?";
+				WHERE pp.pedido_id = ?
+				GROUP BY p.id, p.nombre";
+
 		$stmt = $this->db->prepare($sql);
 		$stmt->bind_param("i", $idPedido);
 		$stmt->execute();
@@ -184,5 +186,27 @@ class PedidoDAO {
 		return $productos;
 
 	}
+
+	/**
+	 * Obtiene todos los pedidos que estén en un estado específico, ordenados del más antiguo al más nuevo.
+	 */
+	public function verPedidosPorEstado($estado) {
+        $sql = "SELECT * FROM pedidos WHERE estado = ? ORDER BY fecha ASC";
+        $stmt = $this->db->prepare($sql);
+        
+        $stmt->bind_param("s", $estado);
+        $stmt->execute();
+        
+        $result = $stmt->get_result();
+        $pedidos = [];
+        
+        while ($fila = $result->fetch_assoc()) {
+            $pedidos[] = $fila;
+        }
+
+        $stmt->close();
+
+        return $pedidos;
+    }
 }
 ?>

@@ -85,5 +85,9 @@ class PedidoServiceApp {
 	public function obtenerProductosDePedido($idPedido) {
 		return $this->pedidoDAO->obtenerProductosDePedido($idPedido);
 	}
+
+	public function verPedidosPorEstado($estado) {
+		return $this->pedidoDAO->verPedidosPorEstado($estado);
+	}
 }
 ?>

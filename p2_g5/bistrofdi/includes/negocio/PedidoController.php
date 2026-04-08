@@ -82,5 +82,8 @@ class PedidoController {
 		return $this->service->obtenerProductosDePedido($idPedido);
 	}
 
+	public function verPedidosPorEstado($estado) {
+		return $this->service->verPedidosPorEstado($estado);
+	}
 }
 ?>
