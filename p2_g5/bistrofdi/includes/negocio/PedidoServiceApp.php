@@ -1,88 +1,106 @@
 <?php
 
-/**
-	* Servicio de negocio para la gestión de pedidos.
-*/
-
 require_once __DIR__ . '/../integracion/PedidoDAO.php';
 require_once __DIR__ . '/../config.php';
 
-class PedidoServiceApp {
+class PedidoServiceApp
+{
+    private PedidoDAO $pedidoDAO;
 
-	private $pedidoDAO;
-
-	public function __construct() {
-		$this->pedidoDAO = new PedidoDAO();
-	}
-
-	/**
-	* Crea un nuevo pedido a partir de un PedidoDTO.
-	* Calcula el total del pedido sumando el precio de cada producto por su cantidad.
-	* @param PedidoDTO $pedidoDTO El objeto con los datos del pedido a crear.
-	* @return int El ID del pedido recién creado.
-	*/
-	public function crearPedido($pedidoDTO) {
-		$productos = $pedidoDTO->getProductos();
-		$total = 0;
-
-		// lo ideal sería tener un DAO de productos para acceder al precio de los productos...
-		$conn = obtenerConexionBD();
-		$ids = implode(",", array_keys($productos));
-		$sql = "SELECT id, precio_base, iva FROM productos WHERE id IN ($ids)";
-		$result = $conn->query($sql);
-
-		while ($row = $result->fetch_assoc()) {
-			$cantidad = $productos[$row["id"]];
-            $precioBase = $row["precio_base"];
-            $porcentajeIva = $row["iva"];
-
-			// Calcular el precio con IVA incluido
-			$precioConIva = $precioBase * (1 + $porcentajeIva / 100);
-			$total += $precioConIva * $cantidad;
-	}
-
-		// Completamos los datos del pedidoDTO antes de guardarlo
-		$pedidoDTO->setTotal($total);
-		$pedidoDTO->setEstado("Recibido");
-		$pedidoDTO->setFecha(date("Y-m-d H:i:s"));
-
-		return $this->pedidoDAO->guardarPedido($pedidoDTO);
-	}
-
-	/**
-	* Obtiene los datos de un pedido por su ID.
-	* @param int $idPedido El ID del pedido a obtener.
-	* @return array Un array asociativo con los datos del pedido, o null si no se encuentra.
-	*/
-	public function obtenerPedido($idPedido) {
-		return $this->pedidoDAO->buscarPedido($idPedido);
-	}
-
-	/**
-	* Actualiza el estado de un pedido.
-	* @param int $idPedido El ID del pedido.
-	* @param string $nuevoEstado El nuevo estado.
-	* @return bool True si se actualizó correctamente.
-	*/
-	public function actualizarEstado($idPedido, $nuevoEstado) {
-		return $this->pedidoDAO->actualizarEstado($idPedido, $nuevoEstado);
+    public function __construct()
+    {
+        $this->pedidoDAO = new PedidoDAO();
     }
-	
-	/**
-	* Obtiene el historial completo de pedidos de un cliente.
-	* @param int $idCliente El ID del cliente.
-	* @return array Lista de pedidos.
-	*/
-	public function obtenerPedidosPorCliente($idCliente) {
-		return $this->pedidoDAO->obtenerPedidosPorCliente($idCliente);
-	}
 
-	/**
-	* Obtiene todos los pedidos que no están entregados ni cancelados.
-	* @return array Lista de pedidos.
-	*/
-	public function obtenerPedidosActivos() {
-        return $this->pedidoDAO->obtenerPedidosActivos();
+    public function crearPedido(int $clienteId, string $tipo, array $productos): int
+    {
+        if (empty($productos)) {
+            throw new Exception('El carrito está vacío.');
+        }
+
+        $conn = obtenerConexionBD();
+        $ids = array_map('intval', array_keys($productos));
+        $idsStr = implode(',', $ids);
+
+        $total = 0;
+        $sql = "SELECT id, precio_base, iva FROM productos WHERE id IN ($idsStr)";
+        $result = $conn->query($sql);
+
+        while ($row = $result->fetch_assoc()) {
+            $cantidad = (int)$productos[$row['id']];
+            $precioConIva = (float)$row['precio_base'] * (1 + ((float)$row['iva'] / 100));
+            $total += $precioConIva * $cantidad;
+        }
+
+        $pedido = new PedidoDTO();
+        $pedido->setClienteId($clienteId);
+        $pedido->setTipo($tipo);
+        $pedido->setProductos($productos);
+        $pedido->setTotal($total);
+        $pedido->setEstado('Recibido');
+        $pedido->setFecha(date('Y-m-d H:i:s'));
+
+        return $this->pedidoDAO->guardarPedido($pedido);
+    }
+
+    public function obtenerPedido(int $idPedido): ?array
+    {
+        return $this->pedidoDAO->buscarPedido($idPedido);
+    }
+
+    public function obtenerLineasPedido(int $idPedido): array
+    {
+        return $this->pedidoDAO->obtenerLineasPedido($idPedido);
+    }
+
+    public function obtenerPedidosPorCliente(int $idCliente): array
+    {
+        return $this->pedidoDAO->obtenerPedidosPorCliente($idCliente);
+    }
+
+    public function obtenerPedidosPorEstado(string $estado): array
+    {
+        return $this->pedidoDAO->obtenerPedidosPorEstado($estado);
+    }
+
+    public function pagarConTarjeta(int $idPedido, int $clienteId): bool
+    {
+        $pedido = $this->pedidoDAO->buscarPedido($idPedido);
+        if (!$pedido || (int)$pedido['cliente_id'] !== $clienteId || $pedido['estado'] !== 'Recibido') {
+            return false;
+        }
+
+        return $this->pedidoDAO->actualizarEstado($idPedido, 'En preparación');
+    }
+
+    public function cancelarPedidoCliente(int $idPedido, int $clienteId): bool
+    {
+        return $this->pedidoDAO->borrarPedidoCliente($idPedido, $clienteId);
+    }
+
+    public function accionCamarero(int $idPedido, string $accion): bool
+    {
+        $pedido = $this->pedidoDAO->buscarPedido($idPedido);
+        if (!$pedido) {
+            return false;
+        }
+
+        $estadoActual = $pedido['estado'];
+
+        $mapa = [
+            'cobrar'   => ['origen' => 'Recibido',     'destino' => 'En preparación'],
+            'terminar' => ['origen' => 'Listo cocina', 'destino' => 'Terminado'],
+            'entregar' => ['origen' => 'Terminado',    'destino' => 'Entregado'],
+        ];
+
+        if (!isset($mapa[$accion])) {
+            return false;
+        }
+
+        if ($estadoActual !== $mapa[$accion]['origen']) {
+            return false;
+        }
+
+        return $this->pedidoDAO->actualizarEstado($idPedido, $mapa[$accion]['destino']);
     }
 }
-?>
