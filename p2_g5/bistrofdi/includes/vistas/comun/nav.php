@@ -24,7 +24,7 @@ $avatar = $_SESSION['avatar'] ?? 'img/avatares/default.png';
         <?php if ($estaLogueado): ?>
             <li>
                 <a href="<?= BASE_URL ?>/perfil.php" class="nav-perfil-link">
-                    <img src="<?= htmlspecialchars($avatar) ?>" alt="Avatar" class="avatar-nav">
+                    <img src="<?= BASE_URL ?>/<?= htmlspecialchars($avatar) ?>" alt="Avatar" class="avatar-nav">
                     <span>Perfil</span>
                 </a>
             </li>
