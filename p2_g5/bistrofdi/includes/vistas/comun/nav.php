@@ -28,10 +28,8 @@ $avatar = $_SESSION['avatar'] ?? 'img/avatares/default.png';
                 </a>
             </li>
             <li>
-                <form action="<?= $base_url ?>logout.php" method="POST" style="display:inline;">
-                    <button type="submit" style="background:none;border:none;padding:0;margin:0;cursor:pointer;font:inherit;color:inherit;">
-                        Salir
-                    </button>
+                <form action="<?= $base_url ?>logout.php" method="POST">
+                    <li><a href="<?= $base_url ?>logout.php">Salir</a></li>
                 </form>
             </li>
         <?php else: ?>
