@@ -135,6 +135,7 @@ tr:hover { background-color: #f8f9fa; }
 /* =========================================
    ESTILOS DEL PANEL GERENTE / SALA
    ========================================= */
+.seccion-camarero { width: 100%; overflow-x: auto; -webkit-overflow-scrolling: touch; padding-bottom: 10px;}
 
 /* Cocinero asignado */
 .wrapper-cocinero { display: flex; align-items: center; gap: 10px; justify-content: flex-start; }
@@ -150,6 +151,12 @@ tr:hover { background-color: #f8f9fa; }
 .li-progreso.pte   { color: #333; }
 .texto-tachado     { text-decoration: line-through; }
 .txt-sin-platos    { color: #888; }
+
+.btn-cocinar-bloqueado { opacity: 0.5; cursor: not-allowed; }
+.plato-preparado { text-decoration: line-through; color: #aaa; }
+.btn-pasar-sala { border: none !important; }
+.estado-sala-listo { background-color: #28a745 !important; }
+.estado-sala-pte { background-color: #ccc !important; }
 
 /* =========================================
    BOTONES Y ENLACES DE ACCIÓN
@@ -221,9 +228,7 @@ input, select, textarea { width: 100%; padding: 10px; border: 1px solid #ddd; bo
 .error-msg { background: #fde8e8; color: #e41e3f; padding: 10px; border-radius: 5px; font-weight: bold; font-size: 14px; margin-bottom: 15px; text-align: center; }
 .precio-final-card { background: #e7f3ff; padding: 15px; border-radius: 5px; margin-top: 20px; border-left: 5px solid #1877f2; }
 
-.badge { padding: 5px 10px; border-radius: 20px; font-size: 0.8em; font-weight: bold; white-space: nowrap; }
-.badge-success { background: #e7f3ff; color: #1877f2; }
-.badge-danger { background: #fde8e8; color: #e41e3f; }
+.badge-success { padding: 5px 10px; border-radius: 20px; font-size: 0.8em; font-weight: bold; white-space: nowrap; background: #e7f3ff; color: #1877f2; }
 .precio-total { font-weight: bold; color: #28a745; font-size: 1.05em; }
 
 .form-actualizar-estado { display: flex; gap: 10px; justify-content: center; align-items: center; margin: 0; }

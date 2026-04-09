@@ -76,15 +76,9 @@
                                 <td><?= htmlspecialchars($p['tipo_pedido'] ?? 'Local') ?></td>
                                 <td><?= htmlspecialchars(trim(($p['nombre_cliente'] ?? '') . ' ' . ($p['apellidos_cliente'] ?? ''))) ?></td>
                                 <td>
-                                    <?php if ($p['estado'] === 'Recibido'): ?>
-                                        <span class="badge-estado estado-recibido">Recibido</span>
-                                    <?php elseif ($p['estado'] === 'En preparación'): ?>
-                                        <span class="badge-estado estado-espera">En espera</span>
-                                    <?php elseif ($p['estado'] === 'Cocinando'): ?>
-                                        <span class="badge-estado estado-cocinando">👨‍🍳 Cocinando</span>
-                                    <?php else: ?>
-                                        <strong><?= htmlspecialchars($p['estado']) ?></strong>
-                                    <?php endif; ?>
+                                    <span class="badge-success">
+										<?php echo htmlspecialchars($p['estado']); ?>
+									</span>
                                 </td>
                                 <td><?= date('H:i', strtotime($p['fecha'])) ?></td>
                                 <td>
@@ -108,8 +102,7 @@
                                             </summary>
                                             <ul class="ul-progreso">
                                                 <?php foreach ($platos as $plato): ?>
-                                                    <li class="li-progreso <?= $plato['preparado'] ? 'listo' : 'pte' ?>">
-                                                        <?= $plato['preparado'] ? '✅' : '⏳' ?> 
+                                                    <li class="li-progreso <?= $plato['preparado'] ? 'listo' : 'pte' ?>"> 
                                                         <strong class="<?= $plato['preparado'] ? 'texto-tachado' : '' ?>"><?= $plato['cantidad'] ?>x</strong> 
                                                         <span class="<?= $plato['preparado'] ? 'texto-tachado' : '' ?>"><?= htmlspecialchars($plato['nombre']) ?></span>
                                                     </li>

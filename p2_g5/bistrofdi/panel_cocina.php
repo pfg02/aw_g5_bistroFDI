@@ -29,8 +29,9 @@
         if (!empty($platos)) {
             $todosPreparados = true;
             foreach ($platos as &$plato) {
-                $idProd = $plato['producto_id'];
-                $estaPreparado = isset($_SESSION['preparados'][$idPedidoActivo][$idProd]) && $_SESSION['preparados'][$idPedidoActivo][$idProd] === true;
+                // Leemos directamente el estado de la Base de Datos
+                $estaPreparado = ($plato['preparado'] == 1);
+                
                 $plato['preparado'] = $estaPreparado; 
                 
                 if (!$estaPreparado) {
@@ -39,7 +40,7 @@
             }
             unset($plato);
         }
-	}
+    }
 
     $tituloPagina = 'Bistró FDI - Cocina';
     $bodyClass    = 'f0-body';
@@ -81,10 +82,10 @@
                                 <td><?= htmlspecialchars($p['tipo'] ?? 'Local') ?></td>
                                 <td><?= date('H:i', strtotime($p['fecha'])) ?></td>
                                 <td>
-                                    <form action="procesar_cocina.php" method="POST" style="margin: 0;">
+                                    <form action="procesar_cocina.php" method="POST">
                                         <input type="hidden" name="accion" value="reclamar">
                                         <input type="hidden" name="id_pedido" value="<?= $p['id'] ?>">
-                                        <button type="submit" class="btn-accion btn-cobrar" <?= $miPedido ? 'disabled title="Termina tu pedido actual primero" style="opacity: 0.5; cursor: not-allowed;"' : '' ?>>
+                                        <button type="submit" class="btn-accion btn-cobrar <?= $miPedido ? 'btn-cocinar-bloqueado' : '' ?>" <?= $miPedido ? 'disabled title="Termina tu pedido actual primero"' : '' ?>>
                                             Cocinar
                                         </button>
                                     </form>
@@ -102,11 +103,11 @@
             <h2 class="titulo-seccion">Mi Mesa de Trabajo</h2>
             
             <?php if (!$miPedido): ?>
-                <p class="p-vacio" style="text-align: center; margin-top: 40px; margin-bottom: 40px;">
+                <p>
                     <br>Esperando comanda... Selecciona un ticket de arriba para empezar a cocinar.
                 </p>
             <?php else: ?>
-                <p style="margin-bottom: 15px;">
+                <p>
                     <strong>Preparando Ticket #<?= htmlspecialchars($miPedido['numero_pedido'] ?? $miPedido['id']) ?> (<?= htmlspecialchars($miPedido['tipo'] ?? 'Local') ?>)</strong>
                 </p>
                 
@@ -122,12 +123,12 @@
                         <?php foreach ($platos as $plato): ?>
                             <tr>
                                 <td><strong><?= $plato['cantidad'] ?>x</strong></td>
-                                <td style="<?= $plato['preparado'] ? 'text-decoration: line-through; color: #aaa;' : '' ?>">
+                                <td class="<?= $plato['preparado'] ? 'plato-preparado' : '' ?>">
                                     <?= htmlspecialchars($plato['nombre']) ?>
                                 </td>
                                 <td>
                                     <?php if (!$plato['preparado']): ?>
-                                        <form action="procesar_cocina.php" method="POST" style="margin: 0;">
+                                        <form action="procesar_cocina.php" method="POST">
                                             <input type="hidden" name="accion" value="marcar_plato">
                                             <input type="hidden" name="id_pedido" value="<?= $miPedido['id'] ?>">
                                             <input type="hidden" name="id_producto" value="<?= $plato['producto_id'] ?>">
@@ -143,10 +144,10 @@
                 </table>
 
                 <div class="contenedor-botones-index">
-                    <form action="procesar_cocina.php" method="POST" style="margin: 0;">
+                    <form action="procesar_cocina.php" method="POST">
                         <input type="hidden" name="accion" value="finalizar_pedido">
                         <input type="hidden" name="id_pedido" value="<?= $miPedido['id'] ?>">
-                        <button type="submit" class="btn-login" style="background: <?= $todosPreparados ? '#28a745' : '#ccc' ?>; border: none;" <?= !$todosPreparados ? 'disabled title="Marca todos los platos primero"' : '' ?>>
+                        <button type="submit" class="btn-login btn-pasar-sala <?= $todosPreparados ? 'estado-sala-listo' : 'estado-sala-pte' ?>" <?= !$todosPreparados ? 'disabled title="Marca todos los platos primero"' : '' ?>>
                             ¡Pasar a Sala!
                         </button>
                     </form>

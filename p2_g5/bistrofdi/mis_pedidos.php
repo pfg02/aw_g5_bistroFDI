@@ -77,7 +77,7 @@
 								<td><?php echo date('d/m/Y H:i', strtotime($pedido['fecha'])); ?></td>
 								<td><?php echo htmlspecialchars($pedido['tipo']); ?></td>
 								<td>
-									<span class="badge <?= $pedido['estado'] === 'Cancelado' ? 'badge-danger' : 'badge-success' ?>">
+									<span class="badge-success">
 										<?php echo htmlspecialchars($pedido['estado']); ?>
 									</span>
 								</td>
