@@ -14,14 +14,17 @@ class Categoria {
     public static function todas() {
         global $db;
         $categorias = [];
-        $res = $db->query("SELECT * FROM categorias ORDER BY nombre ASC");
 
-        if ($res) {
-            while ($fila = $res->fetch_assoc()) {
-                $categorias[] = new Categoria($fila);
-            }
-            $res->free();
+        $stmt = $db->prepare("SELECT * FROM categorias ORDER BY nombre ASC");
+        $stmt->execute();
+
+        $res = $stmt->get_result();
+        while ($fila = $res->fetch_assoc()) {
+            $categorias[] = new Categoria($fila);
         }
+
+        $res->free();
+        $stmt->close();
 
         return $categorias;
     }

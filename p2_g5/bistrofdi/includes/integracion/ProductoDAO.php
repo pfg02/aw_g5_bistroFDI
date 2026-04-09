@@ -26,17 +26,21 @@ class ProductoDAO {
     public function listarTodos() {
         $productos = [];
         $sql = "SELECT p.*, c.nombre as cat_nombre FROM productos p 
-                LEFT JOIN categorias c ON p.id_categoria = c.id ORDER BY p.nombre ASC";
-        $res = $this->db->query($sql);
+                LEFT JOIN categorias c ON p.id_categoria = c.id 
+                ORDER BY p.nombre ASC";
 
-        if ($res) {
-            while ($row = $res->fetch_assoc()) {
-                $p = $this->mapear($row);
-                $p->categoria_nombre = $row['cat_nombre'] ?? 'Sin categoría';
-                $productos[] = $p;
-            }
-            $res->free();
+        $stmt = $this->db->prepare($sql);
+        $stmt->execute();
+
+        $res = $stmt->get_result();
+        while ($row = $res->fetch_assoc()) {
+            $p = $this->mapear($row);
+            $p->categoria_nombre = $row['cat_nombre'] ?? 'Sin categoría';
+            $productos[] = $p;
         }
+
+        $res->free();
+        $stmt->close();
 
         return $productos;
     }
@@ -82,22 +86,23 @@ class ProductoDAO {
      */
     public function listarOfertados() {
         $productos = [];
-        // Filtramos por ofertado = 1 y comprobamos que haya stock
         $sql = "SELECT p.*, c.nombre as cat_nombre FROM productos p 
                 LEFT JOIN categorias c ON p.id_categoria = c.id 
                 WHERE p.ofertado = 1 AND p.stock > 0 
                 ORDER BY c.nombre ASC, p.nombre ASC";
-                
-        $res = $this->db->query($sql);
 
-        if ($res) {
-            while ($row = $res->fetch_assoc()) {
-                $p = $this->mapear($row);
-                $p->categoria_nombre = $row['cat_nombre'] ?? 'Sin categoría';
-                $productos[] = $p;
-            }
-            $res->free();
+        $stmt = $this->db->prepare($sql);
+        $stmt->execute();
+
+        $res = $stmt->get_result();
+        while ($row = $res->fetch_assoc()) {
+            $p = $this->mapear($row);
+            $p->categoria_nombre = $row['cat_nombre'] ?? 'Sin categoría';
+            $productos[] = $p;
         }
+
+        $res->free();
+        $stmt->close();
 
         return $productos;
     }

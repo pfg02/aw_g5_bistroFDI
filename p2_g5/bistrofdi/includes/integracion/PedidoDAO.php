@@ -168,15 +168,19 @@ class PedidoDAO {
                 LEFT JOIN usuarios c ON p.cocinero_id = c.id
                 WHERE p.estado NOT IN ('Entregado', 'Cancelado') 
                 ORDER BY p.fecha ASC";
-		$result = $this->db->query($sql);
-		
+
+        $stmt = $this->db->prepare($sql);
+        $stmt->execute();
+
+        $result = $stmt->get_result();
 		$pedidos = [];
-		if ($result) {
-			while ($row = $result->fetch_assoc()) {
-				$pedidos[] = $row;
-			}
-			$result->free();
+
+		while ($row = $result->fetch_assoc()) {
+			$pedidos[] = $row;
 		}
+
+        $result->free();
+        $stmt->close();
 
 		return $pedidos;
 	}

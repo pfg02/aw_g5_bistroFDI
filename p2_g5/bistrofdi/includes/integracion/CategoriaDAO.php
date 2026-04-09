@@ -28,15 +28,18 @@ class CategoriaDAO {
 
     public function listarTodas() {
         $sql = "SELECT id, nombre, descripcion, imagen FROM categorias ORDER BY nombre ASC";
-        $resultado = $this->db->query($sql);
+        $stmt = $this->db->prepare($sql);
+        $stmt->execute();
+
+        $resultado = $stmt->get_result();
         $categorias = [];
 
-        if ($resultado) {
-            while ($fila = $resultado->fetch_assoc()) {
-                $categorias[] = $fila;
-            }
-            $resultado->free();
+        while ($fila = $resultado->fetch_assoc()) {
+            $categorias[] = $fila;
         }
+
+        $resultado->free();
+        $stmt->close();
 
         return $categorias;
     }
@@ -59,8 +62,6 @@ class CategoriaDAO {
     }
 
     public function eliminar($id) {
-        // Intentamos borrar. Si hay productos vinculados, la BD lanzará error (FK)
-        // y el Service devolverá 'false'.
         try {
             $sql = "DELETE FROM categorias WHERE id = ?";
             $stmt = $this->db->prepare($sql);

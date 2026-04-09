@@ -162,15 +162,18 @@ class UsuarioDAO
 
     public function listarTodos(): array
     {
-        $res = $this->conn->query('SELECT * FROM usuarios ORDER BY id');
+        $stmt = $this->conn->prepare('SELECT * FROM usuarios ORDER BY id');
+        $stmt->execute();
+
+        $res = $stmt->get_result();
         $usuarios = [];
 
-        if ($res) {
-            while ($fila = $res->fetch_assoc()) {
-                $usuarios[] = UsuarioDTO::crearDesdeFila($fila);
-            }
-            $res->free();
+        while ($fila = $res->fetch_assoc()) {
+            $usuarios[] = UsuarioDTO::crearDesdeFila($fila);
         }
+
+        $res->free();
+        $stmt->close();
 
         return $usuarios;
     }

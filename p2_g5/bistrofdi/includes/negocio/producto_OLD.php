@@ -24,14 +24,17 @@ class Producto {
                   FROM productos p
                   LEFT JOIN categorias c ON p.id_categoria = c.id
                   ORDER BY p.nombre ASC";
-        $res = $db->query($query);
 
-        if ($res) {
-            while ($fila = $res->fetch_assoc()) {
-                $productos[] = new Producto($fila);
-            }
-            $res->free();
+        $stmt = $db->prepare($query);
+        $stmt->execute();
+
+        $res = $stmt->get_result();
+        while ($fila = $res->fetch_assoc()) {
+            $productos[] = new Producto($fila);
         }
+
+        $res->free();
+        $stmt->close();
 
         return $productos;
     }
