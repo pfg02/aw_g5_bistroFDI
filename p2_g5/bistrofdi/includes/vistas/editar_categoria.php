@@ -54,7 +54,6 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
     <link rel="stylesheet" href="../../css/estilos.css">
 </head>
 <body class="admin-panel">
-    <?php include __DIR__ . '/comun/nav.php'; ?>
 
     <main class="container-gestion">
         <div class="form-card">
