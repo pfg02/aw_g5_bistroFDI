@@ -88,6 +88,7 @@ CREATE TABLE pedido_productos (
 	pedido_id int(11) NOT NULL,
 	producto_id int(11) NOT NULL,
 	cantidad int(11) NOT NULL,
+	preparado TINYINT(1) NOT NULL DEFAULT 0,
 	PRIMARY KEY (pedido_id, producto_id),
 	CONSTRAINT `pedido_productos_pedido_fk` FOREIGN KEY (`pedido_id`) REFERENCES `pedidos`(`id`) ON DELETE CASCADE ON UPDATE CASCADE,
 	CONSTRAINT `pedido_productos_producto_fk` FOREIGN KEY (`producto_id`) REFERENCES `productos`(`id`) ON DELETE CASCADE ON UPDATE CASCADE

@@ -70,5 +70,9 @@ class PedidoServiceApp {
 	public function eliminarPedido($idPedido){
 		return $this->pedidoDAO->eliminarPedido($idPedido);
 	}
+
+	public function marcarProductoComoPreparado($idPedido, $idProducto) {
+        return $this->pedidoDAO->marcarProductoComoPreparado($idPedido, $idProducto);
+    }
 }
 ?>

@@ -91,7 +91,7 @@ class PedidoDAO {
 		return $exito;
 	}
 
-	public function asignarCocinero($idPedido, $idCocinero, $nuevoEstado = 'Cocinando') {
+	public function asignarCocinero($idPedido, $idCocinero, $nuevoEstado) {
 
 		$sql = "UPDATE pedidos 
                 SET cocinero_id = ?, estado = ? 
@@ -169,7 +169,7 @@ class PedidoDAO {
 	}
 
 	public function obtenerProductosDePedido($idPedido) {
-		$sql = "SELECT p.id AS producto_id, SUM(pp.cantidad) AS cantidad, p.nombre, p.precio_base, p.iva
+		$sql = "SELECT p.id AS producto_id, SUM(pp.cantidad) AS cantidad, p.nombre, p.precio_base, p.iva, MAX(pp.preparado) AS preparado
                 FROM pedido_productos pp
                 INNER JOIN productos p ON pp.producto_id = p.id
                 WHERE pp.pedido_id = ?
@@ -227,5 +227,17 @@ class PedidoDAO {
 
 		return $exito;
 	}
+
+	public function marcarProductoComoPreparado($idPedido, $idProducto) {
+        $sql = "UPDATE pedido_productos SET preparado = 1 WHERE pedido_id = ? AND producto_id = ?";
+        $stmt = $this->db->prepare($sql);
+        
+        $stmt->bind_param("ii", $idPedido, $idProducto);
+        $exito = $stmt->execute();
+        $stmt->close();
+        
+		return $exito;
+    }
+
 }
 ?>

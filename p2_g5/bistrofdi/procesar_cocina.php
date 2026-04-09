@@ -12,11 +12,6 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['accion'], $_POST['id_
     $idCocinero = $_SESSION['id_usuario'];
     $controller = PedidoController::getInstance();
 
-    global $db;
-
-    if (!isset($_SESSION['preparados'])) {
-        $_SESSION['preparados'] = [];
-    }
     if (!isset($_SESSION['pedido_activo_cocinero'])) {
         $_SESSION['pedido_activo_cocinero'] = [];
     }
@@ -32,25 +27,21 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['accion'], $_POST['id_
 
     } elseif ($accion === 'marcar_plato' && isset($_POST['id_producto'])) {
         $idProducto = (int)$_POST['id_producto'];
-        $_SESSION['preparados'][$idPedido][$idProducto] = true;
+        $controller->marcarProductoComoPreparado($idPedido, $idProducto);
 
     } elseif ($accion === 'finalizar_pedido') {
         $actualizado = $controller->actualizarEstadoPedido($idPedido, 'Listo cocina');
 
         if ($actualizado) {
             unset($_SESSION['pedido_activo_cocinero'][$idCocinero]);
-            unset($_SESSION['preparados'][$idPedido]);
         }
 
     } elseif ($accion === 'liberar_pedido') {
-        $sql = "UPDATE pedidos SET estado = 'En preparación', cocinero_id = NULL WHERE id = ? AND cocinero_id = ?";
-        $stmt = $db->prepare($sql);
-        $stmt->bind_param("ii", $idPedido, $idCocinero);
-        $stmt->execute();
-        $stmt->close();
-
-        unset($_SESSION['pedido_activo_cocinero'][$idCocinero]);
-        unset($_SESSION['preparados'][$idPedido]);
+		$actualizado = $controller->asignarCocineroAPedido($idPedido, NULL, 'En preparación');
+       
+		if ($actualizado) {
+            unset($_SESSION['pedido_activo_cocinero'][$idCocinero]);
+        }
 
         $_SESSION['mensaje_exito'] = 'El pedido ha sido liberado y ha vuelto a En preparación.';
     }

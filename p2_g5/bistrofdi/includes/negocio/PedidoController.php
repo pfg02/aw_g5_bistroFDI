@@ -62,5 +62,9 @@ class PedidoController {
 	public function eliminarPedido($idPedido) {
 		return $this->service->eliminarPedido($idPedido);
 	}
+
+	public function marcarProductoComoPreparado($idPedido, $idProducto) {
+        return $this->service->marcarProductoComoPreparado($idPedido, $idProducto);
+    }
 }
 ?>

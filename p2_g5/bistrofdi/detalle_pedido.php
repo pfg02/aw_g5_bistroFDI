@@ -7,7 +7,7 @@
 	require_once __DIR__ . '/includes/negocio/PedidoController.php';
 	
 	exigirLogin();
-	exigirRol('cliente', 'gerente', 'admin');
+	exigirRol('cliente', 'gerente', 'camarero');
 
 	if (!isset($_GET['id']) || !is_numeric($_GET['id'])) {
 		header("Location: mis_pedidos.php");
@@ -16,7 +16,7 @@
 
 	$id_pedido = (int)$_GET['id'];
 	$id_usuario = $_SESSION['id_usuario'];
-	$esGerente = isset($_SESSION['rol']) && $_SESSION['rol'] === 'gerente';
+	$esGerente = isset($_SESSION['rol']) && ($_SESSION['rol'] === 'gerente' || $_SESSION['rol'] === 'camarero');
 	$idClienteContexto = isset($_GET['id_cliente']) ? (int) $_GET['id_cliente'] : null;
 
 	$controller = PedidoController::getInstance();
@@ -94,9 +94,11 @@
                 </div>
             </div>
 
-            <div class="contenedor-botones-index">
+           	<div class="contenedor-botones-index">
                 <?php if ($esGerente && $idClienteContexto): ?>
-                    <a href="mis_pedidos.php?id_cliente=<?= urlencode($idClienteContexto) ?>" class="btn-login">Volver a Usuarios</a>
+                    <a href="mis_pedidos.php?id_cliente=<?= urlencode($idClienteContexto) ?>" class="btn-login">Volver a Pedidos del Usuario</a>
+                <?php elseif ($esGerente): ?>
+                    <a href="panel_camarero.php" class="btn-login">Volver al Panel</a>
                 <?php else: ?>
                     <a href="mis_pedidos.php" class="btn-login">Volver a Mis Pedidos</a>
                 <?php endif; ?>

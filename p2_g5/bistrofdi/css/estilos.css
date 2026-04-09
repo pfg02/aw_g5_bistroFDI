@@ -133,6 +133,25 @@ tr:hover { background-color: #f8f9fa; }
 .galeria-miniatura { display: flex; gap: 5px; flex-wrap: wrap; max-width: 150px; }
 
 /* =========================================
+   ESTILOS DEL PANEL GERENTE / SALA
+   ========================================= */
+
+/* Cocinero asignado */
+.wrapper-cocinero { display: flex; align-items: center; gap: 10px; justify-content: flex-start; }
+.avatar-cocinero { width: 35px; height: 35px; border-radius: 50%; object-fit: cover;}
+
+/* Desplegable de progreso de cocina */
+.celda-progreso { text-align: left; min-width: 220px; }
+.details-progreso { background: #f8f9fa; padding: 6px; border-radius: 6px; border: 1px solid #ddd; cursor: pointer;}
+.summary-progreso { font-weight: bold; color: #0c5460; outline: none; user-select: none;}
+.ul-progreso { margin: 10px 0 0 0; padding-left: 5px; font-size: 0.9em; list-style-type: none;}
+.li-progreso { margin-bottom: 5px; padding-bottom: 5px; border-bottom: 1px solid #eee;}
+.li-progreso.listo { color: #aaa; }
+.li-progreso.pte   { color: #333; }
+.texto-tachado     { text-decoration: line-through; }
+.txt-sin-platos    { color: #888; }
+
+/* =========================================
    BOTONES Y ENLACES DE ACCIÓN
    ========================================= */
 .btn, .btn-accion { display: inline-block; padding: 10px 20px; border-radius: 6px; text-decoration: none; cursor: pointer; border: none; font-weight: bold; font-size: 14px; transition: background-color 0.3s ease; }
@@ -177,7 +196,7 @@ tr:hover { background-color: #f8f9fa; }
     width: 100%;
     flex-wrap: wrap;
 }
-}.contenedor-volver { margin-top: 30px; text-align: center; }
+.contenedor-volver { margin-top: 30px; text-align: center; }
 
 .acciones { display: flex; gap: 10px; justify-content: center; align-items: center; }
 .acciones a, .actions a { text-decoration: none; font-weight: bold; font-size: 0.9em; transition: opacity 0.2s; }
