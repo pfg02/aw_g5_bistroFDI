@@ -7,7 +7,10 @@ if (session_status() === PHP_SESSION_NONE) {
 ini_set('default_charset', 'UTF-8');
 date_default_timezone_set('Europe/Madrid');
 
-$db = new mysqli('localhost', 'root', '', 'bistrofdi');
+define('BASE_URL', '/aw_g5_bistroFDI/p2_g5/bistroFDI');
+define('BASE_PATH', __DIR__ . '/..');
+
+$db = new mysqli('localhost', 'bistro_user', 'bistro_pass', 'bistrofdi');
 
 if ($db->connect_errno) {
     die('Error de conexión a la base de datos: ' . $db->connect_error);

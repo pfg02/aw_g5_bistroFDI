@@ -53,7 +53,7 @@ function tieneRolMinimo(string $rolMinimo): bool
 function exigirLogin(): void
 {
     if (!usuarioLogueado()) {
-        header('Location: login.php');
+        header('Location: ' . BASE_URL . '/login.php');
         exit;
     }
 }
