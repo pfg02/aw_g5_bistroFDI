@@ -216,5 +216,16 @@ class PedidoDAO {
 
         return $pedidos;
     }
+
+	public function eliminarPedido($idPedido) {
+		$sql = "DELETE FROM pedidos WHERE id = ?";
+		$stmt = $this->db->prepare($sql);
+		$stmt->bind_param("i", $idPedido);
+		
+		$exito = $stmt->execute();
+		$stmt->close();
+
+		return $exito;
+	}
 }
 ?>

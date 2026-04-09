@@ -58,5 +58,9 @@ class PedidoController {
 	public function verPedidosPorEstado($estado) {
 		return $this->service->verPedidosPorEstado($estado);
 	}
+
+	public function eliminarPedido($idPedido) {
+		return $this->service->eliminarPedido($idPedido);
+	}
 }
 ?>

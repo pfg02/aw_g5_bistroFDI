@@ -66,5 +66,9 @@ class PedidoServiceApp {
 	public function verPedidosPorEstado($estado) {
 		return $this->pedidoDAO->verPedidosPorEstado($estado);
 	}
+
+	public function eliminarPedido($idPedido){
+		return $this->pedidoDAO->eliminarPedido($idPedido);
+	}
 }
 ?>
