@@ -17,17 +17,27 @@ class CategoriaDAO {
         $stmt = $this->db->prepare($sql);
         $stmt->bind_param("i", $id);
         $stmt->execute();
+
         $resultado = $stmt->get_result();
-        return $resultado->fetch_assoc(); // Retorna array para que el Service lo convierta a DTO
+        $fila = $resultado->fetch_assoc();
+        $resultado->free();
+
+        $stmt->close();
+        return $fila; // Retorna array para que el Service lo convierta a DTO
     }
 
     public function listarTodas() {
         $sql = "SELECT id, nombre, descripcion, imagen FROM categorias ORDER BY nombre ASC";
         $resultado = $this->db->query($sql);
         $categorias = [];
-        while ($fila = $resultado->fetch_assoc()) {
-            $categorias[] = $fila;
+
+        if ($resultado) {
+            while ($fila = $resultado->fetch_assoc()) {
+                $categorias[] = $fila;
+            }
+            $resultado->free();
         }
+
         return $categorias;
     }
 
@@ -43,7 +53,9 @@ class CategoriaDAO {
             $stmt = $this->db->prepare($sql);
             $stmt->bind_param("sss", $nombre, $descripcion, $imagen);
         }
-        return $stmt->execute();
+        $ok = $stmt->execute();
+        $stmt->close();
+        return $ok;
     }
 
     public function eliminar($id) {
@@ -53,7 +65,9 @@ class CategoriaDAO {
             $sql = "DELETE FROM categorias WHERE id = ?";
             $stmt = $this->db->prepare($sql);
             $stmt->bind_param("i", $id);
-            return $stmt->execute();
+            $ok = $stmt->execute();
+            $stmt->close();
+            return $ok;
         } catch (Exception $e) {
             return false;
         }

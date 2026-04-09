@@ -17,8 +17,11 @@ class UsuarioDAO
         $stmt = $this->conn->prepare('SELECT * FROM usuarios WHERE id = ?');
         $stmt->bind_param('i', $id);
         $stmt->execute();
+
         $res = $stmt->get_result();
         $fila = $res->fetch_assoc();
+        $res->free();
+
         $stmt->close();
 
         return $fila ? UsuarioDTO::crearDesdeFila($fila) : null;
@@ -29,8 +32,11 @@ class UsuarioDAO
         $stmt = $this->conn->prepare('SELECT * FROM usuarios WHERE nombre_usuario = ?');
         $stmt->bind_param('s', $nombreUsuario);
         $stmt->execute();
+
         $res = $stmt->get_result();
         $fila = $res->fetch_assoc();
+        $res->free();
+
         $stmt->close();
 
         return $fila ? UsuarioDTO::crearDesdeFila($fila) : null;
@@ -41,8 +47,11 @@ class UsuarioDAO
         $stmt = $this->conn->prepare('SELECT * FROM usuarios WHERE email = ?');
         $stmt->bind_param('s', $email);
         $stmt->execute();
+
         $res = $stmt->get_result();
         $fila = $res->fetch_assoc();
+        $res->free();
+
         $stmt->close();
 
         return $fila ? UsuarioDTO::crearDesdeFila($fila) : null;
@@ -59,8 +68,11 @@ class UsuarioDAO
         }
 
         $stmt->execute();
+
         $res = $stmt->get_result();
         $existe = (bool)$res->fetch_assoc();
+        $res->free();
+
         $stmt->close();
 
         return $existe;
@@ -153,11 +165,13 @@ class UsuarioDAO
         $res = $this->conn->query('SELECT * FROM usuarios ORDER BY id');
         $usuarios = [];
 
-        while ($fila = $res->fetch_assoc()) {
-            $usuarios[] = UsuarioDTO::crearDesdeFila($fila);
+        if ($res) {
+            while ($fila = $res->fetch_assoc()) {
+                $usuarios[] = UsuarioDTO::crearDesdeFila($fila);
+            }
+            $res->free();
         }
 
-        $res->free();
         return $usuarios;
     }
 }

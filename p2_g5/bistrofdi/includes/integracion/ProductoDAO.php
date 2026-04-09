@@ -28,13 +28,16 @@ class ProductoDAO {
         $sql = "SELECT p.*, c.nombre as cat_nombre FROM productos p 
                 LEFT JOIN categorias c ON p.id_categoria = c.id ORDER BY p.nombre ASC";
         $res = $this->db->query($sql);
+
         if ($res) {
             while ($row = $res->fetch_assoc()) {
                 $p = $this->mapear($row);
                 $p->categoria_nombre = $row['cat_nombre'] ?? 'Sin categoría';
                 $productos[] = $p;
             }
+            $res->free();
         }
+
         return $productos;
     }
 
@@ -42,9 +45,13 @@ class ProductoDAO {
         $stmt = $this->db->prepare("SELECT * FROM productos WHERE id = ?");
         $stmt->bind_param("i", $id);
         $stmt->execute();
-        $res = $stmt->get_result()->fetch_assoc();
+
+        $result = $stmt->get_result();
+        $row = $result->fetch_assoc();
+        $result->free();
+
         $stmt->close();
-        return $res ? $this->mapear($res) : null;
+        return $row ? $this->mapear($row) : null;
     }
 
     public function guardar(ProductoDTO $p) {
@@ -82,13 +89,16 @@ class ProductoDAO {
                 ORDER BY c.nombre ASC, p.nombre ASC";
                 
         $res = $this->db->query($sql);
+
         if ($res) {
             while ($row = $res->fetch_assoc()) {
                 $p = $this->mapear($row);
                 $p->categoria_nombre = $row['cat_nombre'] ?? 'Sin categoría';
                 $productos[] = $p;
             }
+            $res->free();
         }
+
         return $productos;
     }
 }

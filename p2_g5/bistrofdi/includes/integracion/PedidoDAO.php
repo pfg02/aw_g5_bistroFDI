@@ -27,7 +27,11 @@ class PedidoDAO {
 			$stmtNum = $this->db->prepare($sqlNum);
 			$stmtNum->bind_param("s", $hoy);
 			$stmtNum->execute();
-			$resNum = $stmtNum->get_result()->fetch_assoc();
+
+			$resultNum = $stmtNum->get_result();
+			$resNum = $resultNum->fetch_assoc();
+			$resultNum->free();
+
 			$numeroPedido = ($resNum['max_num'] !== null) ? $resNum['max_num'] + 1 : 1;
 			$stmtNum->close();
 
@@ -73,6 +77,7 @@ class PedidoDAO {
 		
 		$result = $stmt->get_result();
 		$pedido = $result->fetch_assoc();
+		$result->free();
 
 		$stmt->close();
 
@@ -119,8 +124,11 @@ class PedidoDAO {
 		$stmt = $this->db->prepare($sql);
 		$stmt->bind_param("i", $idCocinero);
 		$stmt->execute();
+
 		$result = $stmt->get_result();
 		$pedido = $result->fetch_assoc();
+		$result->free();
+
 		$stmt->close();
 
 		return $pedido ?: null;
@@ -145,6 +153,7 @@ class PedidoDAO {
 			$pedidos[] = $row;
 		}
 
+		$result->free();
 		$stmt->close();
 		
 		return $pedidos;
@@ -162,9 +171,13 @@ class PedidoDAO {
 		$result = $this->db->query($sql);
 		
 		$pedidos = [];
-		while ($row = $result->fetch_assoc()) {
-			$pedidos[] = $row;
+		if ($result) {
+			while ($row = $result->fetch_assoc()) {
+				$pedidos[] = $row;
+			}
+			$result->free();
 		}
+
 		return $pedidos;
 	}
 
@@ -186,6 +199,7 @@ class PedidoDAO {
 			$productos[] = $row;
 		}
 
+		$result->free();
 		$stmt->close();
 
 		return $productos;
@@ -212,6 +226,7 @@ class PedidoDAO {
             $pedidos[] = $fila;
         }
 
+        $result->free();
         $stmt->close();
 
         return $pedidos;
