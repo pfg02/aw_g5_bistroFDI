@@ -2,21 +2,30 @@
 // includes/presentacion/ProductoController.php
 require_once __DIR__ . '/../config.php';
 require_once __DIR__ . '/../negocio/ProductoService.php';
+require_once __DIR__ . '/../negocio/ProductoDTO.php';
 
 class ProductoController {
     private $service;
-    public function __construct() { $this->service = new ProductoService(); }
+
+    public function __construct() {
+        $this->service = new ProductoService();
+    }
 
     public function manejarPeticion() {
-        $accion = $_REQUEST['accion'] ?? '';
-        $id = $_REQUEST['id'] ?? null;
+        if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
+            header("Location: ../vistas/gestion_productos.php");
+            exit();
+        }
+
+        $accion = $_POST['accion'] ?? '';
+        $id = isset($_POST['id']) ? (int)$_POST['id'] : null;
 
         if ($accion === 'guardar') {
-            $stock = (int)$_POST['stock'];
-            
+            $stock = (int)($_POST['stock'] ?? 0);
+
             // Validación previa en el Controller para ahorrar procesamiento
             if ($stock < 0) {
-                $redirectId = $_POST['id'] ? $_POST['id'] : '';
+                $redirectId = $_POST['id'] ?? '';
                 header("Location: ../vistas/editar_producto.php?id=$redirectId&error=stock");
                 exit();
             }
@@ -38,12 +47,12 @@ class ProductoController {
 
             $dto = new ProductoDTO(
                 $_POST['id'] ?: null,
-                $_POST['nombre'],
+                $_POST['nombre'] ?? '',
                 $_POST['descripcion'] ?? '',
-                $_POST['precio_base'],
+                $_POST['precio_base'] ?? 0,
                 $stock,
                 $imagen_final,
-                $_POST['id_categoria'],
+                $_POST['id_categoria'] ?? null,
                 $_POST['ofertado'] ?? 1,
                 $_POST['iva'] ?? 21
             );
@@ -51,14 +60,34 @@ class ProductoController {
             if ($this->service->guardarProducto($dto)) {
                 header("Location: ../vistas/gestion_productos.php?msg=exito");
             } else {
-                header("Location: ../vistas/editar_producto.php?id=".$_POST['id']."&error=1");
+                $redirectId = $_POST['id'] ?? '';
+                header("Location: ../vistas/editar_producto.php?id=".$redirectId."&error=1");
             }
             exit();
         }
-        
-        // ... resto de acciones (activar/eliminar) se mantienen igual ...
+
+        if ($accion === 'eliminar' && $id) {
+            if ($this->service->cambiarEstado($id, 0)) {
+                header("Location: ../vistas/gestion_productos.php?msg=baja_ok");
+            } else {
+                header("Location: ../vistas/gestion_productos.php?msg=error");
+            }
+            exit();
+        }
+
+        if ($accion === 'reactivar' && $id) {
+            if ($this->service->cambiarEstado($id, 1)) {
+                header("Location: ../vistas/gestion_productos.php?msg=alta_ok");
+            } else {
+                header("Location: ../vistas/gestion_productos.php?msg=error");
+            }
+            exit();
+        }
+
+        header("Location: ../vistas/gestion_productos.php?msg=error");
+        exit();
     }
 }
 
-$controller = new ProductoController($db);
+$controller = new ProductoController();
 $controller->manejarPeticion();

@@ -19,7 +19,7 @@
 
 	if (!empty($carrito)) {
 		foreach ($carrito as $id_producto => $cantidad) {
-        $productoDTO = $productoDAO->obtenerPorId($id_producto);
+			$productoDTO = $productoDAO->obtenerPorId($id_producto);
         
 			if ($productoDTO) {
 				$productos[$id_producto] = [
@@ -112,15 +112,12 @@
                 
 					<div class="botones-pago-horizontal">
 						<form action="confirmar_pedido.php" method="POST">
-                        	<input type="hidden" name="id" value="<?= htmlspecialchars($id_pedido) ?>">
                         	<button type="submit" class="btn-confirmar-compra">Pagar con Tarjeta</button>
                     	</form>
 
 						<form action="confirmar_pedido.php" method="POST" class="form-confirmar">
-							<input type="hidden" name="id_pedido" value="<?php echo htmlspecialchars($idPedido); ?>">
 							<input type="hidden" name="metodo_pago" value="camarero">
-						
-							<button type="submit" class="btn-confirmar-compra btn-camarero"> Solicitar cobro al personal</button>
+							<button type="submit" class="btn-confirmar-compra btn-camarero">Solicitar cobro al personal</button>
 						</form>
 					</div>
 				</div>
@@ -132,7 +129,11 @@
 		<?php if (!empty($carrito)): ?>
 			<div class="contenedor-botones-carrito">
 				<a href="catalogo.php" class="btn-admin">Seguir comprando</a>
-				<a href="cancelar_pedido.php" class="btn-login btn-peligro">Vaciar Carrito</a>
+
+				<form action="cancelar_pedido.php" method="POST" style="display:inline;">
+					<input type="hidden" name="accion" value="vaciar_carrito">
+					<button type="submit" class="btn-login btn-peligro">Vaciar Carrito</button>
+				</form>
 			</div>
 		<?php endif; ?>
 

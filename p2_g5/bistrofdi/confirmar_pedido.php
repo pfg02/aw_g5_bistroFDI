@@ -10,6 +10,11 @@
 	exigirLogin();
 	exigirRol('cliente');
 
+	if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
+		header("Location: carrito.php");
+		exit();
+	}
+
 	if (empty($_SESSION["carrito"])) {
 		header("Location: catalogo.php");
 		exit();
