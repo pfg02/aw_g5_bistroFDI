@@ -2,10 +2,10 @@
 -- Base de datos: 'bistrofdi'
 -- --------------------------------------------------------
 
-DROP TABLE IF EXISTS categorias;
 DROP TABLE IF EXISTS pedido_productos;
 DROP TABLE IF EXISTS productos;
 DROP TABLE IF EXISTS pedidos;
+DROP TABLE IF EXISTS categorias;
 DROP TABLE IF EXISTS usuarios;
 
 

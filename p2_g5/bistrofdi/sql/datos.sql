@@ -35,7 +35,7 @@ INSERT INTO usuarios (nombre_usuario, email, nombre, apellidos, password_hash, r
 	('admin', 'gerente@bistrofdi.es', 'Carlos', 'Gerente', '$2y$10$dQIYU$2y$10$YT8tBN84e4OP6RMEjbehcO9TKTGSm.rzOo1jFr1nkdLfSQEDbE2cCskupVUKinCqeaDPWuI7W2oEUausA02XYxO3J5LjDSWnNm52C', 'gerente', 'img/avatares/gerente.png'),
 	('chef_chicote', 'chicote@bistrofdi.es', 'Alberto', 'Chicote', '$2y$10$dQIYU$2y$10$YT8tBN84e4OP6RMEjbehcO9TKTGSm.rzOo1jFr1nkdLfSQEDbE2cCskupVUKinCqeaDPWuI7W2oEUausA02XYxO3J5LjDSWnNm52C', 'cocinero', 'img/avatares/cocinero.png'),
 	('camarero_juan', 'juan@bistrofdi.es', 'Juan', 'Pérez', '$2y$10$dQIYU$2y$10$YT8tBN84e4OP6RMEjbehcO9TKTGSm.rzOo1jFr1nkdLfSQEDbE2cCskupVUKinCqeaDPWuI7W2oEUausA02XYxO3J5LjDSWnNm52C', 'camarero', 'img/avatares/camarero.png'),
-	('ana_cliente', 'ana@gmail.com', 'Ana', 'Martínez', '$2y$10$dQIYU$2y$10$YT8tBN84e4OP6RMEjbehcO9TKTGSm.rzOo1jFr1nkdLfSQEDbE2cCskupVUKinCqeaDPWuI7W2oEUausA02XYxO3J5LjDSWnNm52C', 'cliente', 'cimg/avatares/liente.png'),
+	('ana_cliente', 'ana@gmail.com', 'Ana', 'Martínez', '$2y$10$dQIYU$2y$10$YT8tBN84e4OP6RMEjbehcO9TKTGSm.rzOo1jFr1nkdLfSQEDbE2cCskupVUKinCqeaDPWuI7W2oEUausA02XYxO3J5LjDSWnNm52C', 'cliente', 'img/avatares/cliente.png'),
 	('luis_cliente', 'luis@hotmail.com', 'Luis', 'Fernández', '$2y$10$dQIYU$2y$10$YT8tBN84e4OP6RMEjbehcO9TKTGSm.rzOo1jFr1nkdLfSQEDbE2cCskupVUKinCqeaDPWuI7W2oEUausA02XYxO3J5LjDSWnNm52C', 'cliente', 'img/avatares/default.png'),
 	('maria_cliente', 'maria@yahoo.es', 'María', 'Sánchez', '$2y$10$dQIYU$2y$10$YT8tBN84e4OP6RMEjbehcO9TKTGSm.rzOo1jFr1nkdLfSQEDbE2cCskupVUKinCqeaDPWuI7W2oEUausA02XYxO3J5LjDSWnNm52C', 'cliente', 'img/avatares/default.png');
 
