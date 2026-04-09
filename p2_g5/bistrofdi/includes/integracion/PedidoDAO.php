@@ -1,48 +1,33 @@
 <?php
 
-/**
-	* Clase de acceso a datos para pedidos.
-*/
-
 require_once __DIR__ . '/../negocio/PedidoDTO.php';
 
 class PedidoDAO {
 
 	private $db;
 
-	// Constructor que recibe la conexión
     public function __construct() {
        	global $db;
 		$this->db = $db;
     }
-
-
-	/**
-	* Guarda un nuevo pedido en la base de datos.
-	*/
 
 	public function guardarPedido($pedidoDTO) {
 
 		$this->db->begin_transaction();
 
 		try {
-			// Extraemos los datos del DTO
-			$pedidoId = $pedidoDTO->getId();
 			$clienteId = $pedidoDTO->getClienteId();
 			$tipo = $pedidoDTO->getTipo();
 			$estado = $pedidoDTO->getEstado();
 			$fecha = $pedidoDTO->getFecha();
 			$total = $pedidoDTO->getTotal();
 
-			// Calcular el numero de pedido diario
 			$hoy = date('Y-m-d');
 			$sqlNum = "SELECT MAX(numero_pedido) as max_num FROM pedidos WHERE DATE(fecha) = ?";
 			$stmtNum = $this->db->prepare($sqlNum);
 			$stmtNum->bind_param("s", $hoy);
 			$stmtNum->execute();
 			$resNum = $stmtNum->get_result()->fetch_assoc();
-
-			// Si hay pedidos hoy, sumamos 1 al máximo. Si no, es el pedido 1 del día.
 			$numeroPedido = ($resNum['max_num'] !== null) ? $resNum['max_num'] + 1 : 1;
 			$stmtNum->close();
 
@@ -51,11 +36,9 @@ class PedidoDAO {
 			$stmtPedido->bind_param("iisssd", $clienteId, $numeroPedido, $tipo, $estado, $fecha, $total);
 			$stmtPedido->execute();
 
-			// Capturamos el ID autonumérico que MySQL ha dado al nuevo pedido
 			$pedidoId = $this->db->insert_id;
 			$stmtPedido->close();
 
-			// Guardar los productos en la tabla intermedia
 			$productos = $pedidoDTO->getProductos();
 			$sqlProductos = "INSERT INTO pedido_productos (pedido_id, producto_id, cantidad) VALUES (?, ?, ?)";
 			$stmtProductos = $this->db->prepare($sqlProductos);
@@ -66,24 +49,24 @@ class PedidoDAO {
 			}
 			$stmtProductos->close();
 
-			// Confirmamos los cambios en la BD
 			$this->db->commit();
-
 			return $pedidoId;
 
 		} catch (Exception $e) {
-			// Si algo falla, revertimos los cambios
 			$this->db->rollback();
-			throw $e; // Re-lanzamos la excepción para que el controlador pueda manejarla
+			throw $e;
 		}
 	}
 
-	/**
-	* Busca un pedido por su ID.
-	*/
 	public function buscarPedido($idPedido) {
 
-		$sql = "SELECT * FROM pedidos WHERE id = ?";
+		$sql = "SELECT p.*, 
+                       u.nombre AS nombre_cliente, u.apellidos AS apellidos_cliente,
+                       c.nombre AS nombre_cocinero, c.apellidos AS apellidos_cocinero, c.avatar AS avatar_cocinero
+                FROM pedidos p
+                INNER JOIN usuarios u ON p.cliente_id = u.id
+                LEFT JOIN usuarios c ON p.cocinero_id = c.id
+                WHERE p.id = ?";
 		$stmt = $this->db->prepare($sql);
 		$stmt->bind_param("i", $idPedido);
 		$stmt->execute();
@@ -96,9 +79,6 @@ class PedidoDAO {
 		return $pedido;
 	}
 
-	/**
-	* Actualiza el estado de un pedido existente.
-	*/
 	public function actualizarEstado($idPedido, $nuevoEstado) {
 
 		$sql = "UPDATE pedidos SET estado = ? WHERE id = ?";
@@ -111,28 +91,49 @@ class PedidoDAO {
 		return $exito;
 	}
 
-	/**
-	* Elimina un pedido de la base de datos.
-	*/
-	public function eliminarPedido($idPedido) {
+	public function asignarCocinero($idPedido, $idCocinero, $nuevoEstado = 'Cocinando') {
 
-		$sql = "DELETE FROM pedidos WHERE id = ?";
+		$sql = "UPDATE pedidos 
+                SET cocinero_id = ?, estado = ? 
+                WHERE id = ? AND estado = 'En preparación'";
 		$stmt = $this->db->prepare($sql);
-		$stmt->bind_param("i", $idPedido);
+		$stmt->bind_param("isi", $idCocinero, $nuevoEstado, $idPedido);
+		$stmt->execute();
 
-		$exito = $stmt->execute();
+		$filas = $stmt->affected_rows;
 		$stmt->close();
 
-		return $exito;
+		return $filas > 0;
 	}
 
-	/**
-	* Obtiene todo el historial de pedidos de un cliente específico.
-	*/
+	public function obtenerPedidoActivoDeCocinero($idCocinero) {
+		$sql = "SELECT p.*, 
+                       u.nombre AS nombre_cliente, u.apellidos AS apellidos_cliente,
+                       c.nombre AS nombre_cocinero, c.apellidos AS apellidos_cocinero, c.avatar AS avatar_cocinero
+                FROM pedidos p
+                INNER JOIN usuarios u ON p.cliente_id = u.id
+                LEFT JOIN usuarios c ON p.cocinero_id = c.id
+                WHERE p.cocinero_id = ? AND p.estado = 'Cocinando'
+                ORDER BY p.fecha ASC
+                LIMIT 1";
+		$stmt = $this->db->prepare($sql);
+		$stmt->bind_param("i", $idCocinero);
+		$stmt->execute();
+		$result = $stmt->get_result();
+		$pedido = $result->fetch_assoc();
+		$stmt->close();
+
+		return $pedido ?: null;
+	}
+
 	public function obtenerPedidosPorCliente($idCliente) {
 
-		// Busca los pedidos del cliente y los ordena del más reciente al más antiguo
-		$sql = "SELECT * FROM pedidos WHERE cliente_id = ? ORDER BY fecha DESC";
+		$sql = "SELECT p.*, 
+                       c.nombre AS nombre_cocinero, c.apellidos AS apellidos_cocinero, c.avatar AS avatar_cocinero
+                FROM pedidos p
+                LEFT JOIN usuarios c ON p.cocinero_id = c.id
+                WHERE p.cliente_id = ? 
+                ORDER BY p.fecha DESC";
 		$stmt = $this->db->prepare($sql);
 		$stmt->bind_param("i", $idCliente);
 		$stmt->execute();
@@ -140,7 +141,6 @@ class PedidoDAO {
 		$result = $stmt->get_result();
 		$pedidos = [];
 
-		// Extraemos todas las filas encontradas en un array
 		while ($row = $result->fetch_assoc()) {
 			$pedidos[] = $row;
 		}
@@ -150,14 +150,13 @@ class PedidoDAO {
 		return $pedidos;
 	}
 
-	/**
-	* Obtiene todos los pedidos que no estén entregados o cancelados.
-	*/
 	public function obtenerPedidosActivos() {
-		// Traemos todos los pedidos del más antiguo al más nuevo
-		$sql = "SELECT p.*, u.nombre AS nombre_cliente, u.apellidos AS apellidos_cliente 
+		$sql = "SELECT p.*, 
+                       u.nombre AS nombre_cliente, u.apellidos AS apellidos_cliente,
+                       c.nombre AS nombre_cocinero, c.apellidos AS apellidos_cocinero, c.avatar AS avatar_cocinero
                 FROM pedidos p 
                 INNER JOIN usuarios u ON p.cliente_id = u.id 
+                LEFT JOIN usuarios c ON p.cocinero_id = c.id
                 WHERE p.estado NOT IN ('Entregado', 'Cancelado') 
                 ORDER BY p.fecha ASC";
 		$result = $this->db->query($sql);
@@ -174,7 +173,7 @@ class PedidoDAO {
                 FROM pedido_productos pp
                 INNER JOIN productos p ON pp.producto_id = p.id
                 WHERE pp.pedido_id = ?
-                GROUP BY p.nombre";
+                GROUP BY p.id, p.nombre, p.precio_base, p.iva";
 
 		$stmt = $this->db->prepare($sql);
 		$stmt->bind_param("i", $idPedido);
@@ -190,14 +189,17 @@ class PedidoDAO {
 		$stmt->close();
 
 		return $productos;
-
 	}
 
-	/**
-	 * Obtiene todos los pedidos que estén en un estado específico, ordenados del más antiguo al más nuevo.
-	 */
 	public function verPedidosPorEstado($estado) {
-        $sql = "SELECT * FROM pedidos WHERE estado = ? ORDER BY fecha ASC";
+        $sql = "SELECT p.*, 
+                       u.nombre AS nombre_cliente, u.apellidos AS apellidos_cliente,
+                       c.nombre AS nombre_cocinero, c.apellidos AS apellidos_cocinero, c.avatar AS avatar_cocinero
+                FROM pedidos p
+                INNER JOIN usuarios u ON p.cliente_id = u.id
+                LEFT JOIN usuarios c ON p.cocinero_id = c.id
+                WHERE p.estado = ? 
+                ORDER BY p.fecha ASC";
         $stmt = $this->db->prepare($sql);
         
         $stmt->bind_param("s", $estado);

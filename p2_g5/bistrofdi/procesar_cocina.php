@@ -1,21 +1,19 @@
 <?php
-/**
- * Procesa las acciones de la cocina SIN modificar estructura de BD.
- */
 require_once __DIR__ . '/includes/sesion.php';
 require_once __DIR__ . '/includes/negocio/PedidoController.php';
+require_once __DIR__ . '/includes/config.php';
 
 exigirLogin();
 exigirRol('cocinero', 'gerente', 'admin');
 
 if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['accion'], $_POST['id_pedido'])) {
-    
     $accion = $_POST['accion'];
     $idPedido = (int)$_POST['id_pedido'];
     $idCocinero = $_SESSION['id_usuario'];
     $controller = PedidoController::getInstance();
-    
-    // Inicializar las "libretas" de memoria en la sesión si no existen
+
+    global $db;
+
     if (!isset($_SESSION['preparados'])) {
         $_SESSION['preparados'] = [];
     }
@@ -23,33 +21,41 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['accion'], $_POST['id_
         $_SESSION['pedido_activo_cocinero'] = [];
     }
 
-    // Reclamar pedido nuevo
     if ($accion === 'reclamar') {
-        $controller->actualizarEstadoPedido($idPedido, 'Cocinando');
-        $_SESSION['pedido_activo_cocinero'][$idCocinero] = $idPedido;
-        
-    // Marcar un producto unificado como preparado
+        $reclamado = $controller->asignarCocineroAPedido($idPedido, $idCocinero, 'Cocinando');
+
+        if ($reclamado) {
+            $_SESSION['pedido_activo_cocinero'][$idCocinero] = $idPedido;
+        } else {
+            $_SESSION['mensaje_error'] = 'Ese pedido ya no está disponible para ser reclamado.';
+        }
+
     } elseif ($accion === 'marcar_plato' && isset($_POST['id_producto'])) {
         $idProducto = (int)$_POST['id_producto'];
         $_SESSION['preparados'][$idPedido][$idProducto] = true;
 
-    // Finalizar y mandar al camarero
     } elseif ($accion === 'finalizar_pedido') {
         $actualizado = $controller->actualizarEstadoPedido($idPedido, 'Listo cocina');
-        
-        // Limpiamos la memoria solo si la base de datos se actualizó bien
+
         if ($actualizado) {
-            if (isset($_SESSION['pedido_activo_cocinero'][$idCocinero])) {
-                unset($_SESSION['pedido_activo_cocinero'][$idCocinero]);
-            }
-            if (isset($_SESSION['preparados'][$idPedido])) {
-                unset($_SESSION['preparados'][$idPedido]);
-            }
+            unset($_SESSION['pedido_activo_cocinero'][$idCocinero]);
+            unset($_SESSION['preparados'][$idPedido]);
         }
+
+    } elseif ($accion === 'liberar_pedido') {
+        $sql = "UPDATE pedidos SET estado = 'En preparación', cocinero_id = NULL WHERE id = ? AND cocinero_id = ?";
+        $stmt = $db->prepare($sql);
+        $stmt->bind_param("ii", $idPedido, $idCocinero);
+        $stmt->execute();
+        $stmt->close();
+
+        unset($_SESSION['pedido_activo_cocinero'][$idCocinero]);
+        unset($_SESSION['preparados'][$idPedido]);
+
+        $_SESSION['mensaje_exito'] = 'El pedido ha sido liberado y ha vuelto a En preparación.';
     }
 }
 
-// Volver al panel como si nada hubiera pasado
 header("Location: panel_cocina.php");
 exit();
 ?>

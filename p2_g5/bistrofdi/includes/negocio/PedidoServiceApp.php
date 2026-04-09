@@ -1,9 +1,5 @@
 <?php
 
-/**
-	* Servicio de negocio para la gestión de pedidos.
-*/
-
 require_once __DIR__ . '/../integracion/PedidoDAO.php';
 require_once __DIR__ . '/../integracion/ProductoDAO.php';
 require_once __DIR__ . '/../config.php';
@@ -18,10 +14,6 @@ class PedidoServiceApp {
 		$this->productoDAO = new ProductoDAO();
 	}
 
-	/**
-	* Crea un nuevo pedido a partir de un PedidoDTO.
-	* Calcula el total del pedido sumando el precio de cada producto por su cantidad.
-	*/
 	public function crearPedido($pedidoDTO) {
 		$productos = $pedidoDTO->getProductos();
 		$total = 0;
@@ -36,7 +28,6 @@ class PedidoServiceApp {
 			}
 		}
 
-		// Completamos los datos del pedidoDTO antes de guardarlo
 		$pedidoDTO->setTotal($total);
 		$pedidoDTO->setEstado("Recibido");
 		$pedidoDTO->setFecha(date("Y-m-d H:i:s"));
@@ -44,37 +35,26 @@ class PedidoServiceApp {
 		return $this->pedidoDAO->guardarPedido($pedidoDTO);
 	}
 
-	/**
-	* Obtiene los datos de un pedido por su ID.
-	*/
 	public function obtenerPedido($idPedido) {
 		return $this->pedidoDAO->buscarPedido($idPedido);
 	}
 
-	/**
-	* Actualiza el estado de un pedido.
-	*/
 	public function actualizarEstado($idPedido, $nuevoEstado) {
 		return $this->pedidoDAO->actualizarEstado($idPedido, $nuevoEstado);
     }
 
-	/**
-	* Elimina un pedido de forma permanente.
-	*/
-	public function eliminarPedido($idPedido) {
-		return $this->pedidoDAO->eliminarPedido($idPedido);
+	public function asignarCocinero($idPedido, $idCocinero, $nuevoEstado = 'Cocinando') {
+		return $this->pedidoDAO->asignarCocinero($idPedido, $idCocinero, $nuevoEstado);
+	}
+
+	public function obtenerPedidoActivoDeCocinero($idCocinero) {
+		return $this->pedidoDAO->obtenerPedidoActivoDeCocinero($idCocinero);
 	}
 	
-	/**
-	* Obtiene el historial completo de pedidos de un cliente.
-	*/
 	public function obtenerPedidosPorCliente($idCliente) {
 		return $this->pedidoDAO->obtenerPedidosPorCliente($idCliente);
 	}
 
-	/**
-	* Obtiene todos los pedidos que no están entregados ni cancelados.
-	*/
 	public function obtenerPedidosActivos() {
         return $this->pedidoDAO->obtenerPedidosActivos();
     }

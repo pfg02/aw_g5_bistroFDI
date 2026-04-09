@@ -7,9 +7,8 @@
 	require_once __DIR__ . '/includes/negocio/PedidoController.php';
 	
 	exigirLogin();
-	exigirRol('cliente', 'admin');
+	exigirRol('cliente', 'gerente', 'admin');
 
-	// Validar que llega el ID por la URL
 	if (!isset($_GET['id']) || !is_numeric($_GET['id'])) {
 		header("Location: mis_pedidos.php");
 		exit();
@@ -17,14 +16,22 @@
 
 	$id_pedido = (int)$_GET['id'];
 	$id_usuario = $_SESSION['id_usuario'];
+	$esGerente = isset($_SESSION['rol']) && $_SESSION['rol'] === 'gerente';
+	$idClienteContexto = isset($_GET['id_cliente']) ? (int) $_GET['id_cliente'] : null;
 
 	$controller = PedidoController::getInstance();
 	$pedido = $controller->verPedido($id_pedido);
 
-	// Validamos que el pedido exista y pertenezca al usuario que ha iniciado sesión
-	if (!$pedido || $pedido['cliente_id'] != $id_usuario) {
+	// Si es cliente normal, el pedido tiene que ser suyo.
+	// Si es gerente, puede ver cualquier pedido.
+	if (!$pedido || (!$esGerente && $pedido['cliente_id'] != $id_usuario)) {
 		$_SESSION['mensaje_error'] = "Acceso denegado o pedido no encontrado.";
-		header("Location: mis_pedidos.php");
+		
+		if ($esGerente && $idClienteContexto) {
+			header("Location: mis_pedidos.php?id_cliente=" . urlencode($idClienteContexto));
+		} else {
+			header("Location: mis_pedidos.php");
+		}
 		exit();
 	}
 
@@ -46,7 +53,7 @@
             
             <div>
                 <div>
-                    <h3>Ticket #<?= $pedido['numero_pedido'] ?></h3>
+                    <h3>Ticket #<?= htmlspecialchars($pedido['numero_pedido'] ?? $pedido['id']) ?></h3>
                     <p>
                         <?= date('d/m/Y H:i', strtotime($pedido['fecha'])) ?> | <strong><?= htmlspecialchars($pedido['tipo']) ?></strong>
                     </p>
@@ -67,11 +74,12 @@
                 </thead>
                 <tbody>
                     <?php foreach ($lineas_pedido as $linea): 
-                        $subtotal_linea = $linea['precio_base'] * $linea['cantidad'];
+                        $precioConIva = $linea['precio_base'] * (1 + ($linea['iva'] / 100));
+                        $subtotal_linea = $precioConIva * $linea['cantidad'];
                     ?>
                     <tr>
                         <td><strong><?= htmlspecialchars($linea['nombre']) ?></strong></td>
-                        <td><?= number_format($linea['precio_base'], 2) ?> €</td>
+                        <td><?= number_format($precioConIva, 2) ?> €</td>
                         <td><?= $linea['cantidad'] ?></td>
                         <td><strong><?= number_format($subtotal_linea, 2) ?> €</strong></td>
                     </tr>
@@ -87,7 +95,11 @@
             </div>
 
             <div class="contenedor-botones-index">
-                <a href="mis_pedidos.php" class="btn-login">Volver a Mis Pedidos</a>
+                <?php if ($esGerente && $idClienteContexto): ?>
+                    <a href="mis_pedidos.php?id_cliente=<?= urlencode($idClienteContexto) ?>" class="btn-login">Volver a Usuarios</a>
+                <?php else: ?>
+                    <a href="mis_pedidos.php" class="btn-login">Volver a Mis Pedidos</a>
+                <?php endif; ?>
             </div>
         </div>
     </section>

@@ -68,13 +68,16 @@ CREATE TABLE usuarios (
 CREATE TABLE pedidos (
 	id int(11) AUTO_INCREMENT PRIMARY KEY,
 	cliente_id int(11) NOT NULL,
+	cocinero_id int(11) DEFAULT NULL,
 	numero_pedido INT NOT NULL,
 	tipo varchar(20) NOT NULL,
 	estado varchar(20) NOT NULL,
 	fecha datetime NOT NULL,
 	total decimal(10,2) NOT NULL,
 	KEY `cliente_id` (`cliente_id`),
-	CONSTRAINT `pedidos_cliente_fk` FOREIGN KEY (`cliente_id`) REFERENCES `usuarios`(`id`) ON DELETE CASCADE ON UPDATE CASCADE
+	KEY `cocinero_id` (`cocinero_id`),
+	CONSTRAINT `pedidos_cliente_fk` FOREIGN KEY (`cliente_id`) REFERENCES `usuarios`(`id`) ON DELETE CASCADE ON UPDATE CASCADE,
+	CONSTRAINT `pedidos_cocinero_fk` FOREIGN KEY (`cocinero_id`) REFERENCES `usuarios`(`id`) ON DELETE SET NULL ON UPDATE CASCADE
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 
 -- --------------------------------------------------------

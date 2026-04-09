@@ -4,7 +4,7 @@ require_once __DIR__ . '/includes/sesion.php';
 ob_start();
 ?>
 <main class="main-bienvenida">
-    <section class="tarjeta-presentacion">
+    <section class="tarjeta-presentacion <?= (isset($_SESSION['rol']) && $_SESSION['rol'] === 'gerente') ? 'tarjeta-ancha' : '' ?>">
         <div class="logo-wrapper">
             <img src="img/logo.jpg" alt="Logo Bistró FDI" class="logo-index-pequeno">
         </div>
@@ -26,6 +26,7 @@ ob_start();
                         <a href="includes/vistas/gestion_productos.php" class="btn-admin">Gestionar Catálogo</a>
                         <a href="includes/vistas/gestion_categorias.php" class="btn-admin">Gestionar Categorías</a>
                         <a href="gestionarUsuarios.php" class="btn-admin">Gestionar Usuarios</a>
+                        <a href="panel_camarero.php" class="btn-admin">Panel de Gerencia</a>
 
                     <?php elseif ($rol === 'camarero'): ?>
                         <a href="panel_camarero.php" class="btn-admin">Panel de Sala (Camareros)</a>
@@ -54,3 +55,4 @@ $tituloPagina = 'Bistró FDI - Inicio';
 $bodyClass = 'f0-body';
 
 require __DIR__ . '/includes/vistas/comun/plantilla.php';
+?>

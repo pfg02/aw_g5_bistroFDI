@@ -8,13 +8,13 @@
 
 	$controller = PedidoController::getInstance();
 	$pedidosActivos = $controller->verPedidosActivos();
+    $esGerente = isset($_SESSION['rol']) && $_SESSION['rol'] === 'gerente';
 
-	// Clasificamos los pedidos por su estado para las vistas diferenciadas
     $pedidosRecibidos = array_filter($pedidosActivos, fn($p) => $p['estado'] == 'Recibido');
     $pedidosListosCocina = array_filter($pedidosActivos, fn($p) => $p['estado'] == 'Listo cocina');
     $pedidosTerminados = array_filter($pedidosActivos, fn($p) => $p['estado'] == 'Terminado');
 
-	$tituloPagina = 'Panel de Sala - Bistró FDI';
+	$tituloPagina = $esGerente ? 'Panel de Gerencia - Bistró FDI' : 'Panel de Sala - Bistró FDI';
 	$bodyClass    = 'f0-body';
 
 	ob_start();
@@ -22,9 +22,60 @@
 
 <div class="main-bienvenida">
     <section class="tarjeta-presentacion tarjeta-ancha">
-        <h1>Panel de <span>Sala</span></h1>
-        <p class="lema">Gestión de flujo de pedidos</p>
+        <h1>Panel de <span><?= $esGerente ? 'Gerencia' : 'Sala' ?></span></h1>
+        <p class="lema"><?= $esGerente ? 'Supervisión global de pedidos pendientes' : 'Gestión de flujo de pedidos' ?></p>
         <div class="divisor"></div>
+
+        <?php if ($esGerente): ?>
+        <div class="seccion-camarero">
+            <h2 class="titulo-seccion">Vista global de pedidos pendientes</h2>
+            <?php 
+                $pedidosPendientesGerente = array_filter(
+                    $pedidosActivos,
+                    fn($p) => in_array($p['estado'], ['Recibido', 'En preparación', 'Cocinando', 'Listo cocina', 'Terminado'])
+                );
+            ?>
+            <?php if (empty($pedidosPendientesGerente)): ?>
+                <p class="p-vacio">No hay pedidos pendientes ahora mismo.</p>
+            <?php else: ?>
+                <table class="tabla-pedidos">
+                    <thead>
+                        <tr>
+                            <th>Ticket</th>
+                            <th>Cliente</th>
+                            <th>Estado</th>
+                            <th>Hora</th>
+                            <th>Cocinero asignado</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <?php foreach ($pedidosPendientesGerente as $p): ?>
+                            <tr>
+                                <td><strong>#<?= htmlspecialchars($p['numero_pedido'] ?? $p['id']) ?></strong></td>
+                                <td><?= htmlspecialchars(trim(($p['nombre_cliente'] ?? '') . ' ' . ($p['apellidos_cliente'] ?? ''))) ?></td>
+                                <td><strong><?= htmlspecialchars($p['estado']) ?></strong></td>
+                                <td><?= date('H:i', strtotime($p['fecha'])) ?></td>
+                                <td>
+                                    <?php if (!empty($p['avatar_cocinero']) || !empty($p['nombre_cocinero'])): ?>
+                                        <div style="display:flex; align-items:center; gap:10px; justify-content:flex-start;">
+                                            <img src="<?= htmlspecialchars($p['avatar_cocinero']) ?>" alt="Avatar del cocinero" style="width:52px; height:52px; border-radius:50%; object-fit:cover; border:2px solid #ddd;">
+                                            <div style="text-align:left;">
+                                                <strong><?= htmlspecialchars(trim(($p['nombre_cocinero'] ?? '') . ' ' . ($p['apellidos_cocinero'] ?? ''))) ?></strong>
+                                            </div>
+                                        </div>
+                                    <?php else: ?>
+                                        <span style="color:#777;">Sin asignar todavía</span>
+                                    <?php endif; ?>
+                                </td>
+                            </tr>
+                        <?php endforeach; ?>
+                    </tbody>
+                </table>
+            <?php endif; ?>
+        </div>
+
+        <div class="divisor"></div>
+        <?php endif; ?>
 
         <div class="seccion-camarero">
             <h2 class="titulo-seccion">Pedidos Pendientes de Cobro (Recibidos)</h2>
