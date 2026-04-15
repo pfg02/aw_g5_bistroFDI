@@ -7,6 +7,7 @@ DROP TABLE IF EXISTS productos;
 DROP TABLE IF EXISTS pedidos;
 DROP TABLE IF EXISTS categorias;
 DROP TABLE IF EXISTS usuarios;
+DROP TABLE IF EXISTS ofertas;
 
 
 -- --------------------------------------------------------
@@ -92,4 +93,30 @@ CREATE TABLE pedido_productos (
 	PRIMARY KEY (pedido_id, producto_id),
 	CONSTRAINT `pedido_productos_pedido_fk` FOREIGN KEY (`pedido_id`) REFERENCES `pedidos`(`id`) ON DELETE CASCADE ON UPDATE CASCADE,
 	CONSTRAINT `pedido_productos_producto_fk` FOREIGN KEY (`producto_id`) REFERENCES `productos`(`id`) ON DELETE CASCADE ON UPDATE CASCADE
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+
+-- --------------------------------------------------------
+-- Estructura de tabla para la tabla 'ofertas'
+-- --------------------------------------------------------
+
+CREATE TABLE ofertas (
+	id int(11) AUTO_INCREMENT PRIMARY KEY,
+	nombre varchar(100) NOT NULL,
+	descripcion TEXT DEFAULT NULL,
+	fecha_inicio datetime NOT NULL,
+	fecha_fin datetime NOT NULL,
+	descuento_porcentaje DECIMAL(5,2) NOT NULL
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+
+-- --------------------------------------------------------
+-- Estructura de tabla para la tabla 'ofertas_productos'
+-- --------------------------------------------------------
+
+CREATE TABLE ofertas_productos (
+	oferta_id int(11) NOT NULL,
+	producto_id int(11) NOT NULL,
+	cantidad int(11) NOT NULL,
+	PRIMARY KEY (oferta_id, producto_id),
+	CONSTRAINT `ofertas_productos_oferta_fk` FOREIGN KEY (`oferta_id`) REFERENCES `ofertas`(`id`) ON DELETE CASCADE ON UPDATE CASCADE,
+	CONSTRAINT `ofertas_productos_producto_fk` FOREIGN KEY (`producto_id`) REFERENCES `productos`(`id`) ON DELETE CASCADE ON UPDATE CASCADE
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
