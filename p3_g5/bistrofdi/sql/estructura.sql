@@ -75,6 +75,8 @@ CREATE TABLE pedidos (
 	estado varchar(20) NOT NULL,
 	fecha datetime NOT NULL,
 	total decimal(10,2) NOT NULL,
+	descuento_total decimal(10,2) NOT NULL,
+	total_sin_descuento decimal(10,2) NOT NULL,
 	KEY `cliente_id` (`cliente_id`),
 	KEY `cocinero_id` (`cocinero_id`),
 	CONSTRAINT `pedidos_cliente_fk` FOREIGN KEY (`cliente_id`) REFERENCES `usuarios`(`id`) ON DELETE CASCADE ON UPDATE CASCADE,
