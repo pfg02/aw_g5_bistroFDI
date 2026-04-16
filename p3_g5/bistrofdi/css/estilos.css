@@ -2464,3 +2464,73 @@ body.f0-body .f0-confirm-text {
         margin-top: 8px !important;
     }
 }
+
+/* DETALLE PEDIDO MÓVIL */
+
+@media (max-width: 768px) {
+
+    .tabla-detalle-pedido-movil {
+        width: 100%;
+        border-collapse: separate;
+        border-spacing: 0;
+        background: transparent;
+        margin-top: 20px;
+    }
+
+    .tabla-detalle-pedido-movil thead {
+        display: none;
+    }
+
+    .tabla-detalle-pedido-movil,
+    .tabla-detalle-pedido-movil tbody,
+    .tabla-detalle-pedido-movil tr,
+    .tabla-detalle-pedido-movil td {
+        display: block;
+        width: 100%;
+    }
+
+    .tabla-detalle-pedido-movil tr {
+        margin-bottom: 16px;
+        padding: 14px;
+        border: 1px solid #ddd;
+        border-radius: 12px;
+        background: #fff;
+        box-shadow: 0 2px 8px rgba(0,0,0,0.08);
+    }
+
+    .tabla-detalle-pedido-movil td {
+        position: relative;
+        text-align: right;
+        padding: 12px 10px 12px 46%;
+        border: none;
+        border-bottom: 1px solid #eee;
+        min-height: 44px;
+        box-sizing: border-box;
+    }
+
+    .tabla-detalle-pedido-movil td:last-child {
+        border-bottom: none;
+    }
+
+    .tabla-detalle-pedido-movil td::before {
+        content: attr(data-label);
+        position: absolute;
+        left: 10px;
+        top: 12px;
+        width: 40%;
+        text-align: left;
+        font-weight: 700;
+        color: #333;
+    }
+
+    .modal-footer {
+        text-align: center !important;
+        margin-top: 20px !important;
+    }
+
+    .precio-modal {
+        font-size: 2rem !important;
+        display: inline-block;
+        margin-top: 10px;
+    }
+}
