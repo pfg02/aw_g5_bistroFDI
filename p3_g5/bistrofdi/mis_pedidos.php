@@ -26,7 +26,7 @@
     
     $historialPedidos = $controller->verPedidosCliente($idCliente);
 
-	$tituloPagina = 'Mis Pedidos - Bistró FDI';
+    $tituloPagina = 'Mis Pedidos - Bistró FDI';
     $bodyClass    = 'f0-body';
 
     ob_start();
@@ -59,7 +59,7 @@
 				    <a href="pedido_inicio.php" class="btn-login">Hacer un Pedido</a>
                 <?php endif; ?>
 			<?php else: ?>
-				<table class="tabla-pedidos">
+				<table class="tabla-pedidos tabla-mis-pedidos-movil">
 					<thead>
 						<tr>
 							<th>Nº Pedido</th>
@@ -73,16 +73,24 @@
 					<tbody>
 						<?php foreach ($historialPedidos as $pedido): ?>
 							<tr>
-								<td><strong>#<?php echo htmlspecialchars($pedido['numero_pedido'] ?? $pedido['id']); ?></strong></td>
-								<td><?php echo date('d/m/Y H:i', strtotime($pedido['fecha'])); ?></td>
-								<td><?php echo htmlspecialchars($pedido['tipo']); ?></td>
-								<td>
+								<td data-label="Nº Pedido">
+									<strong>#<?php echo htmlspecialchars($pedido['numero_pedido'] ?? $pedido['id']); ?></strong>
+								</td>
+								<td data-label="Fecha">
+									<?php echo date('d/m/Y H:i', strtotime($pedido['fecha'])); ?>
+								</td>
+								<td data-label="Tipo">
+									<?php echo htmlspecialchars($pedido['tipo']); ?>
+								</td>
+								<td data-label="Estado">
 									<span class="badge-success">
 										<?php echo htmlspecialchars($pedido['estado']); ?>
 									</span>
 								</td>
-								<td><strong><?php echo number_format($pedido['total'], 2); ?> €</strong></td>
-								<td>
+								<td data-label="Total">
+									<strong><?php echo number_format($pedido['total'], 2); ?> €</strong>
+								</td>
+								<td data-label="Acciones">
 									<?php if ($esGerente && isset($_GET['id_cliente'])): ?>
 										<a href="detalle_pedido.php?id=<?= urlencode($pedido['id']) ?>&id_cliente=<?= urlencode($idCliente) ?>">Ver Detalle</a>
 									<?php else: ?>
