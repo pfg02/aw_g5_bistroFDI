@@ -10,9 +10,15 @@ $avatar = $_SESSION['avatar'] ?? 'img/avatares/default.png';
 ?>
 
 <nav class="navegacion-principal">
-    <a href="<?= BASE_URL ?>/index.php">Bistró FDI</a>
+    <a href="<?= BASE_URL ?>/index.php" class="nav-logo">Bistró FDI</a>
 
-    <ul>
+    <button class="nav-toggle" type="button" aria-label="Abrir menú" aria-expanded="false">
+        <span></span>
+        <span></span>
+        <span></span>
+    </button>
+
+    <ul class="nav-lista">
         <li><a href="<?= BASE_URL ?>/index.php">Inicio</a></li>
 
         <?php if (isset($_SESSION['rol']) && $_SESSION['rol'] === 'gerente'): ?>

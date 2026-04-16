@@ -21,5 +21,22 @@ $bodyClass = $bodyClass ?? '';
     </main>
 
     <?php include __DIR__ . '/footer.php'; ?>
+
+    <script>
+document.addEventListener('DOMContentLoaded', function () {
+    const nav = document.querySelector('.navegacion-principal');
+    const boton = document.querySelector('.nav-toggle');
+
+    if (!nav || !boton) return;
+
+    boton.addEventListener('click', function () {
+        nav.classList.toggle('abierto');
+
+        const expandido = boton.getAttribute('aria-expanded') === 'true';
+        boton.setAttribute('aria-expanded', (!expandido).toString());
+    });
+});
+
+</script>
 </body>
 </html>
