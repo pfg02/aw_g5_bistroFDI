@@ -63,7 +63,7 @@
                 </div>
             </div>
             
-            <table class="tabla-pedidos">
+            <table class="tabla-pedidos tabla-detalle-pedido-movil">
                 <thead>
                     <tr>
                         <th style="text-align: left;">Producto</th>
@@ -78,10 +78,10 @@
                         $subtotal_linea = $precioConIva * $linea['cantidad'];
                     ?>
                     <tr>
-                        <td><strong><?= htmlspecialchars($linea['nombre']) ?></strong></td>
-                        <td><?= number_format($precioConIva, 2) ?> €</td>
-                        <td><?= $linea['cantidad'] ?></td>
-                        <td><strong><?= number_format($subtotal_linea, 2) ?> €</strong></td>
+                        <td data-label="Producto"><strong><?= htmlspecialchars($linea['nombre']) ?></strong></td>
+                        <td data-label="Precio Ud."><?= number_format($precioConIva, 2) ?> €</td>
+                        <td data-label="Cant."><?= $linea['cantidad'] ?></td>
+                        <td data-label="Subtotal"><strong><?= number_format($subtotal_linea, 2) ?> €</strong></td>
                     </tr>
                     <?php endforeach; ?>
                 </tbody>
