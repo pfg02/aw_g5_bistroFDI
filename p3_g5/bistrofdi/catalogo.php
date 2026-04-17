@@ -94,7 +94,10 @@
                                     $fotos = !empty($p->imagen) ? explode(',', $p->imagen) : [];
                                     $fotoPrincipal = !empty($fotos) && trim($fotos[0]) !== '' ? trim($fotos[0]) : 'default.png';
                                 ?>
-                                    <article class="tarjeta-producto" data-nombre="<?= strtolower(htmlspecialchars($p->nombre)) ?>">
+                                    <article 
+                                        class="tarjeta-producto" 
+                                        id="producto-<?= (int)$p->id ?>"
+                                        data-nombre="<?= strtolower(htmlspecialchars($p->nombre)) ?>">
                                         
                                         <div class="imagen-producto">
                                             <img src="img/productos/<?= htmlspecialchars($fotoPrincipal) ?>"
@@ -115,7 +118,7 @@
                                             </button>
                                         </div>
                                         
-                                        <form action="anadir_producto.php" method="POST" class="form-anadir-carrito">
+                                        <form action="anadir_producto.php" method="POST" class="form-anadir-carrito" data-producto-id="<?= (int)$p->id ?>">
                                             <input type="hidden" name="accion" value="agregar">
                                             <input type="hidden" name="id_producto" value="<?= $p->id ?>"> 
                                             <input type="number" name="cantidad" value="1" min="1" max="20">
@@ -155,7 +158,31 @@
 
 <script src="js/catalogo.js"></script>
 
+<script>
+document.addEventListener('DOMContentLoaded', function () {
+    const forms = document.querySelectorAll('.form-anadir-carrito');
+
+    forms.forEach(form => {
+        form.addEventListener('submit', function () {
+            const productoId = this.dataset.productoId;
+            if (productoId) {
+                sessionStorage.setItem('ultimoProductoAnadido', productoId);
+            }
+        });
+    });
+
+    const ultimoProducto = sessionStorage.getItem('ultimoProductoAnadido');
+    if (ultimoProducto) {
+        const tarjeta = document.getElementById('producto-' + ultimoProducto);
+        if (tarjeta) {
+            tarjeta.scrollIntoView({ behavior: 'auto', block: 'center' });
+        }
+        sessionStorage.removeItem('ultimoProductoAnadido');
+    }
+});
+</script>
+
 <?php
     $contenidoPrincipal = ob_get_clean();
     require_once __DIR__ . '/includes/vistas/comun/plantilla.php';
-?> 
+?>
