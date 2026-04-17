@@ -53,48 +53,50 @@ ob_start();
     <?php endif; ?>
 
     <section class="seccion-tabla">
-        <table class="tabla-categorias">
-            <thead>
-                <tr>
-                    <th>Imagen</th>
-                    <th>Nombre</th>
-                    <th>Descripción</th>
-                    <th class="txt-center">Acciones</th>
-                </tr>
-            </thead>
-            <tbody>
-                <?php if (empty($categorias)): ?>
-                    <tr><td colspan="4">No se han encontrado categorías.</td></tr>
-                <?php else: ?>
-                    <?php foreach ($categorias as $cat): ?>
+        <div class="tabla-responsive">
+            <table class="tabla-categorias">
+                <thead>
                     <tr>
-                        <td>
-                            <img src="../../img/categorias/<?= htmlspecialchars($cat->imagen) ?>" 
-                                 class="img-tabla-cat" alt="icono">
-                        </td>
-                        <td class="cat-nombre"><?= htmlspecialchars($cat->nombre) ?></td>
-                        <td class="cat-desc"><?= htmlspecialchars($cat->descripcion) ?></td>
-                        <td class="cat-acciones">
-                            <a href="editar_categoria.php?id=<?= $cat->id ?>" class="btn-editar">Editar</a>
-                            
-                            <form action="gestion_categorias.php" method="POST" class="form-del-inline">
-                                <input type="hidden" name="id" value="<?= $cat->id ?>">
-                                <input type="hidden" name="accion" value="eliminar">
-                                <button type="submit" class="btn-eliminar" 
-                                        onclick="return confirm('¿Deseas eliminar permanentemente esta categoría?')">
-                                    Eliminar
-                                </button>
-                            </form>
-                        </td>
+                        <th>Imagen</th>
+                        <th>Nombre</th>
+                        <th>Descripción</th>
+                        <th class="txt-center">Acciones</th>
                     </tr>
-                    <?php endforeach; ?>
-                <?php endif; ?>
-            </tbody>
-        </table>
+                </thead>
+                <tbody>
+                    <?php if (empty($categorias)): ?>
+                        <tr><td colspan="4">No se han encontrado categorías.</td></tr>
+                    <?php else: ?>
+                        <?php foreach ($categorias as $cat): ?>
+                        <tr>
+                            <td data-label="Imagen">
+                                <img src="../../img/categorias/<?= htmlspecialchars($cat->imagen) ?>" 
+                                     class="img-tabla-cat" alt="icono">
+                            </td>
+                            <td data-label="Nombre" class="cat-nombre"><?= htmlspecialchars($cat->nombre) ?></td>
+                            <td data-label="Descripción" class="cat-desc"><?= htmlspecialchars($cat->descripcion) ?></td>
+                            <td data-label="Acciones" class="cat-acciones">
+                                <a href="editar_categoria.php?id=<?= $cat->id ?>" class="btn-editar">Editar</a>
+                                
+                                <form action="gestion_categorias.php" method="POST" class="form-del-inline">
+                                    <input type="hidden" name="id" value="<?= $cat->id ?>">
+                                    <input type="hidden" name="accion" value="eliminar">
+                                    <button type="submit" class="btn-eliminar" 
+                                            onclick="return confirm('¿Deseas eliminar permanentemente esta categoría?')">
+                                        Eliminar
+                                    </button>
+                                </form>
+                            </td>
+                        </tr>
+                        <?php endforeach; ?>
+                    <?php endif; ?>
+                </tbody>
+            </table>
+        </div>
     </section>
 </div>
 
 <?php
 $contenidoPrincipal = ob_get_clean();
 require_once __DIR__ . '/comun/plantilla.php';
-?> 
+?>
