@@ -36,93 +36,97 @@ ob_start();
     <?php endif; ?>
 
     <section class="seccion-tabla">
-        <table class="tabla-admin">
-            <thead>
-                <tr>
-                    <th>Imagen</th>
-                    <th>Nombre y Estado</th>
-                    <th>Descripción</th>
-                    <th>Precio (PVP)</th>
-                    <th>Stock</th>
-                    <th class="txt-center">Acciones</th>
-                </tr>
-            </thead>
-            <tbody>
-                <?php if (empty($productos)): ?>
-                    <tr><td colspan="6" class="txt-center">No hay productos en la base de datos.</td></tr>
-                <?php else: ?>
-                    <?php foreach ($productos as $p): ?>
-                    
-                    <tr class="<?= isset($p->ofertado) && $p->ofertado == 0 ? 'fila-inactiva' : '' ?>">
-                        
-                        <td class="col-imagenes">
-                            <?php 
-                                $fotos = !empty($p->imagen) ? explode(',', $p->imagen) : [];
-                                if (empty($fotos)): ?>
-                                    <img src="../../img/productos/default.png" alt="Foto producto" class="img-mini-tabla">
-                                <?php else: ?>
-                                    <div class="contenedor-fotos-tabla">
-                                        <?php foreach ($fotos as $f): if(trim($f)): ?>
-                                            <img src="../../img/productos/<?= htmlspecialchars(trim($f)) ?>" alt="Foto producto" class="img-mini-tabla">
-                                        <?php endif; endforeach; ?>
-                                    </div>
-                                <?php endif; ?>
-                        </td>
-                        
-                        <td class="col-nombre">
-                            <strong><?= htmlspecialchars($p->nombre) ?></strong>
-                            <?php if (isset($p->ofertado) && $p->ofertado == 0): ?>
-                                <span class="badge-inactivo">INACTIVO</span>
-                            <?php endif; ?>
-                        </td>
-                        
-                        <td class="col-desc">
-                            <?= htmlspecialchars(mb_strimwidth($p->descripcion ?? '', 0, 60, "...")) ?>
-                        </td>
-                        
-                        <td class="col-precio txt-right">
-                            <?php 
-                                $precio_base = $p->precio ?? $p->precio_base ?? 0;
-                                $iva_aplicado = $p->iva ?? 21; 
-                                $precio_final = $precio_base * (1 + ($iva_aplicado / 100));
-                            ?>
-                            <strong class="precio-final"><?= number_format($precio_final, 2, ',', '.') ?> €</strong>
-                            <br>
-                            <span class="detalle-iva">
-                                (Base: <?= number_format($precio_base, 2, ',', '.') ?>€ + <?= $iva_aplicado ?>% IVA)
-                            </span>
-                        </td>
-                        
-                        <td class="col-stock txt-center">
-                            <?= htmlspecialchars($p->stock ?? 0) ?> uds.
-                        </td>
-                        
-                        <td class="col-acciones txt-center">
-                            <a href="editar_producto.php?id=<?= $p->id ?>" class="btn-editar">Editar</a>
-                            
-                            <?php if (!isset($p->ofertado) || $p->ofertado == 1): ?>
-                                <form action="../negocio/ProductoController.php" method="POST" class="form-del-inline">
-                                    <input type="hidden" name="accion" value="eliminar">
-                                    <input type="hidden" name="id" value="<?= $p->id ?>">
-                                    <button type="submit" class="btn-eliminar" onclick="return confirm('¿Ocultar este producto de la carta?')">Retirar</button>
-                                </form>
-                            <?php else: ?>
-                                <form action="../negocio/ProductoController.php" method="POST" class="form-del-inline">
-                                    <input type="hidden" name="accion" value="reactivar">
-                                    <input type="hidden" name="id" value="<?= $p->id ?>">
-                                    <button type="submit" class="btn-reactivar">Reactivar</button>
-                                </form>
-                            <?php endif; ?>
-                        </td>
+        <div class="tabla-responsive">
+            <table class="tabla-admin tabla-productos-movil">
+                <thead>
+                    <tr>
+                        <th>Imagen</th>
+                        <th>Nombre y Estado</th>
+                        <th>Descripción</th>
+                        <th>Precio (PVP)</th>
+                        <th>Stock</th>
+                        <th class="txt-center">Acciones</th>
                     </tr>
-                    <?php endforeach; ?>
-                <?php endif; ?>
-            </tbody>
-        </table>
+                </thead>
+                <tbody>
+                    <?php if (empty($productos)): ?>
+                        <tr>
+                            <td colspan="6" class="txt-center">No hay productos en la base de datos.</td>
+                        </tr>
+                    <?php else: ?>
+                        <?php foreach ($productos as $p): ?>
+                    
+                        <tr class="<?= isset($p->ofertado) && $p->ofertado == 0 ? 'fila-inactiva' : '' ?>">
+                        
+                            <td class="col-imagenes" data-label="Imagen">
+                                <?php 
+                                    $fotos = !empty($p->imagen) ? explode(',', $p->imagen) : [];
+                                    if (empty($fotos)): ?>
+                                        <img src="../../img/productos/default.png" alt="Foto producto" class="img-mini-tabla">
+                                    <?php else: ?>
+                                        <div class="contenedor-fotos-tabla">
+                                            <?php foreach ($fotos as $f): if(trim($f)): ?>
+                                                <img src="../../img/productos/<?= htmlspecialchars(trim($f)) ?>" alt="Foto producto" class="img-mini-tabla">
+                                            <?php endif; endforeach; ?>
+                                        </div>
+                                    <?php endif; ?>
+                            </td>
+                        
+                            <td class="col-nombre" data-label="Nombre y Estado">
+                                <strong><?= htmlspecialchars($p->nombre) ?></strong>
+                                <?php if (isset($p->ofertado) && $p->ofertado == 0): ?>
+                                    <span class="badge-inactivo">INACTIVO</span>
+                                <?php endif; ?>
+                            </td>
+                        
+                            <td class="col-desc" data-label="Descripción">
+                                <?= htmlspecialchars(mb_strimwidth($p->descripcion ?? '', 0, 60, "...")) ?>
+                            </td>
+                        
+                            <td class="col-precio txt-right" data-label="Precio (PVP)">
+                                <?php 
+                                    $precio_base = $p->precio ?? $p->precio_base ?? 0;
+                                    $iva_aplicado = $p->iva ?? 21; 
+                                    $precio_final = $precio_base * (1 + ($iva_aplicado / 100));
+                                ?>
+                                <strong class="precio-final"><?= number_format($precio_final, 2, ',', '.') ?> €</strong>
+                                <br>
+                                <span class="detalle-iva">
+                                    (Base: <?= number_format($precio_base, 2, ',', '.') ?>€ + <?= $iva_aplicado ?>% IVA)
+                                </span>
+                            </td>
+                        
+                            <td class="col-stock txt-center" data-label="Stock">
+                                <?= htmlspecialchars($p->stock ?? 0) ?> uds.
+                            </td>
+                        
+                            <td class="col-acciones txt-center" data-label="Acciones">
+                                <a href="editar_producto.php?id=<?= $p->id ?>" class="btn-editar">Editar</a>
+                            
+                                <?php if (!isset($p->ofertado) || $p->ofertado == 1): ?>
+                                    <form action="../negocio/ProductoController.php" method="POST" class="form-del-inline">
+                                        <input type="hidden" name="accion" value="eliminar">
+                                        <input type="hidden" name="id" value="<?= $p->id ?>">
+                                        <button type="submit" class="btn-eliminar" onclick="return confirm('¿Ocultar este producto de la carta?')">Retirar</button>
+                                    </form>
+                                <?php else: ?>
+                                    <form action="../negocio/ProductoController.php" method="POST" class="form-del-inline">
+                                        <input type="hidden" name="accion" value="reactivar">
+                                        <input type="hidden" name="id" value="<?= $p->id ?>">
+                                        <button type="submit" class="btn-reactivar">Reactivar</button>
+                                    </form>
+                                <?php endif; ?>
+                            </td>
+                        </tr>
+                        <?php endforeach; ?>
+                    <?php endif; ?>
+                </tbody>
+            </table>
+        </div>
     </section>
 </div>
 
 <?php
 $contenidoPrincipal = ob_get_clean();
 require_once __DIR__ . '/comun/plantilla.php';
-?> 
+?>
