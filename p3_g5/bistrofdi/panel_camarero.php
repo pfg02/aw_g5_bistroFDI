@@ -38,7 +38,7 @@
             <?php if (empty($pedidosPendientesGerente)): ?>
                 <p class="p-vacio">No hay pedidos en preparación o recibidos ahora mismo.</p>
             <?php else: ?>
-                <table class="tabla-pedidos">
+                <table class="tabla-pedidos tabla-sala-movil">
                     <thead>
                         <tr>
                             <th>Ticket</th>
@@ -72,16 +72,16 @@
                                 }
                             ?>
                             <tr>
-                                <td><strong>#<?= htmlspecialchars($p['numero_pedido'] ?? $p['id']) ?></strong></td>
-                                <td><?= htmlspecialchars($p['tipo_pedido'] ?? 'Local') ?></td>
-                                <td><?= htmlspecialchars(trim(($p['nombre_cliente'] ?? '') . ' ' . ($p['apellidos_cliente'] ?? ''))) ?></td>
-                                <td>
+                                <td data-label="Ticket"><strong>#<?= htmlspecialchars($p['numero_pedido'] ?? $p['id']) ?></strong></td>
+                                <td data-label="Tipo"><?= htmlspecialchars($p['tipo_pedido'] ?? 'Local') ?></td>
+                                <td data-label="Cliente"><?= htmlspecialchars(trim(($p['nombre_cliente'] ?? '') . ' ' . ($p['apellidos_cliente'] ?? ''))) ?></td>
+                                <td data-label="Estado">
                                     <span class="badge-success">
 										<?php echo htmlspecialchars($p['estado']); ?>
 									</span>
                                 </td>
-                                <td><?= date('H:i', strtotime($p['fecha'])) ?></td>
-                                <td>
+                                <td data-label="Hora"><?= date('H:i', strtotime($p['fecha'])) ?></td>
+                                <td data-label="Cocinero asignado">
                                     <?php if (!empty($p['avatar_cocinero']) || !empty($p['nombre_cocinero'])): ?>
                                         <div class="wrapper-cocinero">
                                             <img src="<?= htmlspecialchars($p['avatar_cocinero']) ?>" alt="Avatar" class="avatar-cocinero">
@@ -94,7 +94,7 @@
                                     <?php endif; ?>
                                 </td>
                                 
-                                <td class="celda-progreso">
+                                <td class="celda-progreso" data-label="Progreso de Cocina">
                                     <?php if ($totalPlatos > 0): ?>
                                         <details class="details-progreso">
                                             <summary class="summary-progreso">
@@ -114,7 +114,7 @@
                                     <?php endif; ?>
                                 </td>
 
-                                <td>
+                                <td data-label="Detalles">
                                     <a href="detalle_pedido.php?id=<?= $p['id'] ?>">Ver Detalle</a>
                                 </td>
                             </tr>
@@ -131,7 +131,7 @@
             <?php if (empty($pedidosRecibidos)): ?>
                 <p class="p-vacio">No hay pedidos por cobrar.</p>
             <?php else: ?>
-                <table class="tabla-pedidos">
+                <table class="tabla-pedidos tabla-sala-movil">
                     <thead>
                         <tr>
                             <th>Ticket</th>
@@ -145,14 +145,14 @@
                     <tbody>
                         <?php foreach ($pedidosRecibidos as $p): ?>
                             <tr>
-                                <td><strong>#<?= htmlspecialchars($p['numero_pedido'] ?? $p['id']) ?></strong></td>
-                                <td><?= htmlspecialchars($p['tipo_pedido'] ?? 'Local') ?></td>
-                                <td><?= htmlspecialchars($p['nombre_cliente'] . ' ' . $p['apellidos_cliente']) ?></td>
-                                <td><?= number_format($p['total'], 2) ?> €</td>
-                                <td>
+                                <td data-label="Ticket"><strong>#<?= htmlspecialchars($p['numero_pedido'] ?? $p['id']) ?></strong></td>
+                                <td data-label="Tipo"><?= htmlspecialchars($p['tipo_pedido'] ?? 'Local') ?></td>
+                                <td data-label="Cliente / Mesa"><?= htmlspecialchars($p['nombre_cliente'] . ' ' . $p['apellidos_cliente']) ?></td>
+                                <td data-label="Total"><?= number_format($p['total'], 2) ?> €</td>
+                                <td data-label="Detalles">
                                     <a href="detalle_pedido.php?id=<?= $p['id'] ?>">Ver Detalle</a>
                                 </td>
-                                <td>
+                                <td data-label="Acción">
                                     <form action="procesar_estado.php" method="POST">
                                         <input type="hidden" name="id_pedido" value="<?= $p['id'] ?>">
                                         <input type="hidden" name="accion" value="cobrar">
@@ -173,7 +173,7 @@
             <?php if (empty($pedidosListosCocina)): ?>
                 <p class="p-vacio">No hay platos listos para recoger.</p>
             <?php else: ?>
-                <table class="tabla-pedidos">
+                <table class="tabla-pedidos tabla-sala-movil">
                     <thead>
                         <tr>
                             <th>Ticket</th>
@@ -185,12 +185,12 @@
                     <tbody>
                         <?php foreach ($pedidosListosCocina as $p): ?>
                             <tr>
-                                <td><strong>#<?= htmlspecialchars($p['numero_pedido'] ?? $p['id']) ?></strong></td>
-                                <td><?= htmlspecialchars($p['tipo_pedido'] ?? 'Local') ?></td>
-                                <td>
+                                <td data-label="Ticket"><strong>#<?= htmlspecialchars($p['numero_pedido'] ?? $p['id']) ?></strong></td>
+                                <td data-label="Tipo"><?= htmlspecialchars($p['tipo_pedido'] ?? 'Local') ?></td>
+                                <td data-label="Detalles">
                                     <a href="detalle_pedido.php?id=<?= $p['id'] ?>">Ver Detalle</a>
                                 </td>
-                                <td>
+                                <td data-label="Acción">
                                     <form action="procesar_estado.php" method="POST">
                                         <input type="hidden" name="id_pedido" value="<?= $p['id'] ?>">
                                         <input type="hidden" name="accion" value="terminar">
@@ -211,7 +211,7 @@
             <?php if (empty($pedidosTerminados)): ?>
                 <p class="p-vacio">No hay pedidos pendientes de entrega final.</p>
             <?php else: ?>
-                <table class="tabla-pedidos">
+                <table class="tabla-pedidos tabla-sala-movil">
                     <thead>
                         <tr>
                             <th>Ticket</th>
@@ -224,13 +224,13 @@
                     <tbody>
                         <?php foreach ($pedidosTerminados as $p): ?>
                             <tr>
-                                <td><strong>#<?= htmlspecialchars($p['numero_pedido'] ?? $p['id']) ?></strong></td>
-                                <td><?= htmlspecialchars($p['tipo_pedido'] ?? 'Local') ?></td>
-                                <td><?= htmlspecialchars($p['nombre_cliente']) ?></td>
-                                <td>
+                                <td data-label="Ticket"><strong>#<?= htmlspecialchars($p['numero_pedido'] ?? $p['id']) ?></strong></td>
+                                <td data-label="Tipo"><?= htmlspecialchars($p['tipo_pedido'] ?? 'Local') ?></td>
+                                <td data-label="Cliente"><?= htmlspecialchars($p['nombre_cliente']) ?></td>
+                                <td data-label="Detalles">
                                     <a href="detalle_pedido.php?id=<?= $p['id'] ?>" class="link-detalle-texto">Ver Detalle</a>
                                 </td>
-                                <td>
+                                <td data-label="Acción">
                                     <form action="procesar_estado.php" method="POST">
                                         <input type="hidden" name="id_pedido" value="<?= $p['id'] ?>">
                                         <input type="hidden" name="accion" value="entregar">
