@@ -20,7 +20,6 @@
 	}
 	$tipo_pedido = $_SESSION['tipoPedido'] ?? 'Local';
 
-	// ARREGLADO: Inyectamos la conexión global $db al DAO
 	global $db;
 	$productoDAO = new ProductoDAO($db);
 	$productosDTO = $productoDAO->listarOfertados();
@@ -122,7 +121,11 @@
                                             <input type="hidden" name="accion" value="agregar">
                                             <input type="hidden" name="id_producto" value="<?= $p->id ?>"> 
                                             <input type="number" name="cantidad" value="1" min="1" max="20">
-                                            <button type="submit" class="btn-login">Añadir</button>
+
+                                            <div class="wrap-boton-anadir">
+                                                <button type="submit" class="btn-login">Añadir</button>
+                                                <span class="mensaje-anadido" id="mensaje-<?= (int)$p->id ?>">✓ Añadido</span>
+                                            </div>
                                         </form>
                                     </article>
                                 <?php endforeach; ?>
@@ -174,10 +177,22 @@ document.addEventListener('DOMContentLoaded', function () {
     const ultimoProducto = sessionStorage.getItem('ultimoProductoAnadido');
     if (ultimoProducto) {
         const tarjeta = document.getElementById('producto-' + ultimoProducto);
+        const mensaje = document.getElementById('mensaje-' + ultimoProducto);
+
         if (tarjeta) {
             tarjeta.scrollIntoView({ behavior: 'auto', block: 'center' });
         }
-        sessionStorage.removeItem('ultimoProductoAnadido');
+
+        if (mensaje) {
+            mensaje.classList.add('activo');
+
+            setTimeout(() => {
+                mensaje.classList.remove('activo');
+                sessionStorage.removeItem('ultimoProductoAnadido');
+            }, 1500);
+        } else {
+            sessionStorage.removeItem('ultimoProductoAnadido');
+        }
     }
 });
 </script>
