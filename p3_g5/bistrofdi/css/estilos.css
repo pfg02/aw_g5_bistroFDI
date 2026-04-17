@@ -3159,3 +3159,51 @@ body.f0-body .f0-confirm-text {
         box-sizing: border-box !important;
     }
 }
+
+/* Mensaje en CATÁLOGO junto al producto al ser añadido */
+
+.form-anadir-carrito {
+    display: flex;
+    align-items: flex-start;
+    gap: 10px;
+    width: 100%;
+    justify-content: flex-start;
+    margin: 0;
+}
+
+.form-anadir-carrito input[type="number"] {
+    width: 60px;
+    flex: 0 0 60px;
+    box-sizing: border-box;
+}
+
+.wrap-boton-anadir {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+    flex: 1 1 auto;
+    min-width: 0;
+}
+
+.wrap-boton-anadir .btn-login {
+    width: 100%;
+    min-width: 0;
+    box-sizing: border-box;
+    padding: 10px 14px;
+}
+
+.mensaje-anadido {
+    margin-top: 6px;
+    opacity: 0;
+    pointer-events: none;
+    white-space: nowrap;
+    color: #1f7a35;
+    font-weight: 700;
+    font-size: 0.9rem;
+    line-height: 1;
+    transition: opacity 0.2s ease;
+}
+
+.mensaje-anadido.activo {
+    opacity: 1;
+}
