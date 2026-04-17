@@ -2913,3 +2913,82 @@ body.f0-body .f0-confirm-text {
         min-width: 0 !important;
     }
 }
+
+/* PANEL CAMARERO MÓVIL ADAPTACIÓN FINAL */
+
+@media (max-width: 768px) {
+    .tabla-sala-movil {
+        width: 100% !important;
+        border-collapse: separate !important;
+        border-spacing: 0 !important;
+        background: transparent !important;
+        margin-top: 20px !important;
+    }
+
+    .tabla-sala-movil thead {
+        display: none !important;
+    }
+
+    .tabla-sala-movil,
+    .tabla-sala-movil tbody,
+    .tabla-sala-movil tr,
+    .tabla-sala-movil td {
+        display: block !important;
+        width: 100% !important;
+        box-sizing: border-box !important;
+    }
+
+    .tabla-sala-movil tr {
+        margin-bottom: 16px !important;
+        padding: 14px !important;
+        border: 1px solid #ddd !important;
+        border-radius: 12px !important;
+        background: #fff !important;
+        box-shadow: 0 2px 8px rgba(0,0,0,0.08) !important;
+    }
+
+    .tabla-sala-movil td {
+        position: relative !important;
+        text-align: left !important;
+        padding: 10px 0 !important;
+        border: none !important;
+        border-bottom: 1px solid #eee !important;
+        min-height: auto !important;
+    }
+
+    .tabla-sala-movil td:last-child {
+        border-bottom: none !important;
+    }
+
+    .tabla-sala-movil td::before {
+        content: attr(data-label) !important;
+        display: block !important;
+        margin-bottom: 6px !important;
+        font-weight: 700 !important;
+        color: #443933 !important;
+        font-size: 0.85rem !important;
+        text-transform: uppercase !important;
+    }
+
+    .tabla-sala-movil form,
+    .tabla-sala-movil .btn-accion {
+        width: 100% !important;
+    }
+
+    .tabla-sala-movil .btn-accion {
+        display: flex !important;
+        justify-content: center !important;
+        align-items: center !important;
+        min-width: 0 !important;
+        box-sizing: border-box !important;
+    }
+
+    .tabla-sala-movil .wrapper-cocinero {
+        flex-wrap: wrap;
+    }
+
+    .tabla-sala-movil .details-progreso {
+        width: 100%;
+        box-sizing: border-box;
+    }
+}
