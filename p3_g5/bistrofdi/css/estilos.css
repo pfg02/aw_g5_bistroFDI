@@ -2835,3 +2835,81 @@ body.f0-body .f0-confirm-text {
         width: 100% !important;
     }
 }
+
+/* TABLA USUARIOS MÓVIL DEFINITIVA */
+
+@media (max-width: 768px) {
+    .f0-table-wrap {
+        overflow-x: hidden !important;
+    }
+
+    .f0-user-table-mobile {
+        width: 100% !important;
+        min-width: 0 !important;
+        border-collapse: separate !important;
+        border-spacing: 0 !important;
+        background: transparent !important;
+    }
+
+    .f0-user-table-mobile thead {
+        display: none !important;
+    }
+
+    .f0-user-table-mobile,
+    .f0-user-table-mobile tbody,
+    .f0-user-table-mobile tr,
+    .f0-user-table-mobile td {
+        display: block !important;
+        width: 100% !important;
+        box-sizing: border-box !important;
+    }
+
+    .f0-user-table-mobile tr {
+        margin-bottom: 16px !important;
+        padding: 14px !important;
+        border: 1px solid #ddd !important;
+        border-radius: 14px !important;
+        background: #fff !important;
+        box-shadow: 0 2px 8px rgba(0,0,0,0.08) !important;
+    }
+
+    .f0-user-table-mobile td {
+        border: none !important;
+        border-bottom: 1px solid #eee !important;
+        padding: 10px 0 !important;
+        text-align: left !important;
+    }
+
+    .f0-user-table-mobile td:last-child {
+        border-bottom: none !important;
+    }
+
+    .f0-user-table-mobile td::before {
+        content: attr(data-label) !important;
+        display: block !important;
+        margin-bottom: 6px !important;
+        font-weight: 700 !important;
+        color: #443933 !important;
+        font-size: 0.85rem !important;
+        text-transform: uppercase !important;
+    }
+
+    .f0-user-table-mobile .f0-actions {
+        display: flex !important;
+        flex-direction: column !important;
+        gap: 10px !important;
+        width: 100% !important;
+    }
+
+    .f0-user-table-mobile .f0-actions a {
+        width: 100% !important;
+        box-sizing: border-box !important;
+    }
+
+    .f0-user-table-mobile .f0-btn,
+    .f0-user-table-mobile .f0-btn-secondary,
+    .f0-user-table-mobile .f0-btn-danger {
+        width: 100% !important;
+        min-width: 0 !important;
+    }
+}
