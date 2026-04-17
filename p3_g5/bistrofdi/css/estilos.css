@@ -2713,3 +2713,125 @@ body.f0-body .f0-confirm-text {
         margin: 0 !important;
     }
 }
+
+/* PRODUCTOS ADAPTADO FINAL MÓVIL */
+
+@media (max-width: 768px) {
+    .tabla-productos-movil {
+        width: 100% !important;
+        min-width: 0 !important;
+        border-collapse: separate !important;
+        border-spacing: 0 !important;
+        table-layout: auto !important;
+        background: transparent !important;
+        margin-top: 20px !important;
+    }
+
+    .tabla-productos-movil thead {
+        display: none !important;
+    }
+
+    .tabla-productos-movil,
+    .tabla-productos-movil tbody,
+    .tabla-productos-movil tr,
+    .tabla-productos-movil td {
+        display: block !important;
+        width: 100% !important;
+        box-sizing: border-box !important;
+    }
+
+    .tabla-productos-movil tr {
+        margin-bottom: 16px !important;
+        padding: 14px !important;
+        border: 1px solid #ddd !important;
+        border-radius: 12px !important;
+        background: #fff !important;
+        box-shadow: 0 2px 8px rgba(0,0,0,0.08) !important;
+    }
+
+    .tabla-productos-movil td {
+        position: relative !important;
+        text-align: left !important;
+        padding: 10px 0 !important;
+        border: none !important;
+        border-bottom: 1px solid #eee !important;
+        min-height: auto !important;
+    }
+
+    .tabla-productos-movil td:last-child {
+        border-bottom: none !important;
+    }
+
+    .tabla-productos-movil td::before {
+        content: attr(data-label) !important;
+        display: block !important;
+        margin-bottom: 6px !important;
+        font-weight: 700 !important;
+        color: #4b3f35 !important;
+        text-transform: uppercase !important;
+        font-size: 0.85rem !important;
+    }
+
+    .tabla-productos-movil .col-imagenes,
+    .tabla-productos-movil .col-nombre,
+    .tabla-productos-movil .col-desc,
+    .tabla-productos-movil .col-precio,
+    .tabla-productos-movil .col-stock,
+    .tabla-productos-movil .col-acciones {
+        width: 100% !important;
+        min-width: 0 !important;
+        max-width: 100% !important;
+        text-align: left !important;
+    }
+
+    .tabla-productos-movil .col-precio,
+    .tabla-productos-movil .col-stock,
+    .tabla-productos-movil .col-acciones {
+        text-align: left !important;
+    }
+
+    .tabla-productos-movil .contenedor-fotos-tabla {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 8px;
+    }
+
+    .tabla-productos-movil .img-mini-tabla {
+        width: 72px !important;
+        height: 72px !important;
+        max-width: 100% !important;
+        object-fit: cover !important;
+        margin: 0 !important;
+    }
+
+    .tabla-productos-movil .col-acciones {
+        display: flex !important;
+        flex-direction: column !important;
+        gap: 10px !important;
+    }
+
+    .tabla-productos-movil .col-acciones a,
+    .tabla-productos-movil .col-acciones form,
+    .tabla-productos-movil .col-acciones button {
+        width: 100% !important;
+        max-width: 100% !important;
+        min-width: 0 !important;
+        box-sizing: border-box !important;
+    }
+
+    .tabla-productos-movil .btn-editar,
+    .tabla-productos-movil .btn-eliminar,
+    .tabla-productos-movil .btn-reactivar {
+        width: 100% !important;
+        min-width: 0 !important;
+        display: flex !important;
+        justify-content: center !important;
+        text-align: center !important;
+    }
+
+    .tabla-productos-movil .form-del-inline {
+        display: block !important;
+        margin: 0 !important;
+        width: 100% !important;
+    }
+}
