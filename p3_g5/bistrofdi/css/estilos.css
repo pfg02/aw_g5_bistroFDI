@@ -2534,3 +2534,182 @@ body.f0-body .f0-confirm-text {
         margin-top: 10px;
     }
 }
+
+/* CATEGORÍAS ADAPTADO MÓVIL FINAL */
+
+.tabla-responsive {
+    width: 100%;
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+}
+
+.tabla-categorias {
+    width: 100%;
+    border-collapse: collapse;
+    table-layout: fixed;
+}
+
+.tabla-categorias th,
+.tabla-categorias td {
+    word-break: break-word;
+    overflow-wrap: break-word;
+}
+
+.cat-desc {
+    max-width: 280px;
+}
+
+.cat-acciones {
+    white-space: normal;
+}
+
+.cat-acciones a,
+.cat-acciones button {
+    display: inline-block;
+    margin: 4px 4px 4px 0;
+}
+
+@media (max-width: 768px) {
+    .header-gestion {
+        display: flex;
+        flex-direction: column;
+        align-items: stretch;
+        gap: 12px;
+    }
+
+    .header-gestion h1 {
+        font-size: 2rem;
+        line-height: 1.1;
+        margin: 0;
+    }
+
+    .btn-primario {
+        width: 100%;
+        text-align: center;
+    }
+
+    .tabla-categorias thead {
+        display: none;
+    }
+
+    .tabla-categorias,
+    .tabla-categorias tbody,
+    .tabla-categorias tr,
+    .tabla-categorias td {
+        display: block;
+        width: 100%;
+    }
+
+    .tabla-categorias tr {
+        background: #fff;
+        border: 1px solid #d8d1c4;
+        border-radius: 12px;
+        margin-bottom: 16px;
+        padding: 14px;
+    }
+
+    .tabla-categorias td {
+        border: none;
+        padding: 8px 0;
+        text-align: left;
+    }
+
+    .tabla-categorias td::before {
+        content: attr(data-label);
+        display: block;
+        font-weight: 700;
+        margin-bottom: 6px;
+        color: #4b3f35;
+        text-transform: uppercase;
+        font-size: 0.85rem;
+    }
+
+    .img-tabla-cat {
+        width: 72px;
+        height: auto;
+        display: block;
+    }
+
+    .cat-nombre {
+        font-size: 1.2rem;
+    }
+
+    .cat-desc {
+        max-width: 100%;
+    }
+
+    .cat-acciones {
+        display: flex;
+        flex-direction: column;
+        gap: 10px;
+    }
+
+    .cat-acciones a,
+    .cat-acciones button,
+    .cat-acciones form {
+        width: 100%;
+    }
+
+    .cat-acciones .btn-editar,
+    .cat-acciones .btn-eliminar {
+        width: 100%;
+        text-align: center;
+    }
+
+    .form-del-inline {
+        display: block;
+        margin: 0;
+    }
+}
+
+@media (max-width: 768px) {
+    .seccion-tabla,
+    .tabla-responsive {
+        overflow-x: hidden !important;
+    }
+
+    .tabla-categorias {
+        min-width: 0 !important;
+        width: 100% !important;
+        table-layout: auto !important;
+    }
+
+    .tabla-categorias tr,
+    .tabla-categorias td {
+        box-sizing: border-box !important;
+    }
+
+    .tabla-categorias td:first-child {
+        width: 100% !important;
+    }
+
+    .cat-acciones {
+        min-width: 0 !important;
+        width: 100% !important;
+    }
+
+    .cat-acciones a,
+    .cat-acciones button,
+    .cat-acciones form {
+        width: 100% !important;
+        max-width: 100% !important;
+        min-width: 0 !important;
+        box-sizing: border-box !important;
+    }
+
+    .btn-primario,
+    .btn-secundario,
+    .btn-editar,
+    .btn-eliminar {
+        width: 100% !important;
+        max-width: 100% !important;
+        min-width: 0 !important;
+        box-sizing: border-box !important;
+    }
+
+    .form-del-inline {
+        display: block !important;
+        width: 100% !important;
+        margin: 0 !important;
+    }
+}
