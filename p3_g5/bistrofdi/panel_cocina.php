@@ -29,9 +29,7 @@
         if (!empty($platos)) {
             $todosPreparados = true;
             foreach ($platos as &$plato) {
-                // Leemos directamente el estado de la Base de Datos
                 $estaPreparado = ($plato['preparado'] == 1);
-                
                 $plato['preparado'] = $estaPreparado; 
                 
                 if (!$estaPreparado) {
@@ -66,7 +64,7 @@
             <?php if (empty($pedidosNuevos)): ?>
                 <p class="p-vacio">No hay comandas pendientes.</p>
             <?php else: ?>
-                <table class="tabla-pedidos">
+                <table class="tabla-pedidos tabla-cocina-movil">
                     <thead>
                         <tr>
                             <th>Ticket</th>
@@ -78,10 +76,10 @@
                     <tbody>
                         <?php foreach ($pedidosNuevos as $p): ?>
                             <tr>
-                                <td><strong>#<?= htmlspecialchars($p['numero_pedido'] ?? $p['id']) ?></strong></td>
-                                <td><?= htmlspecialchars($p['tipo'] ?? 'Local') ?></td>
-                                <td><?= date('H:i', strtotime($p['fecha'])) ?></td>
-                                <td>
+                                <td data-label="Ticket"><strong>#<?= htmlspecialchars($p['numero_pedido'] ?? $p['id']) ?></strong></td>
+                                <td data-label="Tipo"><?= htmlspecialchars($p['tipo'] ?? 'Local') ?></td>
+                                <td data-label="Hora"><?= date('H:i', strtotime($p['fecha'])) ?></td>
+                                <td data-label="Acción">
                                     <form action="procesar_cocina.php" method="POST">
                                         <input type="hidden" name="accion" value="reclamar">
                                         <input type="hidden" name="id_pedido" value="<?= $p['id'] ?>">
@@ -111,7 +109,7 @@
                     <strong>Preparando Ticket #<?= htmlspecialchars($miPedido['numero_pedido'] ?? $miPedido['id']) ?> (<?= htmlspecialchars($miPedido['tipo'] ?? 'Local') ?>)</strong>
                 </p>
                 
-                <table class="tabla-pedidos">
+                <table class="tabla-pedidos tabla-cocina-movil">
                     <thead>
                         <tr>
                             <th>Cant.</th>
@@ -122,11 +120,11 @@
                     <tbody>
                         <?php foreach ($platos as $plato): ?>
                             <tr>
-                                <td><strong><?= $plato['cantidad'] ?>x</strong></td>
-                                <td class="<?= $plato['preparado'] ? 'plato-preparado' : '' ?>">
+                                <td data-label="Cantidad"><strong><?= $plato['cantidad'] ?>x</strong></td>
+                                <td data-label="Producto" class="<?= $plato['preparado'] ? 'plato-preparado' : '' ?>">
                                     <?= htmlspecialchars($plato['nombre']) ?>
                                 </td>
-                                <td>
+                                <td data-label="Acción">
                                     <?php if (!$plato['preparado']): ?>
                                         <form action="procesar_cocina.php" method="POST">
                                             <input type="hidden" name="accion" value="marcar_plato">
