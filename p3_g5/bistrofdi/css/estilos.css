@@ -2465,6 +2465,103 @@ body.f0-body .f0-confirm-text {
     }
 }
 
+@media (max-width: 768px) {
+    .tabla-mis-pedidos-movil td {
+        display: flex !important;
+        align-items: flex-start !important;
+        justify-content: space-between !important;
+        gap: 14px !important;
+        padding: 12px 0 !important;
+        text-align: left !important;
+    }
+
+    .tabla-mis-pedidos-movil td::before {
+        content: attr(data-label) !important;
+        position: static !important;
+        width: auto !important;
+        min-width: 105px !important;
+        max-width: 105px !important;
+        margin: 0 !important;
+        text-align: left !important;
+        font-weight: 700 !important;
+        color: #333 !important;
+        white-space: normal !important;
+        flex-shrink: 0 !important;
+    }
+
+    .tabla-mis-pedidos-movil td > * {
+        min-width: 0 !important;
+    }
+
+    .tabla-mis-pedidos-movil .badge-success {
+        display: inline-flex !important;
+        align-items: center !important;
+        justify-content: center !important;
+        max-width: 100% !important;
+        min-width: 0 !important;
+        white-space: nowrap !important;
+        padding: 8px 12px !important;
+        line-height: 1.2 !important;
+        box-sizing: border-box !important;
+    }
+
+    .tabla-mis-pedidos-movil a {
+        word-break: break-word !important;
+    }
+
+    .tabla-mis-pedidos-movil td[data-label="Acciones"] {
+        display: block !important;
+    }
+
+    .tabla-mis-pedidos-movil td[data-label="Acciones"]::before {
+        display: block !important;
+        min-width: 0 !important;
+        max-width: none !important;
+        margin-bottom: 8px !important;
+    }
+
+    .tabla-mis-pedidos-movil td[data-label="Acciones"] a,
+    .tabla-mis-pedidos-movil td[data-label="Acciones"] form,
+    .tabla-mis-pedidos-movil td[data-label="Acciones"] button {
+        width: 100% !important;
+        max-width: 100% !important;
+        box-sizing: border-box !important;
+    }
+
+    .tabla-mis-pedidos-movil td[data-label="Acciones"] form {
+        margin-top: 10px !important;
+    }
+
+    .tabla-mis-pedidos-movil td[data-label="Fecha"],
+    .tabla-mis-pedidos-movil td[data-label="Estado"],
+    .tabla-mis-pedidos-movil td[data-label="Total"] {
+        align-items: center !important;
+    }
+}
+
+@media (max-width: 768px) {
+    .tabla-mis-pedidos-movil .badge-success,
+    .tabla-mis-pedidos-movil .badge-estado,
+    .tabla-mis-pedidos-movil .estado-badge {
+        display: inline-flex !important;
+        align-items: center;
+        justify-content: center;
+        max-width: 100% !important;
+        min-width: 0 !important;
+        white-space: normal !important;
+        overflow-wrap: break-word !important;
+        word-break: break-word !important;
+        text-align: center !important;
+        line-height: 1.2 !important;
+        padding: 8px 12px !important;
+        box-sizing: border-box !important;
+    }
+
+    .tabla-mis-pedidos-movil td {
+        overflow: hidden;
+    }
+}
+
 /* DETALLE PEDIDO MÓVIL */
 
 @media (max-width: 768px) {
