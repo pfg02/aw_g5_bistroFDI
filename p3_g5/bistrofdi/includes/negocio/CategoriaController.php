@@ -1,18 +1,31 @@
 <?php
 require_once __DIR__ . '/CategoriaService.php';
 
-class CategoriaController {
-    private $service;
+class CategoriaController
+{
+    private CategoriaService $service;
 
-    public function __construct($db) {
+    public function __construct($db)
+    {
         $this->service = new CategoriaService($db);
     }
 
-    public function gestionarPeticion($accion, $id = null) {
+    public function obtenerPorId(int $id)
+    {
+        return $this->service->obtenerPorId($id);
+    }
+
+    public function guardarCategoria(string $nombre, string $descripcion, ?string $imagen = null, ?int $id = null): bool
+    {
+        return $this->service->guardarCategoria($nombre, $descripcion, $imagen, $id);
+    }
+
+    public function gestionarPeticion($accion, $id = null)
+    {
         if ($accion === 'eliminar' && $id) {
-            // Lógica de seguridad: ¿Tiene productos asociados?
-            // Si todo ok, borrar.
+            return $this->service->eliminarCategoria($id);
         }
-        // Redirigir a la vista de categorías
+
+        return false;
     }
 }

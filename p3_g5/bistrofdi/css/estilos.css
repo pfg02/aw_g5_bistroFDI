@@ -377,8 +377,8 @@ input, select, textarea { width: 100%; padding: 10px; border: 1px solid #ddd; bo
 
 /* Selector de alta prioridad para las miniaturas */
 .admin-panel .img-tabla-cat {
-    width: 50px !important;
-    height: 50px !important;
+    width: 90px !important;
+    height: 90px !important;
     object-fit: cover;
     border-radius: 50%; /* Esto la hará redonda como en tu diseño original */
     border: 1px solid #ddd;
@@ -3206,4 +3206,135 @@ body.f0-body .f0-confirm-text {
 
 .mensaje-anadido.activo {
     opacity: 1;
+}
+
+/* Editar categiorías formulario act */
+
+body.fondo-madera {
+    background: url("../img/fondo_madera_oscura.png") center center / cover fixed no-repeat;
+}
+
+.catalogo-admin {
+    max-width: 1100px;
+    margin: 40px auto;
+    padding: 0 20px;
+}
+
+.header-gestion {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 16px;
+    margin-bottom: 18px;
+}
+
+.header-gestion h1 {
+    margin: 0;
+    color: #ffffff;
+    font-size: 28px;
+    text-shadow: 0 2px 4px rgba(0, 0, 0, 0.35);
+}
+
+.tabla-admin-wrapper {
+    background: #f3f3f3;
+    border: 1px solid #d8d8d8;
+    box-shadow: 0 4px 14px rgba(0, 0, 0, 0.12);
+}
+
+.bloque-formulario-admin {
+    padding: 28px;
+}
+
+.form-admin-edicion .grupo-control {
+    margin-bottom: 20px;
+}
+
+.form-admin-edicion label {
+    display: block;
+    margin-bottom: 8px;
+    font-weight: 700;
+    color: #222;
+}
+
+.form-admin-edicion input[type="text"],
+.form-admin-edicion input[type="file"],
+.form-admin-edicion textarea {
+    width: 100%;
+    padding: 12px 14px;
+    border: 1px solid #cfcfcf;
+    border-radius: 4px;
+    box-sizing: border-box;
+    font: inherit;
+    background: #fff;
+}
+
+.form-admin-edicion textarea {
+    resize: vertical;
+    min-height: 120px;
+}
+
+.preview-categoria {
+    margin-top: 10px;
+}
+
+.img-tabla-cat {
+    width: 120px;
+    height: auto;
+    display: block;
+}
+
+.acciones-form {
+    display: flex;
+    justify-content: flex-end;
+    gap: 12px;
+    margin-top: 25px;
+    flex-wrap: wrap;
+}
+
+.btn-azul-admin {
+    display: inline-block;
+    padding: 12px 20px;
+    border-radius: 4px;
+    text-decoration: none;
+    font-weight: 700;
+    color: #fff;
+    background: linear-gradient(180deg, #4d86d9 0%, #2f65b6 100%);
+    border: 1px solid #2757a1;
+    box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.18);
+}
+
+.btn-primario {
+    display: inline-block;
+    padding: 12px 20px;
+    border-radius: 4px;
+    text-decoration: none;
+    font-weight: 700;
+    color: #fff;
+    background: linear-gradient(180deg, #4e9a52 0%, #357a38 100%);
+    border: 1px solid #2e6b32;
+    cursor: pointer;
+}
+
+.btn-secundario {
+    display: inline-block;
+    padding: 12px 20px;
+    border-radius: 4px;
+    text-decoration: none;
+    font-weight: 700;
+    color: #fff;
+    background: linear-gradient(180deg, #c14d43 0%, #a83228 100%);
+    border: 1px solid #922a21;
+}
+
+.alerta-sistema.alerta-error {
+    margin-bottom: 18px;
+    padding: 12px 16px;
+    background: #fbe3e3;
+    border: 1px solid #d9a4a4;
+    color: #8a1f1f;
+}
+
+.alerta-sistema.alerta-error ul {
+    margin: 0;
+    padding-left: 20px;
 }
