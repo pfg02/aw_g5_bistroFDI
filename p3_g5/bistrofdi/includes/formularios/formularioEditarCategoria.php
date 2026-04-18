@@ -67,7 +67,7 @@ $erroresHtml
 $imagenActualHtml
 
 <div class="acciones-form">
-    <button type="submit" class="btn-primario">GUARDAR CATEGORÍA</button>
+    <button type="submit" class="btn-primario">Guardar categoría</button>
     <a href="gestion_categorias.php" class="btn-secundario">Volver al listado</a>
 </div>
 HTML;
