@@ -1,25 +1,12 @@
 <?php
 require_once __DIR__ . '/includes/sesion.php';
 require_once __DIR__ . '/includes/negocio/UsuarioController.php';
+require_once __DIR__ . '/includes/formularios/FormularioOlvidoPassword.php';
 
 $controller = new UsuarioController();
-
-$mensaje = '';
-$mensajeError = '';
-$datosFormulario = ['email' => ''];
-
-if ($_SERVER['REQUEST_METHOD'] === 'POST') {
-    $datosFormulario['email'] = trim($_POST['email'] ?? '');
-
-    [$ok, $texto] = $controller->procesarSolicitudRecuperacion($_POST);
-
-    if ($ok) {
-        $mensaje = $texto;
-        $datosFormulario['email'] = '';
-    } else {
-        $mensajeError = $texto;
-    }
-}
+$formulario = new FormularioOlvidoPassword($controller);
+$htmlFormulario = $formulario->gestiona();
+$mensaje = $formulario->getMensajeExito();
 
 ob_start();
 ?>
@@ -34,20 +21,7 @@ ob_start();
                 <div class="f0-msg-ok"><?= htmlspecialchars($mensaje) ?></div>
             <?php endif; ?>
 
-            <?php if ($mensajeError): ?>
-                <div class="f0-msg-error"><?= htmlspecialchars($mensajeError) ?></div>
-            <?php endif; ?>
-
-            <form method="post" action="olvidoPassword.php" class="f0-form">
-                <label>
-                    Email
-                    <input type="email" name="email" value="<?= htmlspecialchars($datosFormulario['email']) ?>" placeholder="Correo electrónico" required>
-                </label>
-
-                <div class="f0-form-actions">
-                    <button type="submit" class="f0-btn">Enviar correo de recuperación</button>
-                </div>
-            </form>
+            <?= $htmlFormulario ?>
 
             <div class="f0-auth-switch">
                 <p><a href="login.php">Volver a iniciar sesión</a></p>

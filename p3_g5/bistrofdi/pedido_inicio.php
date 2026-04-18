@@ -4,9 +4,12 @@
  */
 
 	require_once __DIR__ . '/includes/sesion.php';
+    require_once __DIR__ . '/includes/formularios/FormularioInicioPedido.php';
 
 	exigirLogin();
 	exigirRol('cliente');
+
+    $formularioInicio = new FormularioInicioPedido();
 
 	$tituloPagina = 'Bistró FDI - Nuevo Pedido';
 	$bodyClass    = 'f0-body';
@@ -28,23 +31,7 @@
 		
 		<div class="mensaje-sesion">
 			
-			<form action="catalogo.php" method="POST">
-				
-				<div>
-					<label class="txt-bienvenida">¿Cómo prefieres tu pedido?</label>
-					<select name="tipo" id="tipo" class="select-estado">
-						<option value="Local">Consumir en el local</option>
-						<option value="Llevar">Para llevar</option>
-					</select>
-				</div>
-
-
-				<div class="contenedor-botones-index">
-                    <button type="submit" class="btn-login"> Empezar a pedir </button>
-                    <a href="index.php" class="btn-admin">Cancelar</a>
-                </div>
-
-			</form>
+            <?= $formularioInicio->gestiona() ?>
 
 		</div>
 

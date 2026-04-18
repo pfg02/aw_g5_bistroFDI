@@ -6,6 +6,7 @@
 	require_once __DIR__ . '/includes/sesion.php';
 	require_once __DIR__ . '/includes/config.php';
 	require_once __DIR__ . '/includes/negocio/PedidoController.php';
+    require_once __DIR__ . '/includes/formularios/FormularioPago.php';
 
 	exigirLogin();
 	exigirRol('cliente');
@@ -23,6 +24,8 @@
 		header("Location: index.php");
 		exit();
 	}
+
+    $formularioPago = new FormularioPago($idPedido);
 
 	$tituloPagina = 'Pasarela de Pago - Bistró FDI';
 	$bodyClass    = 'f0-body';
@@ -53,38 +56,7 @@
 				<div class="caja-metodo-pago">
 					<h3 class="titulo-metodo">Pagar ahora con Tarjeta</h3>
 					
-					<form action="procesar_pago.php" method="POST" class="form-pedido-inicio">
-						<input type="hidden" name="id_pedido" value="<?php echo htmlspecialchars($idPedido); ?>">
-						<input type="hidden" name="metodo_pago" value="tarjeta">
-						
-						<div class="grupo-form-pedido">
-							<label for="tarjeta" class="label-pedido">Número de Tarjeta</label>
-							<input type="text" id="tarjeta" name="tarjeta" placeholder="1234567890123456" 
-								required pattern="\d{16}" maxlength="16" 
-								title="Introduce los 16 números de la tarjeta sin espacios" 
-								class="select-pedido input-pago">
-						</div>
-						
-						<div class="grid-tarjeta-datos">
-							<div class="grupo-form-pedido">
-								<label for="caducidad" class="label-pedido">Caducidad</label>
-								<input type="text" id="caducidad" name="caducidad" placeholder="MM/AA" 
-									required pattern="(0[1-9]|1[0-2])\/\d{2}" maxlength="5" 
-									title="Formato de fecha MM/AA (ejemplo: 12/25)" 
-									class="select-pedido input-pago">
-							</div>
-							
-							<div class="grupo-form-pedido">
-								<label for="cvv" class="label-pedido">CVV</label>
-								<input type="text" id="cvv" name="cvv" placeholder="123" 
-									required pattern="\d{3}" maxlength="3" 
-									title="Introduce los 3 números de seguridad de la parte trasera" 
-									class="select-pedido input-pago">
-							</div>
-						</div>
-						
-						<button type="submit" class="btn-confirmar-compra"> Procesar Pago Online </button>
-					</form>
+                    <?= $formularioPago->gestiona() ?>
 				</div>
 
 				<div class="caja-metodo-pago" style="border: none; background: transparent; padding: 0; margin-top: 10px;">

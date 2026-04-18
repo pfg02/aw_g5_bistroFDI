@@ -1,6 +1,7 @@
 <?php
 require_once __DIR__ . '/includes/sesion.php';
 require_once __DIR__ . '/includes/negocio/UsuarioController.php';
+require_once __DIR__ . '/includes/formularios/FormularioLogin.php';
 
 if (usuarioLogueado()) {
     header('Location: index.php');
@@ -8,18 +9,8 @@ if (usuarioLogueado()) {
 }
 
 $controller = new UsuarioController();
-$mensajeError = '';
-
-if ($_SERVER['REQUEST_METHOD'] === 'POST') {
-    [$ok, $mensaje] = $controller->procesarLogin($_POST);
-
-    if ($ok) {
-        header('Location: index.php');
-        exit;
-    }
-
-    $mensajeError = $mensaje;
-}
+$formulario = new FormularioLogin($controller);
+$htmlFormulario = $formulario->gestiona();
 
 ob_start();
 ?>
@@ -33,25 +24,7 @@ ob_start();
                 <div class="f0-msg-ok">Usuario registrado correctamente. Ya puedes iniciar sesión.</div>
             <?php endif; ?>
 
-            <?php if ($mensajeError): ?>
-                <div class="f0-msg-error"><?= htmlspecialchars($mensajeError) ?></div>
-            <?php endif; ?>
-
-            <form method="post" action="login.php" class="f0-form">
-                <label>
-                    Nombre de usuario
-                    <input type="text" name="nombre_usuario" value="<?= htmlspecialchars($_POST['nombre_usuario'] ?? '') ?>" placeholder="Nombre de usuario" required>
-                </label>
-
-                <label>
-                    Contraseña
-                    <input type="password" name="password" placeholder="Contraseña" required>
-                </label>
-
-                <div class="f0-form-actions">
-                    <button type="submit" class="f0-btn">Entrar</button>
-                </div>
-            </form>
+            <?= $htmlFormulario ?>
 
             <div class="f0-auth-switch">
                 <p><a href="registro.php">Registrarse</a></p>
