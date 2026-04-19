@@ -1,5 +1,5 @@
 <?php
-require_once __DIR__ . '/../Formulario.php';
+require_once __DIR__ . '/../core/formulario.php';
 require_once __DIR__ . '/../negocio/UsuarioController.php';
 
 class FormularioLogin extends Formulario
@@ -11,7 +11,7 @@ class FormularioLogin extends Formulario
         parent::__construct('formLogin', [
             'action' => 'login.php',
             'class' => 'f0-form',
-            'urlRedireccion' => 'index.php',
+            'urlRedireccion' => '../../../index.php',
         ]);
         $this->controller = $controller;
     }

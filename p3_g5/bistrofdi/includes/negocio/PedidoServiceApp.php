@@ -2,7 +2,7 @@
 
 require_once __DIR__ . '/../integracion/PedidoDAO.php';
 require_once __DIR__ . '/../integracion/ProductoDAO.php';
-require_once __DIR__ . '/../config.php';
+require_once __DIR__ . '/../core/config.php';
 
 class PedidoServiceApp {
 

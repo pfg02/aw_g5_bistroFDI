@@ -1,12 +1,12 @@
 <?php
-require_once __DIR__ . '/../Formulario.php';
+require_once __DIR__ . '/../core/formulario.php';
 
 class FormularioInicioPedido extends Formulario
 {
     public function __construct()
     {
         parent::__construct('formInicioPedido', [
-            'action' => 'catalogo.php',
+            'action' => '../tienda/catalogo.php',
             'class' => '',
         ]);
     }
@@ -28,7 +28,7 @@ class FormularioInicioPedido extends Formulario
 
 <div class="contenedor-botones-index">
     <button type="submit" class="btn-login"> Empezar a pedir </button>
-    <a href="index.php" class="btn-admin">Cancelar</a>
+    <a href="../../../index.php" class="btn-admin">Cancelar</a>
 </div>
 HTML;
     }

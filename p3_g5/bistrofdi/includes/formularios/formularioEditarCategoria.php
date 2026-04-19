@@ -1,6 +1,6 @@
 <?php
 
-require_once __DIR__ . '/../Formulario.php';
+require_once __DIR__ . '/../core/formulario.php';
 require_once __DIR__ . '/../negocio/CategoriaController.php';
 require_once __DIR__ . '/../negocio/CategoriaDTO.php';
 
@@ -33,11 +33,13 @@ class FormularioEditarCategoria extends Formulario
         $imagenActualHtml = '';
         if ($this->categoria && !empty($this->categoria->imagen)) {
             $src = htmlspecialchars($this->categoria->imagen);
+            $rutaImagen = BASE_URL . '/img/categorias/' . $src;
+
             $imagenActualHtml = <<<HTML
 <div class="grupo-control">
     <label>Imagen actual:</label>
     <div class="preview-categoria">
-        <img src="../../img/categorias/$src" alt="Imagen actual" class="img-tabla-cat">
+        <img src="$rutaImagen" alt="Imagen actual" class="img-tabla-cat">
     </div>
 </div>
 HTML;

@@ -1,5 +1,5 @@
 <?php
-require_once __DIR__ . '/../Formulario.php';
+require_once __DIR__ . '/../core/formulario.php';
 require_once __DIR__ . '/../negocio/UsuarioController.php';
 
 class FormularioOlvidoPassword extends Formulario

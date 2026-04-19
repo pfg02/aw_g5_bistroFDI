@@ -1,5 +1,6 @@
 <?php
-require_once __DIR__ . '/../Formulario.php';
+require_once __DIR__ . '/../core/config.php';
+require_once __DIR__ . '/../core/formulario.php';
 
 class FormularioPago extends Formulario
 {
@@ -8,7 +9,7 @@ class FormularioPago extends Formulario
     public function __construct(int $idPedido)
     {
         parent::__construct('formPagoTarjeta', [
-            'action' => 'procesar_pago.php',
+            'action' => BASE_URL . '/includes/acciones/pedido/procesar_pago.php',            'method' => 'POST',
             'class' => 'form-pedido-inicio',
         ]);
         $this->idPedido = $idPedido;
@@ -24,31 +25,22 @@ class FormularioPago extends Formulario
 
 <div class="grupo-form-pedido">
     <label for="tarjeta" class="label-pedido">Número de Tarjeta</label>
-    <input type="text" id="tarjeta" name="tarjeta" placeholder="1234567890123456"
-        required pattern="\d{16}" maxlength="16"
-        title="Introduce los 16 números de la tarjeta sin espacios"
-        class="select-pedido input-pago">
+    <input type="text" id="tarjeta" name="tarjeta" placeholder="1234567890123456" required maxlength="16" class="select-pedido input-pago">
 </div>
 
 <div class="grid-tarjeta-datos">
     <div class="grupo-form-pedido">
         <label for="caducidad" class="label-pedido">Caducidad</label>
-        <input type="text" id="caducidad" name="caducidad" placeholder="MM/AA"
-            required pattern="(0[1-9]|1[0-2])\/\d{2}" maxlength="5"
-            title="Formato de fecha MM/AA (ejemplo: 12/25)"
-            class="select-pedido input-pago">
+        <input type="text" id="caducidad" name="caducidad" placeholder="MM/AA" required maxlength="5" class="select-pedido input-pago">
     </div>
 
     <div class="grupo-form-pedido">
         <label for="cvv" class="label-pedido">CVV</label>
-        <input type="text" id="cvv" name="cvv" placeholder="123"
-            required pattern="\d{3}" maxlength="3"
-            title="Introduce los 3 números de seguridad de la parte trasera"
-            class="select-pedido input-pago">
+        <input type="text" id="cvv" name="cvv" placeholder="123" required maxlength="3" class="select-pedido input-pago">
     </div>
 </div>
 
-<button type="submit" class="btn-confirmar-compra"> Procesar Pago Online </button>
+<button type="submit" class="btn-confirmar-compra">Procesar Pago Online</button>
 HTML;
     }
 

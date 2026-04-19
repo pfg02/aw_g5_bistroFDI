@@ -1,5 +1,5 @@
 <?php
-require_once __DIR__ . '/includes/sesion.php';
+require_once __DIR__ . '/includes/core/sesion.php';
 
 ob_start();
 ?>
@@ -23,27 +23,27 @@ ob_start();
                     <?php $rol = $_SESSION['rol'] ?? 'cliente'; ?>
 
                     <?php if ($rol === 'gerente'): ?>
-                        <a href="includes/vistas/gestion_productos.php" class="btn-admin">Gestionar Catálogo</a>
-                        <a href="includes/vistas/gestion_categorias.php" class="btn-admin">Gestionar Categorías</a>
-                        <a href="gestionarUsuarios.php" class="btn-admin">Gestionar Usuarios</a>
-                        <a href="panel_camarero.php" class="btn-admin">Panel de Gerencia</a>
+                        <a href="includes/vistas/admin/gestion_productos.php" class="btn-admin">Gestionar Catálogo</a>
+                        <a href="includes/vistas/admin/gestion_categorias.php" class="btn-admin">Gestionar Categorías</a>
+                        <a href="includes/vistas/admin/gestionarUsuarios.php" class="btn-admin">Gestionar Usuarios</a>
+                        <a href="includes/vistas/camarero/panel_camarero.php" class="btn-admin">Panel de Gerencia</a>
 
                     <?php elseif ($rol === 'camarero'): ?>
-                        <a href="panel_camarero.php" class="btn-admin">Panel de Sala (Camareros)</a>
+                        <a href="includes/vistas/camarero/panel_camarero.php" class="btn-admin">Panel de Sala (Camareros)</a>
 
                     <?php elseif ($rol === 'cocinero'): ?>
-                        <a href="panel_cocina.php" class="btn-admin">Panel de Cocina (Cocineros)</a>
+                        <a href="includes/vistas/cocina/panel_cocina.php" class="btn-admin">Panel de Cocina (Cocineros)</a>
 
                     <?php else: ?>
-                        <a href="perfil.php" class="btn-login">Ver mi Perfil</a>
-                        <a href="pedido_inicio.php" class="btn-login">Hacer Pedido</a>
-                        <a href="mis_pedidos.php" class="btn-login">Mis Pedidos</a>
+                        <a href="includes/vistas/perfil/perfil.php" class="btn-login">Ver mi Perfil</a>
+                        <a href="includes/vistas/pedido/pedido_inicio.php" class="btn-login">Hacer Pedido</a>
+                        <a href="includes/vistas/pedido/mis_pedidos.php" class="btn-login">Mis Pedidos</a>
                     <?php endif; ?>
                 </div>
             <?php else: ?>
                 <p>Inicia sesión para gestionar el sistema.</p>
                 <div class="contenedor-botones-index">
-                    <a href="login.php" class="btn-login">Acceder al Sistema</a>
+                    <a href="includes/vistas/auth/login.php" class="btn-login">Acceder al Sistema</a>
                 </div>
             <?php endif; ?>
         </div>
@@ -54,5 +54,5 @@ $contenidoPrincipal = ob_get_clean();
 $tituloPagina = 'Bistró FDI - Inicio';
 $bodyClass = 'f0-body';
 
-require __DIR__ . '/includes/vistas/comun/plantilla.php';
+require __DIR__ . '/includes/vistas/partials/plantilla.php';
 ?>

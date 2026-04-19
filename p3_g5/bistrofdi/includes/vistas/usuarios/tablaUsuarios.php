@@ -32,9 +32,9 @@
                     </td>
                     <td data-label="Acciones">
                         <div class="f0-actions">
-                            <a href="cambiarRol.php?id=<?= urlencode((string)$usuario->getId()) ?>" class="f0-btn">Editar</a>
-                            <a href="mis_pedidos.php?id_cliente=<?= urlencode((string)$usuario->getId()) ?>" class="f0-btn">Ver Pedidos</a>
-                            <a href="borrarUsuario.php?id=<?= urlencode((string)$usuario->getId()) ?>" class="f0-btn-danger">Borrar</a>
+                            <a href="<?= BASE_URL ?>/includes/vistas/admin/cambiarRol.php?id=<?= urlencode((string)$usuario->getId()) ?>" class="f0-btn">Editar</a>
+                            <a href="<?= BASE_URL ?>/includes/vistas/pedido/mis_pedidos.php?id_cliente=<?= urlencode((string)$usuario->getId()) ?>" class="f0-btn">Ver Pedidos</a>
+                            <a href="<?= BASE_URL ?>/includes/vistas/admin/borrarUsuario.php?id=<?= urlencode((string)$usuario->getId()) ?>" class="f0-btn-danger">Borrar</a>
                         </div>
                     </td>
                 </tr>

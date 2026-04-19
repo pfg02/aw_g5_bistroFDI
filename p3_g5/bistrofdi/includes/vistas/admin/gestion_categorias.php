@@ -7,7 +7,7 @@ require_once __DIR__ . '/../../negocio/CategoriaDTO.php';
 
 // 2. Seguridad: Solo Gerente
 if (!isset($_SESSION['rol']) || $_SESSION['rol'] !== 'gerente') {
-    header("Location: ../auth/login.php");
+    header("Location: ../../../index.php");
     exit();
 }
 
@@ -35,7 +35,7 @@ $categorias = $service->listarTodas();
 
 $tituloPagina = 'Gestión de Categorías - Bistró FDI';
 $bodyClass = 'admin-panel';
-$extraHead = '<link rel="stylesheet" href="' . BASE_URL . '/css/estilos.css">';
+$extraHead = '<link rel="stylesheet" href="../../../css/estilos.css">';
 
 ob_start();
 ?>
@@ -70,7 +70,7 @@ ob_start();
                         <?php foreach ($categorias as $cat): ?>
                         <tr>
                             <td data-label="Imagen">
-                                <img src="<?= BASE_URL ?>/img/categorias/<?= htmlspecialchars($cat->imagen) ?>" 
+                                <img src="../../../img/categorias/<?= htmlspecialchars($cat->imagen) ?>" 
                                      class="img-tabla-cat" alt="icono">
                             </td>
                             <td data-label="Nombre" class="cat-nombre"><?= htmlspecialchars($cat->nombre) ?></td>

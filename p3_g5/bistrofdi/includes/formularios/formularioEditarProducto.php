@@ -1,6 +1,7 @@
 <?php
 
-require_once __DIR__ . '/../Formulario.php';
+require_once __DIR__ . '/../core/config.php';
+require_once __DIR__ . '/../core/formulario.php';
 require_once __DIR__ . '/../negocio/ProductoDTO.php';
 
 class FormularioEditarProducto extends Formulario
@@ -12,7 +13,7 @@ class FormularioEditarProducto extends Formulario
     public function __construct(ProductoDTO $producto, array $categorias, ?string $id)
     {
         parent::__construct('formEditarProducto', [
-            'action' => '../negocio/ProductoController.php',
+            'action' => BASE_URL . '/includes/negocio/ProductoController.php',
             'enctype' => 'multipart/form-data'
         ]);
 
@@ -57,7 +58,8 @@ class FormularioEditarProducto extends Formulario
                 $f = trim($f);
                 if ($f !== '') {
                     $src = htmlspecialchars($f);
-                    $imagenesActualesHtml .= "<img src=\"../../img/productos/$src\" alt=\"Imagen actual del producto\">";
+                    $rutaImagen = BASE_URL . '/img/productos/' . $src;
+                    $imagenesActualesHtml .= "<img src=\"$rutaImagen\" alt=\"Imagen actual del producto\">";
                 }
             }
             $imagenesActualesHtml .= '</div>';
