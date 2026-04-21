@@ -7,7 +7,17 @@ exigirRol('gerente');
 $controller = new UsuarioController();
 $mensajeError = '';
 
-$idUsuario = isset($_GET['id']) ? (int)$_GET['id'] : 0;
+if ($_SERVER['REQUEST_METHOD'] === 'POST') {
+    $idUsuario = filter_input(INPUT_POST, 'id_usuario', FILTER_VALIDATE_INT) ?: 0;
+} else {
+    $idUsuario = filter_input(INPUT_GET, 'id', FILTER_VALIDATE_INT) ?: 0;
+}
+
+if ($idUsuario <= 0) {
+    header('Location: gestionarUsuarios.php');
+    exit;
+}
+
 $usuario = $controller->obtenerUsuarioPorId($idUsuario);
 
 if (!$usuario) {
@@ -15,7 +25,7 @@ if (!$usuario) {
 }
 
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
-    [$ok, $texto] = $controller->procesarCambioRol($idUsuario, (int)$_SESSION['id_usuario'], $_POST);
+    [$ok, $texto] = $controller->procesarCambioRol($idUsuario, (int) $_SESSION['id_usuario'], $_POST);
 
     if ($ok) {
         header('Location: gestionarUsuarios.php');
@@ -50,7 +60,9 @@ ob_start();
             <p><strong>Rol actual:</strong> <?= htmlspecialchars($usuario->getRol()) ?></p>
         </div>
 
-        <form method="post" action="cambiarRol.php?id=<?= urlencode((string)$idUsuario) ?>" class="f0-form">
+        <form method="post" action="cambiarRol.php" class="f0-form">
+            <input type="hidden" name="id_usuario" value="<?= htmlspecialchars((string) $idUsuario) ?>">
+
             <div class="f0-role-list">
                 <?php foreach ($roles as $rol): ?>
                     <label class="f0-role-option">

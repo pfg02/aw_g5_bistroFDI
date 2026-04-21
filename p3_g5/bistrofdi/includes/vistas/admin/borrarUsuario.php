@@ -7,7 +7,17 @@ exigirRol('gerente');
 $controller = new UsuarioController();
 $mensajeError = '';
 
-$idUsuario = isset($_GET['id']) ? (int)$_GET['id'] : 0;
+if ($_SERVER['REQUEST_METHOD'] === 'POST') {
+    $idUsuario = filter_input(INPUT_POST, 'id_usuario', FILTER_VALIDATE_INT) ?: 0;
+} else {
+    $idUsuario = filter_input(INPUT_GET, 'id', FILTER_VALIDATE_INT) ?: 0;
+}
+
+if ($idUsuario <= 0) {
+    header('Location: gestionarUsuarios.php');
+    exit;
+}
+
 $usuario = $controller->obtenerUsuarioPorId($idUsuario);
 
 if (!$usuario) {
@@ -15,7 +25,7 @@ if (!$usuario) {
 }
 
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
-    [$ok, $texto] = $controller->procesarBorrado($idUsuario, (int)$_SESSION['id_usuario']);
+    [$ok, $texto] = $controller->procesarBorrado($idUsuario, (int) $_SESSION['id_usuario']);
 
     if ($ok) {
         header('Location: gestionarUsuarios.php');
@@ -41,7 +51,9 @@ ob_start();
                 <strong><?= htmlspecialchars($usuario->getNombreUsuario()) ?></strong>?
             </p>
 
-            <form method="post" action="borrarUsuario.php?id=<?= urlencode((string)$idUsuario) ?>" class="f0-form">
+            <form method="post" action="borrarUsuario.php" class="f0-form">
+                <input type="hidden" name="id_usuario" value="<?= htmlspecialchars((string) $idUsuario) ?>">
+
                 <div class="f0-form-actions" style="justify-content:center;">
                     <button type="submit" class="f0-btn-danger">Sí, borrar usuario</button>
                     <a href="gestionarUsuarios.php" class="f0-btn-secondary">Cancelar</a>
