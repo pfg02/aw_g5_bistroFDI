@@ -24,20 +24,20 @@ class ProductoController
         $accion = trim((string) (filter_input(INPUT_POST, 'accion', FILTER_UNSAFE_RAW) ?? ''));
         $id = filter_input(INPUT_POST, 'id', FILTER_VALIDATE_INT, [
             'options' => ['min_range' => 1]
-        ]) ?: null;
+        ]);
 
         if ($accion === 'guardar') {
-            $this->procesarGuardado($id);
+            $this->procesarGuardado($id !== false ? $id : null);
             return;
         }
 
-        if ($accion === 'eliminar' && $id !== null) {
-            $this->procesarCambioEstado($id, 0, 'baja_ok');
+        if ($accion === 'eliminar' && $id !== false && $id !== null) {
+            $this->procesarCambioEstado((int) $id, 0, 'baja_ok');
             return;
         }
 
-        if ($accion === 'reactivar' && $id !== null) {
-            $this->procesarCambioEstado($id, 1, 'alta_ok');
+        if ($accion === 'reactivar' && $id !== false && $id !== null) {
+            $this->procesarCambioEstado((int) $id, 1, 'alta_ok');
             return;
         }
 
@@ -58,29 +58,42 @@ class ProductoController
         $iva = filter_input(INPUT_POST, 'iva', FILTER_VALIDATE_INT);
         $imagenActual = trim((string) (filter_input(INPUT_POST, 'imagen_actual', FILTER_UNSAFE_RAW) ?? ''));
 
-        if ($stock === false || $stock < 0) {
-            $this->redirigirEdicion($id, 'stock');
-        }
-
         if (
-            $nombre === '' ||
-            $precioBase === false || $precioBase < 0 ||
-            $idCategoria === false || $idCategoria <= 0 ||
-            !in_array((int) $ofertado, [0, 1], true) ||
-            !in_array((int) $iva, [4, 10, 21], true) ||
-            !$this->imagenesActualesValidas($imagenActual)
+            $precioBase === false ||
+            $stock === false ||
+            $idCategoria === false ||
+            $idCategoria === null ||
+            $ofertado === false ||
+            $iva === false
         ) {
             $this->redirigirEdicion($id, '1');
         }
 
-        $resultadoImagenes = $this->service->procesarImagenes($_FILES);
+        if ((int) $stock < 0) {
+            $this->redirigirEdicion($id, 'stock');
+        }
 
-        if (($resultadoImagenes['error'] ?? null) !== null) {
+        if (!$this->imagenesActualesValidas($imagenActual)) {
             $this->redirigirEdicion($id, '1');
         }
 
-        $nuevasFotos = $resultadoImagenes['imagenes'] ?? null;
-        $imagenFinal = $this->combinarImagenes($imagenActual, $nuevasFotos);
+        $nuevasFotos = $this->service->procesarImagenes($_FILES);
+
+        if (!empty($this->service->getUltimosErrores())) {
+            $this->redirigirEdicion($id, '1');
+        }
+
+        $imagenFinal = $imagenActual;
+
+        if ($nuevasFotos !== null) {
+            if ($imagenActual === '') {
+                $imagenFinal = $nuevasFotos;
+            } else {
+                $listaViejas = array_filter(array_map('trim', explode(',', $imagenActual)));
+                $listaNuevas = array_filter(array_map('trim', explode(',', $nuevasFotos)));
+                $imagenFinal = implode(',', array_slice(array_merge($listaViejas, $listaNuevas), 0, 3));
+            }
+        }
 
         $dto = new ProductoDTO(
             $id,
@@ -102,10 +115,10 @@ class ProductoController
         $this->redirigirEdicion($id, '1');
     }
 
-    private function procesarCambioEstado(int $id, int $estado, string $msgOk): void
+    private function procesarCambioEstado(int $id, int $estado, string $mensajeOk): void
     {
         if ($this->service->cambiarEstado($id, $estado)) {
-            header('Location: ' . BASE_URL . '/includes/vistas/admin/gestion_productos.php?msg=' . rawurlencode($msgOk));
+            header('Location: ' . BASE_URL . '/includes/vistas/admin/gestion_productos.php?msg=' . rawurlencode($mensajeOk));
             exit();
         }
 
@@ -123,23 +136,6 @@ class ProductoController
 
         header('Location: ' . $url);
         exit();
-    }
-
-    private function combinarImagenes(string $imagenActual, ?string $nuevasFotos): string
-    {
-        if ($nuevasFotos === null || trim($nuevasFotos) === '') {
-            return $imagenActual;
-        }
-
-        if (trim($imagenActual) === '') {
-            return $nuevasFotos;
-        }
-
-        $listaViejas = array_filter(array_map('trim', explode(',', $imagenActual)));
-        $listaNuevas = array_filter(array_map('trim', explode(',', $nuevasFotos)));
-        $combinadas = array_merge($listaViejas, $listaNuevas);
-
-        return implode(',', array_slice($combinadas, 0, 3));
     }
 
     private function imagenesActualesValidas(string $imagenes): bool

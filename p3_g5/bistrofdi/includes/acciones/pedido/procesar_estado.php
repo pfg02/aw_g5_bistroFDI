@@ -1,4 +1,6 @@
 <?php
+declare(strict_types=1);
+
 require_once __DIR__ . '/../../core/config.php';
 require_once __DIR__ . '/../../core/sesion.php';
 require_once __DIR__ . '/../../negocio/PedidoController.php';
@@ -6,39 +8,48 @@ require_once __DIR__ . '/../../negocio/PedidoController.php';
 exigirLogin();
 exigirRol('camarero');
 
-if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['id_pedido'], $_POST['accion'])) {
-    
-    $idPedido = (int)$_POST['id_pedido'];
-    $accion = $_POST['accion'];
+$redirect = BASE_URL . '/includes/vistas/camarero/panel_camarero.php';
 
-    $controller = PedidoController::getInstance();
-    $nuevoEstado = null;
-
-    switch ($accion) {
-        case 'cobrar':
-            $nuevoEstado = 'En preparación';
-            break;
-        case 'terminar':
-            $nuevoEstado = 'Terminado';
-            break;
-        case 'entregar':
-            $nuevoEstado = 'Entregado';
-            break;
-        default:
-            $_SESSION['mensaje_error'] = 'Acción no reconocida.';
-            header('Location: ' . BASE_URL . '/includes/vistas/camarero/panel_camarero.php');
-            exit();
-    }
-
-    if ($nuevoEstado) {
-        if ($controller->actualizarEstadoPedido($idPedido, $nuevoEstado)) {
-            $_SESSION['mensaje_exito'] = "Pedido actualizado a '$nuevoEstado'.";
-        } else {
-            $_SESSION['mensaje_error'] = 'Error al actualizar el pedido.';
-        }
-    }
+if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
+    $_SESSION['mensaje_error'] = 'Método no permitido.';
+    header('Location: ' . $redirect);
+    exit();
 }
 
-header('Location: ' . BASE_URL . '/includes/vistas/camarero/panel_camarero.php');
+$idPedido = filter_input(INPUT_POST, 'id_pedido', FILTER_VALIDATE_INT, [
+    'options' => ['min_range' => 1]
+]);
+
+$accion = trim((string) (filter_input(INPUT_POST, 'accion', FILTER_UNSAFE_RAW) ?? ''));
+
+if ($idPedido === false || $idPedido === null) {
+    $_SESSION['mensaje_error'] = 'El identificador del pedido no es válido.';
+    header('Location: ' . $redirect);
+    exit();
+}
+
+$accionesPermitidas = [
+    'cobrar' => 'En preparación',
+    'terminar' => 'Terminado',
+    'entregar' => 'Entregado',
+];
+
+if (!array_key_exists($accion, $accionesPermitidas)) {
+    $_SESSION['mensaje_error'] = 'Acción no reconocida.';
+    header('Location: ' . $redirect);
+    exit();
+}
+
+$nuevoEstado = $accionesPermitidas[$accion];
+
+$controller = PedidoController::getInstance();
+
+if ($controller->actualizarEstadoPedido((int) $idPedido, $nuevoEstado)) {
+    $_SESSION['mensaje_exito'] = "Pedido actualizado a '$nuevoEstado'.";
+} else {
+    $_SESSION['mensaje_error'] = 'Error al actualizar el pedido.';
+}
+
+header('Location: ' . $redirect);
 exit();
 ?>

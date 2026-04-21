@@ -116,6 +116,11 @@ class UsuarioService
     public function cambiarRol(int $idUsuario, string $nuevoRol, int $idUsuarioSesion): array
     {
         $rolesValidos = ['cliente', 'camarero', 'cocinero', 'gerente'];
+        $nuevoRol = trim($nuevoRol);
+
+        if ($idUsuario <= 0) {
+            return [false, 'Usuario no válido.'];
+        }
 
         if (!in_array($nuevoRol, $rolesValidos, true)) {
             return [false, 'Rol no válido.'];
@@ -139,6 +144,10 @@ class UsuarioService
 
     public function borrarUsuario(int $idUsuario, int $idUsuarioSesion): array
     {
+        if ($idUsuario <= 0) {
+            return [false, 'Usuario no válido.'];
+        }
+
         if ($idUsuario === $idUsuarioSesion) {
             return [false, 'No puedes borrarte a ti mismo.'];
         }
@@ -157,6 +166,16 @@ class UsuarioService
 
     public function actualizarAvatar(int $idUsuario, string $rutaAvatar): array
     {
+        $rutaAvatar = trim($rutaAvatar);
+
+        if ($idUsuario <= 0) {
+            return [false, 'Usuario no válido.'];
+        }
+
+        if (!$this->esRutaAvatarValida($rutaAvatar)) {
+            return [false, 'La ruta del avatar no es válida.'];
+        }
+
         $usuario = $this->usuarioDAO->buscarPorId($idUsuario);
         if (!$usuario) {
             return [false, 'Usuario no encontrado.'];
@@ -199,5 +218,10 @@ class UsuarioService
     public function listarUsuarios(): array
     {
         return $this->usuarioDAO->listarTodos();
+    }
+
+    private function esRutaAvatarValida(string $rutaAvatar): bool
+    {
+        return preg_match('/^img\/avatares\/[a-zA-Z0-9._-]+\.(png|jpg|jpeg|webp|gif)$/i', $rutaAvatar) === 1;
     }
 }

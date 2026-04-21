@@ -1,35 +1,100 @@
 <?php
-// includes/negocio/ProductoDTO.php
+declare(strict_types=1);
 
-class ProductoDTO {
-    public $id; 
-    public $nombre; 
-    public $descripcion; 
-    public $precio; 
-    public $stock; 
-    public $imagen; 
-    public $id_categoria; 
-    public $ofertado;
-    public $iva; 
-    public $categoria_nombre;
+class ProductoDTO
+{
+    public ?int $id;
+    public string $nombre;
+    public string $descripcion;
+    public float $precio;
+    public int $stock;
+    public ?string $imagen;
+    public ?int $id_categoria;
+    public int $ofertado;
+    public int $iva;
+    public ?string $categoria_nombre;
 
-    public function __construct($id=null, $nombre="", $descripcion="", $precio=0, $stock=0, $imagen=null, $id_categoria=null, $ofertado=1, $iva=21) {
-        $this->id = $id; 
-        $this->nombre = $nombre; 
+    public function __construct(
+        ?int $id = null,
+        string $nombre = '',
+        string $descripcion = '',
+        float $precio = 0.0,
+        int $stock = 0,
+        ?string $imagen = null,
+        ?int $id_categoria = null,
+        int $ofertado = 1,
+        int $iva = 21,
+        ?string $categoria_nombre = null
+    ) {
+        $this->id = $id;
+        $this->nombre = $nombre;
         $this->descripcion = $descripcion;
-        $this->precio = (float)$precio; 
-        $this->stock = ($stock < 0) ? 0 : (int)$stock;        
-        $this->imagen = $imagen; 
+        $this->precio = $precio;
+        $this->stock = max(0, $stock);
+        $this->imagen = $imagen;
         $this->id_categoria = $id_categoria;
-        $this->ofertado = (int)$ofertado; 
-        $this->iva = (int)$iva;
+        $this->ofertado = $ofertado;
+        $this->iva = $iva;
+        $this->categoria_nombre = $categoria_nombre;
     }
 
-    public function getPrecioFinal() {
+    public function getId(): ?int
+    {
+        return $this->id;
+    }
+
+    public function getNombre(): string
+    {
+        return $this->nombre;
+    }
+
+    public function getDescripcion(): string
+    {
+        return $this->descripcion;
+    }
+
+    public function getPrecio(): float
+    {
+        return $this->precio;
+    }
+
+    public function getStock(): int
+    {
+        return $this->stock;
+    }
+
+    public function getImagen(): ?string
+    {
+        return $this->imagen;
+    }
+
+    public function getIdCategoria(): ?int
+    {
+        return $this->id_categoria;
+    }
+
+    public function getOfertado(): int
+    {
+        return $this->ofertado;
+    }
+
+    public function getIva(): int
+    {
+        return $this->iva;
+    }
+
+    public function getCategoriaNombre(): ?string
+    {
+        return $this->categoria_nombre;
+    }
+
+    public function getPrecioFinal(): float
+    {
         return $this->precio * (1 + ($this->iva / 100));
     }
 
-    public function obtenerEstadoStock() {
-        return ($this->stock > 0) ? "En stock" : "Sin stock";
+    public function obtenerEstadoStock(): string
+    {
+        return $this->stock > 0 ? 'En stock' : 'Sin stock';
     }
 }

@@ -1,37 +1,56 @@
 <?php
-    require_once __DIR__ . '/../../core/sesion.php';
-    require_once __DIR__ . '/../../negocio/PedidoController.php';
+declare(strict_types=1);
 
-    exigirLogin();
-    exigirRol('cocinero', 'gerente');
+require_once __DIR__ . '/../../core/config.php';
+require_once __DIR__ . '/../../core/sesion.php';
+require_once __DIR__ . '/../../negocio/PedidoController.php';
 
-    $idCocinero = $_SESSION['id_usuario'];
-    $controller = PedidoController::getInstance();
+exigirLogin();
+exigirRol('cocinero', 'gerente');
 
-    $pedidosNuevos = $controller->verPedidosPorEstado('En preparación');
+$idCocinero = filter_var($_SESSION['id_usuario'] ?? null, FILTER_VALIDATE_INT, [
+    'options' => ['min_range' => 1]
+]);
 
-    // Recuperar el pedido activo desde BD para que no se pierda al cerrar sesión o salir
-    $miPedido = $controller->obtenerPedidoActivoDeCocinero($idCocinero);
+if ($idCocinero === false || $idCocinero === null) {
+    $_SESSION['mensaje_error'] = 'Sesión no válida.';
+    header('Location: ' . BASE_URL . '/includes/vistas/auth/login.php');
+    exit();
+}
 
-    if ($miPedido) {
-        $_SESSION['pedido_activo_cocinero'][$idCocinero] = $miPedido['id'];
-    } elseif (isset($_SESSION['pedido_activo_cocinero'][$idCocinero])) {
-        unset($_SESSION['pedido_activo_cocinero'][$idCocinero]);
+$controller = PedidoController::getInstance();
+
+$pedidosNuevos = $controller->verPedidosPorEstado('En preparación');
+
+// Recuperar el pedido activo desde BD para que no se pierda al cerrar sesión o salir
+$miPedido = $controller->obtenerPedidoActivoDeCocinero((int) $idCocinero);
+
+if ($miPedido) {
+    $idPedidoActivoSesion = obtenerDatoPedido($miPedido, 'id', 'getId');
+    if ($idPedidoActivoSesion !== null) {
+        $_SESSION['pedido_activo_cocinero'][(int) $idCocinero] = (int) $idPedidoActivoSesion;
     }
+} elseif (isset($_SESSION['pedido_activo_cocinero'][(int) $idCocinero])) {
+    unset($_SESSION['pedido_activo_cocinero'][(int) $idCocinero]);
+}
 
-    $platos = [];
-    $todosPreparados = false;
-    
-    if ($miPedido) {
-        $idPedidoActivo = $miPedido['id'];
-        $platos = $controller->obtenerProductosDePedido($idPedidoActivo);
-        
+$platos = [];
+$todosPreparados = false;
+$idPedidoActivo = null;
+
+if ($miPedido) {
+    $idPedidoActivo = obtenerDatoPedido($miPedido, 'id', 'getId');
+
+    if ($idPedidoActivo !== null) {
+        $platos = $controller->obtenerProductosDePedido((int) $idPedidoActivo);
+
         if (!empty($platos)) {
             $todosPreparados = true;
+
             foreach ($platos as &$plato) {
-                $estaPreparado = ($plato['preparado'] == 1);
-                $plato['preparado'] = $estaPreparado; 
-                
+                $estaPreparado = ((int) ($plato['preparado'] ?? 0) === 1);
+                $plato['preparado'] = $estaPreparado;
+
                 if (!$estaPreparado) {
                     $todosPreparados = false;
                 }
@@ -39,11 +58,12 @@
             unset($plato);
         }
     }
+}
 
-    $tituloPagina = 'Bistró FDI - Cocina';
-    $bodyClass    = 'f0-body';
+$tituloPagina = 'Bistró FDI - Cocina';
+$bodyClass = 'f0-body';
 
-    ob_start();
+ob_start();
 ?>
 
 <div class="main-bienvenida">
@@ -54,13 +74,21 @@
 
         <?php if (isset($_SESSION['mensaje_error'])): ?>
             <div class="error-msg">
-                <?php echo htmlspecialchars($_SESSION['mensaje_error']); unset($_SESSION['mensaje_error']); ?>
+                <?= htmlspecialchars($_SESSION['mensaje_error']) ?>
+                <?php unset($_SESSION['mensaje_error']); ?>
+            </div>
+        <?php endif; ?>
+
+        <?php if (isset($_SESSION['mensaje_exito'])): ?>
+            <div class="alerta alerta-exito">
+                <?= htmlspecialchars($_SESSION['mensaje_exito']) ?>
+                <?php unset($_SESSION['mensaje_exito']); ?>
             </div>
         <?php endif; ?>
 
         <div class="seccion-camarero">
             <h2 class="titulo-seccion">Comandas Nuevas</h2>
-            
+
             <?php if (empty($pedidosNuevos)): ?>
                 <p class="p-vacio">No hay comandas pendientes.</p>
             <?php else: ?>
@@ -75,15 +103,33 @@
                     </thead>
                     <tbody>
                         <?php foreach ($pedidosNuevos as $p): ?>
+                            <?php
+                                $idPedido = (int) (obtenerDatoPedido($p, 'id', 'getId') ?? 0);
+                                $numeroPedido = obtenerDatoPedido($p, 'numero_pedido', 'getNumeroPedido') ?? $idPedido;
+                                $tipoPedido = (string) (obtenerDatoPedido($p, 'tipo', 'getTipo') ?? 'Local');
+                                $fechaPedido = (string) (obtenerDatoPedido($p, 'fecha', 'getFecha') ?? '');
+
+                                $horaFormateada = '';
+                                if ($fechaPedido !== '') {
+                                    $timestamp = strtotime($fechaPedido);
+                                    if ($timestamp !== false) {
+                                        $horaFormateada = date('H:i', $timestamp);
+                                    }
+                                }
+                            ?>
                             <tr>
-                                <td data-label="Ticket"><strong>#<?= htmlspecialchars($p['numero_pedido'] ?? $p['id']) ?></strong></td>
-                                <td data-label="Tipo"><?= htmlspecialchars($p['tipo'] ?? 'Local') ?></td>
-                                <td data-label="Hora"><?= date('H:i', strtotime($p['fecha'])) ?></td>
+                                <td data-label="Ticket"><strong>#<?= htmlspecialchars((string) $numeroPedido) ?></strong></td>
+                                <td data-label="Tipo"><?= htmlspecialchars($tipoPedido) ?></td>
+                                <td data-label="Hora"><?= htmlspecialchars($horaFormateada) ?></td>
                                 <td data-label="Acción">
-                                    <form action="../../acciones/cocina/procesar_cocina.php" method="POST">
+                                    <form action="<?= BASE_URL ?>/includes/acciones/cocina/procesar_cocina.php" method="POST">
                                         <input type="hidden" name="accion" value="reclamar">
-                                        <input type="hidden" name="id_pedido" value="<?= $p['id'] ?>">
-                                        <button type="submit" class="btn-accion btn-cobrar <?= $miPedido ? 'btn-cocinar-bloqueado' : '' ?>" <?= $miPedido ? 'disabled title="Termina tu pedido actual primero"' : '' ?>>
+                                        <input type="hidden" name="id_pedido" value="<?= htmlspecialchars((string) $idPedido) ?>">
+                                        <button
+                                            type="submit"
+                                            class="btn-accion btn-cobrar <?= $miPedido ? 'btn-cocinar-bloqueado' : '' ?>"
+                                            <?= $miPedido ? 'disabled title="Termina tu pedido actual primero"' : '' ?>
+                                        >
                                             Cocinar
                                         </button>
                                     </form>
@@ -99,16 +145,20 @@
 
         <div class="seccion-camarero">
             <h2 class="titulo-seccion">Mi Mesa de Trabajo</h2>
-            
+
             <?php if (!$miPedido): ?>
                 <p>
                     <br>Esperando comanda... Selecciona un ticket de arriba para empezar a cocinar.
                 </p>
             <?php else: ?>
+                <?php
+                    $numeroMiPedido = obtenerDatoPedido($miPedido, 'numero_pedido', 'getNumeroPedido') ?? $idPedidoActivo;
+                    $tipoMiPedido = (string) (obtenerDatoPedido($miPedido, 'tipo', 'getTipo') ?? 'Local');
+                ?>
                 <p>
-                    <strong>Preparando Ticket #<?= htmlspecialchars($miPedido['numero_pedido'] ?? $miPedido['id']) ?> (<?= htmlspecialchars($miPedido['tipo'] ?? 'Local') ?>)</strong>
+                    <strong>Preparando Ticket #<?= htmlspecialchars((string) $numeroMiPedido) ?> (<?= htmlspecialchars($tipoMiPedido) ?>)</strong>
                 </p>
-                
+
                 <table class="tabla-pedidos tabla-cocina-movil">
                     <thead>
                         <tr>
@@ -119,17 +169,23 @@
                     </thead>
                     <tbody>
                         <?php foreach ($platos as $plato): ?>
+                            <?php
+                                $cantidad = (int) ($plato['cantidad'] ?? 0);
+                                $nombre = (string) ($plato['nombre'] ?? '');
+                                $productoId = (int) ($plato['producto_id'] ?? 0);
+                                $preparado = !empty($plato['preparado']);
+                            ?>
                             <tr>
-                                <td data-label="Cantidad"><strong><?= $plato['cantidad'] ?>x</strong></td>
-                                <td data-label="Producto" class="<?= $plato['preparado'] ? 'plato-preparado' : '' ?>">
-                                    <?= htmlspecialchars($plato['nombre']) ?>
+                                <td data-label="Cantidad"><strong><?= $cantidad ?>x</strong></td>
+                                <td data-label="Producto" class="<?= $preparado ? 'plato-preparado' : '' ?>">
+                                    <?= htmlspecialchars($nombre) ?>
                                 </td>
                                 <td data-label="Acción">
-                                    <?php if (!$plato['preparado']): ?>
-                                        <form action="../../acciones/cocina/procesar_cocina.php" method="POST">
+                                    <?php if (!$preparado): ?>
+                                        <form action="<?= BASE_URL ?>/includes/acciones/cocina/procesar_cocina.php" method="POST">
                                             <input type="hidden" name="accion" value="marcar_plato">
-                                            <input type="hidden" name="id_pedido" value="<?= $miPedido['id'] ?>">
-                                            <input type="hidden" name="id_producto" value="<?= $plato['producto_id'] ?>">
+                                            <input type="hidden" name="id_pedido" value="<?= htmlspecialchars((string) $idPedidoActivo) ?>">
+                                            <input type="hidden" name="id_producto" value="<?= htmlspecialchars((string) $productoId) ?>">
                                             <button type="submit" class="btn-accion btn-entregar">Listo</button>
                                         </form>
                                     <?php else: ?>
@@ -142,10 +198,14 @@
                 </table>
 
                 <div class="contenedor-botones-index">
-                    <form action="../../acciones/cocina/procesar_cocina.php" method="POST">
+                    <form action="<?= BASE_URL ?>/includes/acciones/cocina/procesar_cocina.php" method="POST">
                         <input type="hidden" name="accion" value="finalizar_pedido">
-                        <input type="hidden" name="id_pedido" value="<?= $miPedido['id'] ?>">
-                        <button type="submit" class="btn-login btn-pasar-sala <?= $todosPreparados ? 'estado-sala-listo' : 'estado-sala-pte' ?>" <?= !$todosPreparados ? 'disabled title="Marca todos los platos primero"' : '' ?>>
+                        <input type="hidden" name="id_pedido" value="<?= htmlspecialchars((string) $idPedidoActivo) ?>">
+                        <button
+                            type="submit"
+                            class="btn-login btn-pasar-sala <?= $todosPreparados ? 'estado-sala-listo' : 'estado-sala-pte' ?>"
+                            <?= !$todosPreparados ? 'disabled title="Marca todos los platos primero"' : '' ?>
+                        >
                             ¡Pasar a Sala!
                         </button>
                     </form>
@@ -154,12 +214,25 @@
         </div>
 
         <div class="contenedor-volver">
-            <a href="../../../index.php" class="btn-login">Volver al Inicio</a>
+            <a href="<?= BASE_URL ?>/index.php" class="btn-login">Volver al Inicio</a>
         </div>
     </section>
 </div>
 
 <?php
-    $contenidoPrincipal = ob_get_clean();
-    require_once __DIR__ . '/../partials/plantilla.php';
+$contenidoPrincipal = ob_get_clean();
+require_once __DIR__ . '/../partials/plantilla.php';
+
+function obtenerDatoPedido($pedido, string $claveArray, string $getter)
+{
+    if (is_array($pedido)) {
+        return $pedido[$claveArray] ?? null;
+    }
+
+    if (is_object($pedido) && method_exists($pedido, $getter)) {
+        return $pedido->$getter();
+    }
+
+    return null;
+}
 ?>

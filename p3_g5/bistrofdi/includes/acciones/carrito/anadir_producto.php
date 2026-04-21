@@ -1,32 +1,54 @@
 <?php
+declare(strict_types=1);
+
 /**
  * Añade un producto al carrito en la sesión y devuelve al catálogo.
  */
 
+require_once __DIR__ . '/../../core/config.php';
 require_once __DIR__ . '/../../core/sesion.php';
 
 exigirLogin();
 exigirRol('cliente');
 
-if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['id_producto'], $_POST['cantidad'])) {
-    
-    $id = (int)$_POST['id_producto'];
-    $cantidad = (int)$_POST['cantidad'];
+$redirect = BASE_URL . '/includes/vistas/tienda/catalogo.php';
 
-    if ($cantidad > 0) {
-        if (!isset($_SESSION['carrito'])) {
-            $_SESSION['carrito'] = [];
-        }
-
-        if (isset($_SESSION['carrito'][$id])) {
-            $_SESSION['carrito'][$id] += $cantidad;
-        } else {
-            $_SESSION['carrito'][$id] = $cantidad;
-        }
-
-        $_SESSION['mensaje_exito'] = "Artículo añadido al carrito.";
-    }
+if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
+    $_SESSION['mensaje_error'] = 'Método no permitido.';
+    header('Location: ' . $redirect);
+    exit();
 }
 
-header("Location: " . BASE_URL . "/includes/vistas/tienda/catalogo.php");
+$idProducto = filter_input(INPUT_POST, 'id_producto', FILTER_VALIDATE_INT, [
+    'options' => ['min_range' => 1]
+]);
+
+$cantidad = filter_input(INPUT_POST, 'cantidad', FILTER_VALIDATE_INT, [
+    'options' => ['min_range' => 1]
+]);
+
+if ($idProducto === false || $idProducto === null) {
+    $_SESSION['mensaje_error'] = 'El producto indicado no es válido.';
+    header('Location: ' . $redirect);
+    exit();
+}
+
+if ($cantidad === false || $cantidad === null) {
+    $_SESSION['mensaje_error'] = 'La cantidad indicada no es válida.';
+    header('Location: ' . $redirect);
+    exit();
+}
+
+if (!isset($_SESSION['carrito']) || !is_array($_SESSION['carrito'])) {
+    $_SESSION['carrito'] = [];
+}
+
+if (isset($_SESSION['carrito'][(int) $idProducto])) {
+    $_SESSION['carrito'][(int) $idProducto] += (int) $cantidad;
+} else {
+    $_SESSION['carrito'][(int) $idProducto] = (int) $cantidad;
+}
+
+$_SESSION['mensaje_exito'] = 'Artículo añadido al carrito.';
+header('Location: ' . $redirect);
 exit();

@@ -1,4 +1,5 @@
 <?php
+declare(strict_types=1);
 
 require_once __DIR__ . '/../core/config.php';
 require_once __DIR__ . '/../core/formulario.php';
@@ -14,65 +15,106 @@ class FormularioEditarProducto extends Formulario
     {
         parent::__construct('formEditarProducto', [
             'action' => BASE_URL . '/includes/negocio/ProductoController.php',
-            'enctype' => 'multipart/form-data'
+            'method' => 'POST',
+            'enctype' => 'multipart/form-data',
         ]);
 
         $this->producto = $producto;
         $this->categorias = $categorias;
         $this->id = $id;
 
-        if (isset($_GET['error'])) {
-            if ($_GET['error'] === 'stock') {
-                $this->errores[] = 'El stock no puede ser negativo.';
-            } elseif ($_GET['error'] === '1') {
-                $this->errores[] = 'Error al guardar el producto.';
-            }
+        $error = trim((string) (filter_input(INPUT_GET, 'error', FILTER_UNSAFE_RAW) ?? ''));
+
+        if ($error === 'stock') {
+            $this->errores[] = 'El stock no puede ser negativo.';
+        } elseif ($error === '1') {
+            $this->errores[] = 'Error al guardar el producto.';
         }
     }
 
     protected function generaCamposFormulario(array $datos): string
     {
-        $id = htmlspecialchars($datos['id'] ?? ($this->producto->id ?? ''));
-        $imagenActual = htmlspecialchars($datos['imagen_actual'] ?? ($this->producto->imagen ?? ''));
-        $nombre = htmlspecialchars($datos['nombre'] ?? ($this->producto->nombre ?? ''));
-        $precio = htmlspecialchars((string)($datos['precio_base'] ?? ($this->producto->precio ?? 0)));
-        $stock = htmlspecialchars((string)($datos['stock'] ?? ($this->producto->stock ?? 0)));
-        $descripcion = htmlspecialchars($datos['descripcion'] ?? ($this->producto->descripcion ?? ''));
-        $ivaSeleccionado = $datos['iva'] ?? ($this->producto->iva ?? 21);
-        $categoriaSeleccionada = $datos['id_categoria'] ?? ($this->producto->id_categoria ?? 0);
-        $ofertadoSeleccionado = $datos['ofertado'] ?? ($this->producto->ofertado ?? 1);
+        $id = htmlspecialchars(
+            (string) ($datos['id'] ?? $this->obtenerDatoProducto('id') ?? ''),
+            ENT_QUOTES,
+            'UTF-8'
+        );
+
+        $imagenActual = htmlspecialchars(
+            (string) ($datos['imagen_actual'] ?? $this->obtenerDatoProducto('imagen') ?? ''),
+            ENT_QUOTES,
+            'UTF-8'
+        );
+
+        $nombre = htmlspecialchars(
+            (string) ($datos['nombre'] ?? $this->obtenerDatoProducto('nombre') ?? ''),
+            ENT_QUOTES,
+            'UTF-8'
+        );
+
+        $precio = htmlspecialchars(
+            (string) ($datos['precio_base'] ?? $this->obtenerDatoProducto('precio') ?? 0),
+            ENT_QUOTES,
+            'UTF-8'
+        );
+
+        $stock = htmlspecialchars(
+            (string) ($datos['stock'] ?? $this->obtenerDatoProducto('stock') ?? 0),
+            ENT_QUOTES,
+            'UTF-8'
+        );
+
+        $descripcion = htmlspecialchars(
+            (string) ($datos['descripcion'] ?? $this->obtenerDatoProducto('descripcion') ?? ''),
+            ENT_QUOTES,
+            'UTF-8'
+        );
+
+        $ivaSeleccionado = (string) ($datos['iva'] ?? $this->obtenerDatoProducto('iva') ?? 21);
+        $categoriaSeleccionada = (string) ($datos['id_categoria'] ?? $this->obtenerDatoProducto('id_categoria') ?? 0);
+        $ofertadoSeleccionado = (string) ($datos['ofertado'] ?? $this->obtenerDatoProducto('ofertado') ?? 1);
 
         $opcionesCategorias = '<option value="">Selecciona una categoría</option>';
         foreach ($this->categorias as $cat) {
-            $selected = ((string)$categoriaSeleccionada === (string)$cat->id) ? 'selected' : '';
-            $idCat = htmlspecialchars((string)$cat->id);
-            $nombreCat = htmlspecialchars($cat->nombre);
+            $idCatRaw = $this->obtenerDatoGenerico($cat, 'id');
+            $nombreCatRaw = $this->obtenerDatoGenerico($cat, 'nombre');
+
+            $idCat = htmlspecialchars((string) $idCatRaw, ENT_QUOTES, 'UTF-8');
+            $nombreCat = htmlspecialchars((string) $nombreCatRaw, ENT_QUOTES, 'UTF-8');
+            $selected = ($categoriaSeleccionada === (string) $idCatRaw) ? 'selected' : '';
+
             $opcionesCategorias .= "<option value=\"$idCat\" $selected>$nombreCat</option>";
         }
 
         $imagenesActualesHtml = '';
-        if (!empty($this->producto->imagen)) {
+        $imagenesProducto = (string) ($this->obtenerDatoProducto('imagen') ?? '');
+
+        if (trim($imagenesProducto) !== '') {
             $imagenesActualesHtml .= '<p>Imágenes actuales:</p><div class="galeria-actual-producto">';
-            $fotos = explode(',', $this->producto->imagen);
+            $fotos = explode(',', $imagenesProducto);
+
             foreach ($fotos as $f) {
                 $f = trim($f);
                 if ($f !== '') {
-                    $src = htmlspecialchars($f);
+                    $src = htmlspecialchars($f, ENT_QUOTES, 'UTF-8');
                     $rutaImagen = BASE_URL . '/img/productos/' . $src;
                     $imagenesActualesHtml .= "<img src=\"$rutaImagen\" alt=\"Imagen actual del producto\">";
                 }
             }
+
             $imagenesActualesHtml .= '</div>';
         }
 
         $erroresHtml = self::generaListaErrores($this->errores);
 
-        $sel4 = ((string)$ivaSeleccionado === '4') ? 'selected' : '';
-        $sel10 = ((string)$ivaSeleccionado === '10') ? 'selected' : '';
-        $sel21 = ((string)$ivaSeleccionado === '21') ? 'selected' : '';
+        $sel4 = ($ivaSeleccionado === '4') ? 'selected' : '';
+        $sel10 = ($ivaSeleccionado === '10') ? 'selected' : '';
+        $sel21 = ($ivaSeleccionado === '21') ? 'selected' : '';
 
-        $selAct = ((string)$ofertadoSeleccionado === '1') ? 'selected' : '';
-        $selInact = ((string)$ofertadoSeleccionado === '0') ? 'selected' : '';
+        $selAct = ($ofertadoSeleccionado === '1') ? 'selected' : '';
+        $selInact = ($ofertadoSeleccionado === '0') ? 'selected' : '';
+
+        $urlListado = BASE_URL . '/includes/vistas/admin/gestion_productos.php';
 
         return <<<HTML
 $erroresHtml
@@ -82,18 +124,18 @@ $erroresHtml
 <input type="hidden" name="imagen_actual" value="$imagenActual">
 
 <div class="grupo-control">
-    <label>Nombre:</label>
-    <input type="text" name="nombre" value="$nombre" required maxlength="100">
+    <label for="nombre">Nombre:</label>
+    <input type="text" id="nombre" name="nombre" value="$nombre" required maxlength="100">
 </div>
 
 <div class="grupo-control">
-    <label>Precio Base (€):</label>
-    <input type="number" step="0.01" min="0" name="precio_base" value="$precio" required>
+    <label for="precio_base">Precio Base (€):</label>
+    <input type="number" id="precio_base" name="precio_base" value="$precio" required min="0" max="9999.99" step="0.01">
 </div>
 
 <div class="grupo-control">
-    <label>IVA:</label>
-    <select name="iva" required>
+    <label for="iva">IVA:</label>
+    <select id="iva" name="iva" required>
         <option value="4" $sel4>4%</option>
         <option value="10" $sel10>10%</option>
         <option value="21" $sel21>21%</option>
@@ -101,25 +143,25 @@ $erroresHtml
 </div>
 
 <div class="grupo-control">
-    <label>Stock:</label>
-    <input type="number" name="stock" value="$stock" min="0" step="1" required>
+    <label for="stock">Stock:</label>
+    <input type="number" id="stock" name="stock" value="$stock" required min="0" max="9999" step="1">
 </div>
 
 <div class="grupo-control">
-    <label>Categoría:</label>
-    <select name="id_categoria" required>
+    <label for="id_categoria">Categoría:</label>
+    <select id="id_categoria" name="id_categoria" required>
         $opcionesCategorias
     </select>
 </div>
 
 <div class="grupo-control">
-    <label>Descripción:</label>
-    <textarea name="descripcion" rows="4" maxlength="2000">$descripcion</textarea>
+    <label for="descripcion">Descripción:</label>
+    <textarea id="descripcion" name="descripcion" rows="4" maxlength="2000">$descripcion</textarea>
 </div>
 
 <div class="grupo-control">
-    <label>Estado:</label>
-    <select name="ofertado" required>
+    <label for="ofertado">Estado:</label>
+    <select id="ofertado" name="ofertado" required>
         <option value="1" $selAct>Activo (En carta)</option>
         <option value="0" $selInact>Inactivo (Oculto)</option>
     </select>
@@ -144,13 +186,33 @@ $imagenesActualesHtml
 
 <div class="acciones-form">
     <button type="submit" class="btn-primario">Guardar producto</button>
-    <a href="gestion_productos.php" class="btn-secundario">Volver al listado</a>
+    <a href="$urlListado" class="btn-secundario">Volver al listado</a>
 </div>
 HTML;
     }
 
     protected function procesaFormulario(array $datos): ?string
     {
+        return null;
+    }
+
+    private function obtenerDatoProducto(string $campo)
+    {
+        return $this->obtenerDatoGenerico($this->producto, $campo);
+    }
+
+    private function obtenerDatoGenerico(object $objeto, string $campo)
+    {
+        $getter = 'get' . str_replace(' ', '', ucwords(str_replace('_', ' ', $campo)));
+
+        if (method_exists($objeto, $getter)) {
+            return $objeto->$getter();
+        }
+
+        if (isset($objeto->$campo)) {
+            return $objeto->$campo;
+        }
+
         return null;
     }
 }

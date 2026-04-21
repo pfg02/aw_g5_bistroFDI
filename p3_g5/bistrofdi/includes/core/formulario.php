@@ -68,7 +68,7 @@ abstract class Formulario
         $method = htmlspecialchars($this->method);
 
         return <<<HTML
-<form method="$method" action="$action"$classAtt$enctypeAtt novalidate>
+<form method="$method" action="$action"$classAtt$enctypeAtt>
     <input type="hidden" name="idFormulario" value="$idForm">
     $htmlCampos
 </form>

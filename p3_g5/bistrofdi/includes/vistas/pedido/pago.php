@@ -1,4 +1,6 @@
 <?php
+declare(strict_types=1);
+
 /**
  * Vista de la pasarela de pago para un pedido recién creado.
  */
@@ -11,48 +13,77 @@ require_once __DIR__ . '/../../formularios/FormularioPago.php';
 exigirLogin();
 exigirRol('cliente');
 
-if (!isset($_GET['id'])) {
+$idPedido = filter_input(INPUT_GET, 'id', FILTER_VALIDATE_INT, [
+    'options' => ['min_range' => 1]
+]);
+
+$idUsuario = filter_var($_SESSION['id_usuario'] ?? null, FILTER_VALIDATE_INT, [
+    'options' => ['min_range' => 1]
+]);
+
+if ($idPedido === false || $idPedido === null) {
     header('Location: ' . BASE_URL . '/index.php');
     exit();
 }
 
-$idPedido = (int)$_GET['id'];
+if ($idUsuario === false || $idUsuario === null) {
+    $_SESSION['mensaje_error'] = 'Sesión no válida.';
+    header('Location: ' . BASE_URL . '/includes/vistas/auth/login.php');
+    exit();
+}
+
 $controller = PedidoController::getInstance();
-$pedido = $controller->verPedido($idPedido);
+$pedido = $controller->verPedido((int) $idPedido);
 
-if (!$pedido || $pedido['cliente_id'] != $_SESSION['id_usuario']) {
+if ($pedido === null || $pedido === false) {
+    $_SESSION['mensaje_error'] = 'Pedido no encontrado.';
     header('Location: ' . BASE_URL . '/index.php');
     exit();
 }
 
-$formularioPago = new FormularioPago($idPedido);
+$clienteIdPedido = obtenerClienteIdPedido($pedido);
+
+if ($clienteIdPedido === null || $clienteIdPedido !== (int) $idUsuario) {
+    $_SESSION['mensaje_error'] = 'Acceso denegado.';
+    header('Location: ' . BASE_URL . '/index.php');
+    exit();
+}
+
+$formularioPago = new FormularioPago((int) $idPedido);
 
 $tituloPagina = 'Pasarela de Pago - Bistró FDI';
 $bodyClass = 'f0-body';
+
+$numeroPedido = obtenerDatoPedido($pedido, 'numero_pedido', 'getNumeroPedido');
+$idPedidoMostrar = obtenerDatoPedido($pedido, 'id', 'getId');
+$tipoPedido = obtenerDatoPedido($pedido, 'tipo', 'getTipo');
+$totalPedido = obtenerDatoPedido($pedido, 'total', 'getTotal');
+
+$numeroMostrar = $numeroPedido !== null ? (string) $numeroPedido : (string) $idPedidoMostrar;
 
 ob_start();
 ?>
 
 <div class="main-bienvenida">
     <section class="tarjeta-presentacion tarjeta-ancha">
-        
+
         <h1>Pasarela de <span>Pago</span></h1>
         <p class="lema">Elige cómo quieres abonar tu pedido</p>
         <div class="divisor"></div>
 
         <div class="mensaje-sesion contenedor-pago">
-            
+
             <div class="resumen-pago-destacado">
-                <p class="texto-resumen"><strong>Ticket:</strong> #<?php echo htmlspecialchars($pedido["numero_pedido"] ?? $pedido["id"]); ?></p>
-                <p class="texto-resumen"><strong>Modalidad:</strong> <?php echo htmlspecialchars($pedido["tipo"]); ?></p>
+                <p class="texto-resumen"><strong>Ticket:</strong> #<?= htmlspecialchars($numeroMostrar) ?></p>
+                <p class="texto-resumen"><strong>Modalidad:</strong> <?= htmlspecialchars((string) $tipoPedido) ?></p>
                 <div class="divisor-pago"></div>
                 <p class="total-pago-container">
-                    Total a pagar: <strong class="total-pago-destacado"><?php echo number_format($pedido["total"], 2); ?> €</strong>
+                    Total a pagar: <strong class="total-pago-destacado"><?= number_format((float) $totalPedido, 2) ?> €</strong>
                 </p>
             </div>
 
             <div class="opciones-pago-container">
-                
+
                 <div class="caja-metodo-pago">
                     <h3 class="titulo-metodo">Pagar ahora con Tarjeta</h3>
                     <?= $formularioPago->gestiona() ?>
@@ -60,7 +91,7 @@ ob_start();
 
                 <div class="caja-metodo-pago">
                     <form action="<?= BASE_URL ?>/includes/acciones/pedido/cancelar_pedido.php" method="POST" class="form-confirmar">
-                        <input type="hidden" name="id_pedido" value="<?php echo htmlspecialchars($idPedido); ?>">
+                        <input type="hidden" name="id_pedido" value="<?= htmlspecialchars((string) $idPedido) ?>">
                         <button type="submit" class="btn-admin">Cancelar Pedido</button>
                     </form>
                 </div>
@@ -75,4 +106,38 @@ ob_start();
 <?php
 $contenidoPrincipal = ob_get_clean();
 require_once __DIR__ . '/../partials/plantilla.php';
+
+/**
+ * Obtiene cliente_id de un pedido que puede venir como array o DTO.
+ */
+function obtenerClienteIdPedido($pedido): ?int
+{
+    if (is_array($pedido)) {
+        $valor = $pedido['cliente_id'] ?? null;
+        return filter_var($valor, FILTER_VALIDATE_INT, ['options' => ['min_range' => 1]]) ?: null;
+    }
+
+    if (is_object($pedido) && method_exists($pedido, 'getClienteId')) {
+        $valor = $pedido->getClienteId();
+        return is_int($valor) ? $valor : null;
+    }
+
+    return null;
+}
+
+/**
+ * Obtiene un dato del pedido que puede venir como array o DTO.
+ */
+function obtenerDatoPedido($pedido, string $claveArray, string $getter)
+{
+    if (is_array($pedido)) {
+        return $pedido[$claveArray] ?? null;
+    }
+
+    if (is_object($pedido) && method_exists($pedido, $getter)) {
+        return $pedido->$getter();
+    }
+
+    return null;
+}
 ?>

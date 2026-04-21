@@ -1,17 +1,24 @@
 <?php
+declare(strict_types=1);
+
 require_once __DIR__ . '/CategoriaService.php';
+require_once __DIR__ . '/CategoriaDTO.php';
 
 class CategoriaController
 {
     private CategoriaService $service;
 
-    public function __construct($db)
+    public function __construct(mysqli $db)
     {
         $this->service = new CategoriaService($db);
     }
 
-    public function obtenerPorId(int $id)
+    public function obtenerPorId(int $id): ?CategoriaDTO
     {
+        if ($id <= 0) {
+            return null;
+        }
+
         return $this->service->obtenerPorId($id);
     }
 
@@ -20,9 +27,9 @@ class CategoriaController
         return $this->service->guardarCategoria($nombre, $descripcion, $imagen, $id);
     }
 
-    public function gestionarPeticion($accion, $id = null)
+    public function gestionarPeticion(string $accion, ?int $id = null): bool
     {
-        if ($accion === 'eliminar' && $id) {
+        if ($accion === 'eliminar' && $id !== null && $id > 0) {
             return $this->service->eliminarCategoria($id);
         }
 

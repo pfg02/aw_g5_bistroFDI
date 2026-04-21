@@ -1,128 +1,184 @@
 <?php
-    require_once __DIR__ . '/../../core/sesion.php';
-    require_once __DIR__ . '/../../core/config.php';
-    require_once __DIR__ . '/../../negocio/PedidoController.php'; 
+declare(strict_types=1);
 
-    exigirLogin();
+require_once __DIR__ . '/../../core/sesion.php';
+require_once __DIR__ . '/../../core/config.php';
+require_once __DIR__ . '/../../negocio/PedidoController.php';
 
-    $controller = PedidoController::getInstance();
-    $esGerente = isset($_SESSION['rol']) && $_SESSION['rol'] === 'gerente';
+exigirLogin();
+exigirRol('cliente', 'gerente');
 
-    // Si es gerente y no viene un id_cliente concreto, no debe ver "mis pedidos":
-    // lo mandamos a la gestión de usuarios.
-    if ($esGerente && !isset($_GET['id_cliente'])) {
-        header("Location: ../admin/gestionarUsuarios.php");
-        exit();
-    }
+$controller = PedidoController::getInstance();
 
-    if ($esGerente && isset($_GET['id_cliente'])) {
-        $idCliente = (int) $_GET['id_cliente'];
-        $subtituloListado = 'Historial de pedidos del usuario seleccionado';
-    } else {
-        exigirRol('cliente', 'gerente');
-        $idCliente = $_SESSION['id_usuario'];
-        $subtituloListado = 'Historial de tus compras';
-    }
-    
-    $historialPedidos = $controller->verPedidosCliente($idCliente);
+$rolUsuario = $_SESSION['rol'] ?? null;
+$esGerente = ($rolUsuario === 'gerente');
 
-    $tituloPagina = 'Mis Pedidos - Bistró FDI';
-    $bodyClass    = 'f0-body';
+$idUsuarioSesion = filter_var($_SESSION['id_usuario'] ?? null, FILTER_VALIDATE_INT, [
+    'options' => ['min_range' => 1]
+]);
 
-    ob_start();
+$idClienteParam = filter_input(INPUT_GET, 'id_cliente', FILTER_VALIDATE_INT, [
+    'options' => ['min_range' => 1]
+]);
+
+if ($idUsuarioSesion === false || $idUsuarioSesion === null) {
+    $_SESSION['mensaje_error'] = 'Sesión no válida.';
+    header('Location: ' . BASE_URL . '/includes/vistas/auth/login.php');
+    exit();
+}
+
+/*
+ * Si es gerente y no viene un id_cliente concreto, no debe ver "mis pedidos":
+ * lo mandamos a la gestión de usuarios.
+ */
+if ($esGerente && ($idClienteParam === false || $idClienteParam === null)) {
+    header('Location: ' . BASE_URL . '/includes/vistas/admin/gestionarUsuarios.php');
+    exit();
+}
+
+if ($esGerente) {
+    $idCliente = (int) $idClienteParam;
+    $subtituloListado = 'Historial de pedidos del usuario seleccionado';
+} else {
+    $idCliente = (int) $idUsuarioSesion;
+    $subtituloListado = 'Historial de tus compras';
+}
+
+$historialPedidos = $controller->verPedidosCliente($idCliente);
+
+$tituloPagina = 'Mis Pedidos - Bistró FDI';
+$bodyClass = 'f0-body';
+
+ob_start();
 ?>
 
 <div class="main-bienvenida">
-	<section class="tarjeta-presentacion tarjeta-ancha">
-		
-		<h1><?= $esGerente && isset($_GET['id_cliente']) ? 'Pedidos del <span>Usuario</span>' : 'Mis <span>Pedidos</span>' ?></h1>
-		<p class="lema"><?= htmlspecialchars($subtituloListado) ?></p>
-		
-		<div class="divisor"></div>
-		
-		<?php if (isset($_SESSION['mensaje_exito'])): ?>
-			<div class="error-msg">
-				<?php echo htmlspecialchars($_SESSION['mensaje_exito']); unset($_SESSION['mensaje_exito']); ?>
-			</div>
-		<?php endif; ?>
+    <section class="tarjeta-presentacion tarjeta-ancha">
 
-		<?php if (isset($_SESSION['mensaje_error'])): ?>
-			<div class="error-msg">
-				<?php echo htmlspecialchars($_SESSION['mensaje_error']); unset($_SESSION['mensaje_error']); ?>
-			</div>
-		<?php endif; ?>
-		
-		<div class="mensaje-sesion">
-			<?php if (empty($historialPedidos)): ?>
-				<p>No hay pedidos para mostrar.</p>
+        <h1><?= $esGerente ? 'Pedidos del <span>Usuario</span>' : 'Mis <span>Pedidos</span>' ?></h1>
+        <p class="lema"><?= htmlspecialchars($subtituloListado) ?></p>
+
+        <div class="divisor"></div>
+
+        <?php if (isset($_SESSION['mensaje_exito'])): ?>
+            <div class="error-msg">
+                <?= htmlspecialchars($_SESSION['mensaje_exito']) ?>
+                <?php unset($_SESSION['mensaje_exito']); ?>
+            </div>
+        <?php endif; ?>
+
+        <?php if (isset($_SESSION['mensaje_error'])): ?>
+            <div class="error-msg">
+                <?= htmlspecialchars($_SESSION['mensaje_error']) ?>
+                <?php unset($_SESSION['mensaje_error']); ?>
+            </div>
+        <?php endif; ?>
+
+        <div class="mensaje-sesion">
+            <?php if (empty($historialPedidos)): ?>
+                <p>No hay pedidos para mostrar.</p>
                 <?php if (!$esGerente): ?>
-				    <a href="pedido_inicio.php" class="btn-login">Hacer un Pedido</a>
+                    <a href="<?= BASE_URL ?>/includes/vistas/pedido/pedido_inicio.php" class="btn-login">Hacer un Pedido</a>
                 <?php endif; ?>
-			<?php else: ?>
-				<table class="tabla-pedidos tabla-mis-pedidos-movil">
-					<thead>
-						<tr>
-							<th>Nº Pedido</th>
-							<th>Fecha</th>
-							<th>Tipo</th>
-							<th>Estado</th>
-							<th>Total</th>
-							<th>Acciones</th>
-                        </tr>
-					</thead>
-					<tbody>
-						<?php foreach ($historialPedidos as $pedido): ?>
-							<tr>
-								<td data-label="Nº Pedido">
-									<strong>#<?php echo htmlspecialchars($pedido['numero_pedido'] ?? $pedido['id']); ?></strong>
-								</td>
-								<td data-label="Fecha">
-									<?php echo date('d/m/Y H:i', strtotime($pedido['fecha'])); ?>
-								</td>
-								<td data-label="Tipo">
-									<?php echo htmlspecialchars($pedido['tipo']); ?>
-								</td>
-								<td data-label="Estado">
-									<span class="badge-success">
-										<?php echo htmlspecialchars($pedido['estado']); ?>
-									</span>
-								</td>
-								<td data-label="Total">
-									<strong><?php echo number_format($pedido['total'], 2); ?> €</strong>
-								</td>
-								<td data-label="Acciones">
-									<?php if ($esGerente && isset($_GET['id_cliente'])): ?>
-										<a href="detalle_pedido.php?id=<?= urlencode($pedido['id']) ?>&id_cliente=<?= urlencode($idCliente) ?>">Ver Detalle</a>
-									<?php else: ?>
-										<a href="detalle_pedido.php?id=<?= urlencode($pedido['id']) ?>">Ver Detalle</a>
-									<?php endif; ?>
-									<br>
-									<?php if (!$esGerente && $pedido['estado'] === 'Recibido'): ?>
-										<form action="../../acciones/pedido/cancelar_pedido.php" method="POST" class="form-actualizar-estado">
-											<input type="hidden" name="id_pedido" value="<?php echo htmlspecialchars($pedido['id']); ?>">
-											<button type="submit" class="btn-accion btn-peligro">Cancelar</button>
-										</form>
-									<?php endif; ?>
-								</td>
-							</tr>
-						<?php endforeach; ?>
-					</tbody>
-				</table>
-			<?php endif; ?>
-		</div>
-
-		<div class="contenedor-volver">
-            <?php if ($esGerente && isset($_GET['id_cliente'])): ?>
-                <a href="../admin/gestionarUsuarios.php" class="btn-login">Volver a Usuarios</a>
             <?php else: ?>
-			    <a href="../../../index.php" class="btn-login">Volver al Inicio</a>
-            <?php endif; ?>
-		</div>
+                <table class="tabla-pedidos tabla-mis-pedidos-movil">
+                    <thead>
+                        <tr>
+                            <th>Nº Pedido</th>
+                            <th>Fecha</th>
+                            <th>Tipo</th>
+                            <th>Estado</th>
+                            <th>Total</th>
+                            <th>Acciones</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <?php foreach ($historialPedidos as $pedido): ?>
+                            <?php
+                                $pedidoId = obtenerDatoPedido($pedido, 'id', 'getId');
+                                $numeroPedido = obtenerDatoPedido($pedido, 'numero_pedido', 'getNumeroPedido');
+                                $fechaPedido = obtenerDatoPedido($pedido, 'fecha', 'getFecha');
+                                $tipoPedido = obtenerDatoPedido($pedido, 'tipo', 'getTipo');
+                                $estadoPedido = obtenerDatoPedido($pedido, 'estado', 'getEstado');
+                                $totalPedido = obtenerDatoPedido($pedido, 'total', 'getTotal');
 
-	</section>
+                                $numeroMostrar = $numeroPedido !== null ? (string) $numeroPedido : (string) $pedidoId;
+
+                                $fechaFormateada = '';
+                                if (is_string($fechaPedido) && $fechaPedido !== '') {
+                                    $timestamp = strtotime($fechaPedido);
+                                    if ($timestamp !== false) {
+                                        $fechaFormateada = date('d/m/Y H:i', $timestamp);
+                                    }
+                                }
+                            ?>
+                            <tr>
+                                <td data-label="Nº Pedido">
+                                    <strong>#<?= htmlspecialchars($numeroMostrar) ?></strong>
+                                </td>
+                                <td data-label="Fecha">
+                                    <?= htmlspecialchars($fechaFormateada) ?>
+                                </td>
+                                <td data-label="Tipo">
+                                    <?= htmlspecialchars((string) $tipoPedido) ?>
+                                </td>
+                                <td data-label="Estado">
+                                    <span class="badge-success">
+                                        <?= htmlspecialchars((string) $estadoPedido) ?>
+                                    </span>
+                                </td>
+                                <td data-label="Total">
+                                    <strong><?= number_format((float) $totalPedido, 2) ?> €</strong>
+                                </td>
+                                <td data-label="Acciones">
+                                    <?php if ($esGerente): ?>
+                                        <a href="<?= BASE_URL ?>/includes/vistas/pedido/detalle_pedido.php?id=<?= urlencode((string) $pedidoId) ?>&id_cliente=<?= urlencode((string) $idCliente) ?>">Ver Detalle</a>
+                                    <?php else: ?>
+                                        <a href="<?= BASE_URL ?>/includes/vistas/pedido/detalle_pedido.php?id=<?= urlencode((string) $pedidoId) ?>">Ver Detalle</a>
+                                    <?php endif; ?>
+                                    <br>
+                                    <?php if (!$esGerente && $estadoPedido === 'Recibido'): ?>
+                                        <form action="<?= BASE_URL ?>/includes/acciones/pedido/cancelar_pedido.php" method="POST" class="form-actualizar-estado">
+                                            <input type="hidden" name="id_pedido" value="<?= htmlspecialchars((string) $pedidoId) ?>">
+                                            <button type="submit" class="btn-accion btn-peligro">Cancelar</button>
+                                        </form>
+                                    <?php endif; ?>
+                                </td>
+                            </tr>
+                        <?php endforeach; ?>
+                    </tbody>
+                </table>
+            <?php endif; ?>
+        </div>
+
+        <div class="contenedor-volver">
+            <?php if ($esGerente): ?>
+                <a href="<?= BASE_URL ?>/includes/vistas/admin/gestionarUsuarios.php" class="btn-login">Volver a Usuarios</a>
+            <?php else: ?>
+                <a href="<?= BASE_URL ?>/index.php" class="btn-login">Volver al Inicio</a>
+            <?php endif; ?>
+        </div>
+
+    </section>
 </div>
 
 <?php
-    $contenidoPrincipal = ob_get_clean();
-    require_once __DIR__ . '/../partials/plantilla.php';
+$contenidoPrincipal = ob_get_clean();
+require_once __DIR__ . '/../partials/plantilla.php';
+
+/**
+ * Obtiene un dato del pedido que puede venir como array o DTO.
+ */
+function obtenerDatoPedido($pedido, string $claveArray, string $getter)
+{
+    if (is_array($pedido)) {
+        return $pedido[$claveArray] ?? null;
+    }
+
+    if (is_object($pedido) && method_exists($pedido, $getter)) {
+        return $pedido->$getter();
+    }
+
+    return null;
+}
 ?>

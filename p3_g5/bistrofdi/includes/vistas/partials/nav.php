@@ -34,7 +34,11 @@ $avatar = $_SESSION['avatar'] ?? 'img/avatares/default.png';
                     <span>Perfil</span>
                 </a>
             </li>
-            <li><a href="<?= BASE_URL ?>/includes/acciones/auth/logout.php">Salir</a></li>
+            <li>
+                <form action="<?= BASE_URL ?>/includes/acciones/auth/logout.php" method="post" style="margin: 0;">
+                    <button type="submit" class="nav-perfil-link">Salir</button>
+                </form>
+            </li>
         <?php else: ?>
             <li><a href="<?= BASE_URL ?>/includes/vistas/auth/login.php">Login</a></li>
             <li><a href="<?= BASE_URL ?>/includes/vistas/auth/registro.php">Registrarse</a></li>

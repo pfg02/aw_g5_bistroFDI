@@ -1,33 +1,47 @@
 <?php
+declare(strict_types=1);
 
 /**
-	* Clase de acceso a datos para categorías.
-*/
+ * Clase de acceso a datos para categorías.
+ */
+require_once __DIR__ . '/../negocio/CategoriaDTO.php';
 
-class CategoriaDAO {
-    
-	private $db;
+class CategoriaDAO
+{
+    private mysqli $db;
 
-    public function __construct($db) {
+    public function __construct(mysqli $db)
+    {
         $this->db = $db;
     }
 
-    public function obtenerPorId($id) {
-        $sql = "SELECT id, nombre, descripcion, imagen FROM categorias WHERE id = ?";
+    public function obtenerPorId(int $id): ?CategoriaDTO
+    {
+        $sql = 'SELECT id, nombre, descripcion, imagen FROM categorias WHERE id = ?';
         $stmt = $this->db->prepare($sql);
-        $stmt->bind_param("i", $id);
+        $stmt->bind_param('i', $id);
         $stmt->execute();
 
         $resultado = $stmt->get_result();
         $fila = $resultado->fetch_assoc();
         $resultado->free();
-
         $stmt->close();
-        return $fila; // Retorna array para que el Service lo convierta a DTO
+
+        if (!$fila) {
+            return null;
+        }
+
+        return new CategoriaDTO(
+            (int) $fila['id'],
+            (string) $fila['nombre'],
+            $fila['descripcion'] !== null ? (string) $fila['descripcion'] : null,
+            $fila['imagen'] !== null ? (string) $fila['imagen'] : null
+        );
     }
 
-    public function listarTodas() {
-        $sql = "SELECT id, nombre, descripcion, imagen FROM categorias ORDER BY nombre ASC";
+    public function listarTodas(): array
+    {
+        $sql = 'SELECT id, nombre, descripcion, imagen FROM categorias ORDER BY nombre ASC';
         $stmt = $this->db->prepare($sql);
         $stmt->execute();
 
@@ -35,7 +49,12 @@ class CategoriaDAO {
         $categorias = [];
 
         while ($fila = $resultado->fetch_assoc()) {
-            $categorias[] = $fila;
+            $categorias[] = new CategoriaDTO(
+                (int) $fila['id'],
+                (string) $fila['nombre'],
+                $fila['descripcion'] !== null ? (string) $fila['descripcion'] : null,
+                $fila['imagen'] !== null ? (string) $fila['imagen'] : null
+            );
         }
 
         $resultado->free();
@@ -44,32 +63,36 @@ class CategoriaDAO {
         return $categorias;
     }
 
-    public function guardar($nombre, $descripcion, $imagen, $id = null) {
-        if ($id) {
-            // UPDATE
-            $sql = "UPDATE categorias SET nombre = ?, descripcion = ?, imagen = ? WHERE id = ?";
+    public function guardar(string $nombre, ?string $descripcion, ?string $imagen, ?int $id = null): bool
+    {
+        if ($id !== null) {
+            $sql = 'UPDATE categorias SET nombre = ?, descripcion = ?, imagen = ? WHERE id = ?';
             $stmt = $this->db->prepare($sql);
-            $stmt->bind_param("sssi", $nombre, $descripcion, $imagen, $id);
+            $stmt->bind_param('sssi', $nombre, $descripcion, $imagen, $id);
         } else {
-            // INSERT
-            $sql = "INSERT INTO categorias (nombre, descripcion, imagen) VALUES (?, ?, ?)";
+            $sql = 'INSERT INTO categorias (nombre, descripcion, imagen) VALUES (?, ?, ?)';
             $stmt = $this->db->prepare($sql);
-            $stmt->bind_param("sss", $nombre, $descripcion, $imagen);
+            $stmt->bind_param('sss', $nombre, $descripcion, $imagen);
         }
+
         $ok = $stmt->execute();
         $stmt->close();
+
         return $ok;
     }
 
-    public function eliminar($id) {
+    public function eliminar(int $id): bool
+    {
         try {
-            $sql = "DELETE FROM categorias WHERE id = ?";
+            $sql = 'DELETE FROM categorias WHERE id = ?';
             $stmt = $this->db->prepare($sql);
-            $stmt->bind_param("i", $id);
+            $stmt->bind_param('i', $id);
+
             $ok = $stmt->execute();
             $stmt->close();
+
             return $ok;
-        } catch (Exception $e) {
+        } catch (Throwable $e) {
             return false;
         }
     }
