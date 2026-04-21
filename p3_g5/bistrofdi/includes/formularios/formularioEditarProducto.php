@@ -42,7 +42,7 @@ class FormularioEditarProducto extends Formulario
         $categoriaSeleccionada = $datos['id_categoria'] ?? ($this->producto->id_categoria ?? 0);
         $ofertadoSeleccionado = $datos['ofertado'] ?? ($this->producto->ofertado ?? 1);
 
-        $opcionesCategorias = '';
+        $opcionesCategorias = '<option value="">Selecciona una categoría</option>';
         foreach ($this->categorias as $cat) {
             $selected = ((string)$categoriaSeleccionada === (string)$cat->id) ? 'selected' : '';
             $idCat = htmlspecialchars((string)$cat->id);
@@ -83,17 +83,17 @@ $erroresHtml
 
 <div class="grupo-control">
     <label>Nombre:</label>
-    <input type="text" name="nombre" value="$nombre" required>
+    <input type="text" name="nombre" value="$nombre" required maxlength="100">
 </div>
 
 <div class="grupo-control">
     <label>Precio Base (€):</label>
-    <input type="number" step="0.01" name="precio_base" value="$precio" required>
+    <input type="number" step="0.01" min="0" name="precio_base" value="$precio" required>
 </div>
 
 <div class="grupo-control">
     <label>IVA:</label>
-    <select name="iva">
+    <select name="iva" required>
         <option value="4" $sel4>4%</option>
         <option value="10" $sel10>10%</option>
         <option value="21" $sel21>21%</option>
@@ -102,24 +102,24 @@ $erroresHtml
 
 <div class="grupo-control">
     <label>Stock:</label>
-    <input type="number" name="stock" value="$stock" required>
+    <input type="number" name="stock" value="$stock" min="0" step="1" required>
 </div>
 
 <div class="grupo-control">
     <label>Categoría:</label>
-    <select name="id_categoria">
+    <select name="id_categoria" required>
         $opcionesCategorias
     </select>
 </div>
 
 <div class="grupo-control">
     <label>Descripción:</label>
-    <textarea name="descripcion" rows="4">$descripcion</textarea>
+    <textarea name="descripcion" rows="4" maxlength="2000">$descripcion</textarea>
 </div>
 
 <div class="grupo-control">
     <label>Estado:</label>
-    <select name="ofertado">
+    <select name="ofertado" required>
         <option value="1" $selAct>Activo (En carta)</option>
         <option value="0" $selInact>Inactivo (Oculto)</option>
     </select>
@@ -130,13 +130,13 @@ $erroresHtml
 
     <div class="bloque-inputs-imagenes">
         <label for="foto1">Imagen 1:</label>
-        <input type="file" id="foto1" name="foto1" accept="image/*">
+        <input type="file" id="foto1" name="foto1" accept=".jpg,.jpeg,.png,.webp,.gif,image/jpeg,image/png,image/webp,image/gif">
 
         <label for="foto2">Imagen 2:</label>
-        <input type="file" id="foto2" name="foto2" accept="image/*">
+        <input type="file" id="foto2" name="foto2" accept=".jpg,.jpeg,.png,.webp,.gif,image/jpeg,image/png,image/webp,image/gif">
 
         <label for="foto3">Imagen 3:</label>
-        <input type="file" id="foto3" name="foto3" accept="image/*">
+        <input type="file" id="foto3" name="foto3" accept=".jpg,.jpeg,.png,.webp,.gif,image/jpeg,image/png,image/webp,image/gif">
     </div>
 </fieldset>
 
