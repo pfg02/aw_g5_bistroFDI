@@ -1,7 +1,11 @@
 <?php
+declare(strict_types=1);
+
 /**
  * Clase para el acceso a datos de las ofertas.
  */
+
+require_once __DIR__ . '/../negocio/OfertasDTO.php';
 
 class OfertaDAO {
     private $db;
