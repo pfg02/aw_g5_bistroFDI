@@ -60,7 +60,7 @@ class OfertaDAO {
             $idOferta = $this->db->insert_id;
             $stmt->close();
 
-            $sqlProd = "INSERT INTO oferta_productos (oferta_id, producto_id, cantidad) VALUES (?, ?, ?)";
+            $sqlProd = "INSERT INTO ofertas_productos (oferta_id, producto_id, cantidad) VALUES (?, ?, ?)";
             $stmtProd = $this->db->prepare($sqlProd);
 
             foreach ($oferta->getProductos() as $p) {
@@ -84,7 +84,7 @@ class OfertaDAO {
      */
     public function obtenerProductosDeOferta($idOferta) {
         $sql = "SELECT op.producto_id, op.cantidad, p.nombre, p.precio_base, p.iva 
-                FROM oferta_productos op
+                FROM ofertas_productos op
                 INNER JOIN productos p ON op.producto_id = p.id
                 WHERE op.oferta_id = ?";
 
