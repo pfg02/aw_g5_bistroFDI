@@ -5,8 +5,8 @@ require_once __DIR__ . '/../../core/config.php';
 require_once __DIR__ . '/../../core/sesion.php';
 require_once __DIR__ . '/../../integracion/OfertasDAO.php';
 require_once __DIR__ . '/../../integracion/ProductoDAO.php';
-require_once __DIR__ . '/../../formularios/FormularioOferta.php';
-require_once __DIR__ . '/../../negocio/OfertaDTO.php';
+require_once __DIR__ . '/../../formularios/formularioOferta.php';
+require_once __DIR__ . '/../../negocio/OfertasDTO.php';
 
 exigirLogin();
 exigirRol('gerente');
