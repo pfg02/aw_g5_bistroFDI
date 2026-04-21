@@ -1,4 +1,7 @@
 <?php
+declare(strict_types=1);
+
+require_once __DIR__ . '/../core/config.php';
 require_once __DIR__ . '/../core/formulario.php';
 require_once __DIR__ . '/../negocio/UsuarioController.php';
 
@@ -12,9 +15,11 @@ class FormularioPerfil extends Formulario
     public function __construct(UsuarioController $controller, int $idUsuario, array $valoresIniciales, string $nombreUsuario)
     {
         parent::__construct('formPerfil', [
-            'action' => 'perfil.php',
+            'action' => BASE_URL . '/includes/vistas/perfil/perfil.php',
+            'method' => 'POST',
             'class' => 'f0-form',
         ]);
+
         $this->controller = $controller;
         $this->idUsuario = $idUsuario;
         $this->valoresIniciales = $valoresIniciales;
@@ -24,41 +29,45 @@ class FormularioPerfil extends Formulario
     protected function generaCamposFormulario(array $datos): string
     {
         $datos = array_merge($this->valoresIniciales, $datos);
-        $nombreUsuario = htmlspecialchars($this->nombreUsuario);
-        $email = htmlspecialchars(trim($datos['email'] ?? ''));
-        $nombre = htmlspecialchars(trim($datos['nombre'] ?? ''));
-        $apellidos = htmlspecialchars(trim($datos['apellidos'] ?? ''));
+
+        $nombreUsuario = htmlspecialchars($this->nombreUsuario, ENT_QUOTES, 'UTF-8');
+        $email = htmlspecialchars(trim((string) ($datos['email'] ?? '')), ENT_QUOTES, 'UTF-8');
+        $nombre = htmlspecialchars(trim((string) ($datos['nombre'] ?? '')), ENT_QUOTES, 'UTF-8');
+        $apellidos = htmlspecialchars(trim((string) ($datos['apellidos'] ?? '')), ENT_QUOTES, 'UTF-8');
+
         $errorGlobal = !empty($this->errores)
-            ? '<div class="f0-msg-error">' . htmlspecialchars($this->errores[0]) . '</div>'
+            ? '<div class="f0-msg-error">' . htmlspecialchars($this->errores[0], ENT_QUOTES, 'UTF-8') . '</div>'
             : '';
+
+        $urlInicio = BASE_URL . '/index.php';
 
         return <<<HTML
 {$errorGlobal}
 <div class="f0-form-grid">
-    <label>
+    <label for="nombre_usuario">
         Nombre de usuario
-        <input type="text" value="{$nombreUsuario}" disabled>
+        <input type="text" id="nombre_usuario" value="{$nombreUsuario}" disabled>
     </label>
 
-    <label>
+    <label for="email">
         Email
-        <input type="email" name="email" value="{$email}" required>
+        <input type="email" id="email" name="email" value="{$email}" required maxlength="100">
     </label>
 
-    <label>
+    <label for="nombre">
         Nombre
-        <input type="text" name="nombre" value="{$nombre}" required>
+        <input type="text" id="nombre" name="nombre" value="{$nombre}" required maxlength="50">
     </label>
 
-    <label>
+    <label for="apellidos">
         Apellidos
-        <input type="text" name="apellidos" value="{$apellidos}" required>
+        <input type="text" id="apellidos" name="apellidos" value="{$apellidos}" required maxlength="100">
     </label>
 </div>
 
 <div class="f0-form-actions">
     <button type="submit" class="f0-btn">Guardar cambios</button>
-    <a href="index.php" class="f0-btn-secondary">Volver al inicio</a>
+    <a href="{$urlInicio}" class="f0-btn-secondary">Volver al inicio</a>
 </div>
 HTML;
     }
@@ -69,8 +78,8 @@ HTML;
 
         if ($ok) {
             $this->mensajeExito = $texto;
-            $usuario = $this->controller->obtenerUsuarioPorId($this->idUsuario);
 
+            $usuario = $this->controller->obtenerUsuarioPorId($this->idUsuario);
             if ($usuario) {
                 $this->valoresIniciales = [
                     'email' => $usuario->getEmail(),
