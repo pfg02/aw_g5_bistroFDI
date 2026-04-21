@@ -24,6 +24,7 @@ $avatar = $_SESSION['avatar'] ?? 'img/avatares/default.png';
         <?php if (isset($_SESSION['rol']) && $_SESSION['rol'] === 'gerente'): ?>
             <li><a href="<?= BASE_URL ?>/includes/vistas/admin/gestion_categorias.php">Categorías</a></li>
             <li><a href="<?= BASE_URL ?>/includes/vistas/admin/gestion_productos.php">Productos</a></li>
+            <li><a href="<?= BASE_URL ?>/includes/vistas/admin/gestion_ofertas.php">Ofertas</a></li>
             <li><a href="<?= BASE_URL ?>/includes/vistas/admin/gestionarUsuarios.php">Usuarios</a></li>
         <?php endif; ?>
 
@@ -35,7 +36,7 @@ $avatar = $_SESSION['avatar'] ?? 'img/avatares/default.png';
                 </a>
             </li>
             <li>
-                <form action="<?= BASE_URL ?>/includes/acciones/auth/logout.php" method="post" style="margin: 0;">
+                <form action="<?= BASE_URL ?>/includes/acciones/auth/logout.php" method="post" class="form-logout-nav">
                     <button type="submit" class="nav-perfil-link">Salir</button>
                 </form>
             </li>
