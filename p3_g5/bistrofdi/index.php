@@ -27,6 +27,8 @@ ob_start();
                         <a href="includes/vistas/admin/gestion_categorias.php" class="btn-admin">Gestionar Categorías</a>
                         <a href="includes/vistas/admin/gestionarUsuarios.php" class="btn-admin">Gestionar Usuarios</a>
                         <a href="includes/vistas/camarero/panel_camarero.php" class="btn-admin">Panel de Gerencia</a>
+                        <a href="/includes/vistas/admin/gestion_ofertas.php" class="btn-login">Gestionar Ofertas</a>
+
 
                     <?php elseif ($rol === 'camarero'): ?>
                         <a href="includes/vistas/camarero/panel_camarero.php" class="btn-admin">Panel de Sala (Camareros)</a>
