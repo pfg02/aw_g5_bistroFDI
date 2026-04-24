@@ -26,13 +26,9 @@ class PedidoDAO
             $descuentoTotal = (float) $pedidoDTO->getDescuentoTotal();
             $totalSinDescuento = (float) $pedidoDTO->getTotalSinDescuento();
 
-            $hoy = date('Y-m-d');
-
             $sqlNum = "SELECT MAX(numero_pedido) AS max_num
-                       FROM pedidos
-                       WHERE DATE(fecha) = ?";
+                       FROM pedidos";
             $stmtNum = $this->db->prepare($sqlNum);
-            $stmtNum->bind_param('s', $hoy);
             $stmtNum->execute();
 
             $rsNum = $stmtNum->get_result();
