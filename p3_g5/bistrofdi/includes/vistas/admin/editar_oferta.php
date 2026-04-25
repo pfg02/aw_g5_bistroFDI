@@ -20,10 +20,11 @@ if ($idOferta === false || $idOferta === null) {
     exit();
 }
 
-global $db;
+$db = Application::getInstance()->conexionBd();
 
 $ofertaDAO = new OfertaDAO($db);
-$productoDAO = new ProductoDAO();
+$productoDAO = new ProductoDAO($db);
+
 $productosDisponibles = $productoDAO->listarTodos();
 
 $oferta = cargarOferta($ofertaDAO, (int) $idOferta);
@@ -44,11 +45,7 @@ $htmlFormulario = $formulario->gestiona();
 $datosValidados = $formulario->getDatosValidados();
 
 if ($_SERVER['REQUEST_METHOD'] === 'POST' && !empty($datosValidados['oferta'])) {
-    $ok = false;
-
-    if (method_exists($ofertaDAO, 'actualizarOferta')) {
-        $ok = $ofertaDAO->actualizarOferta($datosValidados['oferta']);
-    }
+    $ok = $ofertaDAO->actualizarOferta($datosValidados['oferta']);
 
     if ($ok) {
         header('Location: ' . BASE_URL . '/includes/vistas/admin/gestion_ofertas.php?msg=editada');
@@ -89,36 +86,16 @@ require_once __DIR__ . '/../partials/plantilla.php';
 
 function cargarOferta(OfertaDAO $ofertaDAO, int $idOferta): ?OfertaDTO
 {
-    if (method_exists($ofertaDAO, 'obtenerPorId')) {
-        $oferta = $ofertaDAO->obtenerPorId($idOferta);
-        if ($oferta instanceof OfertaDTO) {
-            $productos = $ofertaDAO->obtenerProductosDeOferta($idOferta);
-            $oferta->setProductos(normalizarProductosOferta($productos));
-            return $oferta;
-        }
+    $oferta = $ofertaDAO->obtenerPorId($idOferta);
+
+    if (!$oferta instanceof OfertaDTO) {
+        return null;
     }
 
-    if (method_exists($ofertaDAO, 'listarOfertas')) {
-        $ofertas = $ofertaDAO->listarOfertas();
+    $productos = $ofertaDAO->obtenerProductosDeOferta($idOferta);
+    $oferta->setProductos(normalizarProductosOferta($productos));
 
-        foreach ($ofertas as $oferta) {
-            $id = null;
-
-            if (is_object($oferta) && method_exists($oferta, 'getId')) {
-                $id = $oferta->getId();
-            } elseif (is_array($oferta)) {
-                $id = $oferta['id'] ?? null;
-            }
-
-            if ((int) $id === $idOferta && $oferta instanceof OfertaDTO) {
-                $productos = $ofertaDAO->obtenerProductosDeOferta($idOferta);
-                $oferta->setProductos(normalizarProductosOferta($productos));
-                return $oferta;
-            }
-        }
-    }
-
-    return null;
+    return $oferta;
 }
 
 function normalizarProductosOferta(array $productos): array
@@ -134,4 +111,3 @@ function normalizarProductosOferta(array $productos): array
 
     return $resultado;
 }
-?>

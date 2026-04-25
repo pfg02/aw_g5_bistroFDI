@@ -6,10 +6,9 @@ class UsuarioDAO
 {
     private mysqli $conn;
 
-   public function __construct()
+   public function __construct(mysqli $db)
     {
-		global $db;
-        $this->conn = $db;
+    $this->conn = $db;
     }
 
     public function buscarPorId(int $id): ?UsuarioDTO

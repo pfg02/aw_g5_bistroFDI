@@ -36,7 +36,7 @@ if (!in_array($tipoPedido, $tiposPermitidos, true)) {
     $_SESSION['tipoPedido'] = $tipoPedido;
 }
 
-$productoDAO = new ProductoDAO();
+$productoDAO = new ProductoDAO(Application::getInstance()->conexionBd());
 $productosDTO = $productoDAO->listarOfertados();
 
 $menuAgrupado = [];

@@ -1,13 +1,15 @@
 <?php
 
-require_once __DIR__ . "/../integration/OfertasDAO.php";
+require_once __DIR__ . '/../core/config.php';
+require_once __DIR__ . '/../integracion/OfertasDAO.php';
 
-class OfertasServiceApp {
-
+class OfertasServiceApp
+{
     private $ofertasDAO;
 
-    public function __construct($db) {
-        $this->ofertasDAO = new OfertasDAO($db);
+    public function __construct(?mysqli $db = null)
+    {
+        $this->ofertasDAO = new OfertaDAO($db ?? Application::getInstance()->conexionBd());
     }
 
     /**

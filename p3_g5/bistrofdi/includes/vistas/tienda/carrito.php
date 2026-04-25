@@ -26,7 +26,7 @@ if (!is_string($tipoPedido) || !in_array($tipoPedido, $tiposPermitidos, true)) {
     exit();
 }
 
-$productoDAO = new ProductoDAO();
+$productoDAO = new ProductoDAO(Application::getInstance()->conexionBd());
 
 $productos = [];
 $total = 0.0;

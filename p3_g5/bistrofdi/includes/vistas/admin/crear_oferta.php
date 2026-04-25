@@ -5,15 +5,15 @@ require_once __DIR__ . '/../../core/config.php';
 require_once __DIR__ . '/../../core/sesion.php';
 require_once __DIR__ . '/../../integracion/OfertasDAO.php';
 require_once __DIR__ . '/../../integracion/ProductoDAO.php';
-require_once __DIR__ . '/../../formularios/FormularioOferta.php';
+require_once __DIR__ . '/../../formularios/formularioOferta.php';
 
 exigirLogin();
 exigirRol('gerente');
 
-global $db;
+$db = Application::getInstance()->conexionBd();
 
 $ofertaDAO = new OfertaDAO($db);
-$productoDAO = new ProductoDAO();
+$productoDAO = new ProductoDAO($db);
 $productosDisponibles = $productoDAO->listarTodos();
 
 $formulario = new FormularioOferta(

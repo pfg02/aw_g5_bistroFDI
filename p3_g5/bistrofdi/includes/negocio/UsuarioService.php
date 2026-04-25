@@ -6,9 +6,9 @@ class UsuarioService
 {
     private UsuarioDAO $usuarioDAO;
 
-    public function __construct()
+    public function __construct(?mysqli $db = null)
     {
-        $this->usuarioDAO = new UsuarioDAO();
+    $this->usuarioDAO = new UsuarioDAO($db ?? Application::getInstance()->conexionBd());
     }
 
     public function registrarUsuario(

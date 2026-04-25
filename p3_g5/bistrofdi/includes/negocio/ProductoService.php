@@ -9,9 +9,9 @@ class ProductoService
     private ProductoDAO $dao;
     private array $ultimosErrores = [];
 
-    public function __construct()
+    public function __construct(?mysqli $db = null)
     {
-        $this->dao = new ProductoDAO();
+    $this->dao = new ProductoDAO($db ?? Application::getInstance()->conexionBd());
     }
 
     public function listarTodos(): array

@@ -7,10 +7,9 @@ class PedidoDAO
 {
     private mysqli $db;
 
-    public function __construct()
+    public function __construct(mysqli $db)
     {
-        global $db;
-        $this->db = $db;
+    $this->db = $db;
     }
 
     public function guardarPedido(PedidoDTO $pedidoDTO): int

@@ -11,10 +11,9 @@ class ProductoDAO
 {
     private mysqli $db;
 
-    public function __construct()
+    public function __construct(mysqli $db)
     {
-        global $db;
-        $this->db = $db;
+    $this->db = $db;
     }
 
     private function mapear(array $row): ProductoDTO
