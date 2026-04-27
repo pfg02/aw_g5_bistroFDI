@@ -1,11 +1,14 @@
 <?php
 require_once __DIR__ . '/../../core/sesion.php';
 require_once __DIR__ . '/../../negocio/UsuarioController.php';
+require_once __DIR__ . '/../usuarios/tablaUsuarios.php';
 
 exigirRol('gerente');
 
 $controller = new UsuarioController();
 $usuarios = $controller->obtenerListaUsuarios();
+
+$tablaUsuarios = new TablaUsuarios($usuarios);
 
 ob_start();
 ?>
@@ -20,7 +23,7 @@ ob_start();
             <a href="<?= BASE_URL ?>/index.php" class="f0-btn-secondary">Volver al inicio</a>
         </div>
 
-        <?php include __DIR__ . '/../usuarios/tablaUsuarios.php'; ?>
+        <?= $tablaUsuarios->render(); ?>
     </div>
 </section>
 <?php
