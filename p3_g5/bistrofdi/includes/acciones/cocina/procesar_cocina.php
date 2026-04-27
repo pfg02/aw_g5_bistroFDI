@@ -30,6 +30,12 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['accion'], $_POST['id_
         $controller->marcarProductoComoPreparado($idPedido, $idProducto);
 
     } elseif ($accion === 'finalizar_pedido') {
+        if (!$controller->todosProductosCocinaPreparados($idPedido)) {
+            $_SESSION['mensaje_error'] = 'Todavía quedan productos de cocina sin marcar como listos.';
+            header("Location: ../../vistas/cocina/panel_cocina.php");
+            exit();
+        }
+
         $actualizado = $controller->actualizarEstadoPedido($idPedido, 'Listo cocina');
 
         if ($actualizado) {

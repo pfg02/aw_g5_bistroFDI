@@ -55,6 +55,7 @@ CREATE TABLE productos (
     imagen VARCHAR(255) DEFAULT 'default_prod.png',
     iva INT(11) DEFAULT 10,
     ofertado TINYINT(1) DEFAULT 1,
+    requiere_cocina TINYINT(1) NOT NULL DEFAULT 1,
     KEY `id_categoria` (`id_categoria`),
     CONSTRAINT `productos_categoria_fk`
         FOREIGN KEY (`id_categoria`) REFERENCES `categorias`(`id`)

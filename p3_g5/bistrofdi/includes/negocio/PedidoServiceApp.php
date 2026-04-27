@@ -89,4 +89,9 @@ class PedidoServiceApp
     {
         return $this->pedidoDAO->marcarProductoComoPreparado($idPedido, $idProducto);
     }
+
+    public function todosProductosCocinaPreparados($idPedido)
+    {
+        return $this->pedidoDAO->todosProductosCocinaPreparados((int) $idPedido);
+    }
 }

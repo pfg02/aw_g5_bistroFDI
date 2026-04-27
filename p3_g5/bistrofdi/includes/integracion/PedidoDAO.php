@@ -60,14 +60,16 @@ class PedidoDAO
             $stmtPedido->close();
 
             $productos = $pedidoDTO->getProductos();
-            $sqlProductos = "INSERT INTO pedido_productos (pedido_id, producto_id, cantidad)
-                             VALUES (?, ?, ?)";
+            $sqlProductos = "INSERT INTO pedido_productos (pedido_id, producto_id, cantidad, preparado)
+                             SELECT ?, p.id, ?, CASE WHEN p.requiere_cocina = 1 THEN 0 ELSE 1 END
+                             FROM productos p
+                             WHERE p.id = ?";
             $stmtProductos = $this->db->prepare($sqlProductos);
 
             foreach ($productos as $productoId => $cantidad) {
                 $productoId = (int) $productoId;
                 $cantidad = (int) $cantidad;
-                $stmtProductos->bind_param('iii', $pedidoId, $productoId, $cantidad);
+                $stmtProductos->bind_param('iii', $pedidoId, $cantidad, $productoId);
                 $stmtProductos->execute();
             }
 
@@ -234,11 +236,12 @@ class PedidoDAO
                        p.nombre,
                        p.precio_base,
                        p.iva,
+                       p.requiere_cocina,
                        MAX(pp.preparado) AS preparado
                 FROM pedido_productos pp
                 INNER JOIN productos p ON pp.producto_id = p.id
                 WHERE pp.pedido_id = ?
-                GROUP BY p.id, p.nombre, p.precio_base, p.iva";
+                GROUP BY p.id, p.nombre, p.precio_base, p.iva, p.requiere_cocina";
 
         $stmt = $this->db->prepare($sql);
         $stmt->bind_param('i', $idPedido);
@@ -254,6 +257,7 @@ class PedidoDAO
                 'nombre' => (string) $fila['nombre'],
                 'precio_base' => (float) $fila['precio_base'],
                 'iva' => (int) $fila['iva'],
+                'requiere_cocina' => (int) $fila['requiere_cocina'],
                 'preparado' => (int) $fila['preparado'],
             ];
         }
@@ -309,9 +313,12 @@ class PedidoDAO
 
     public function marcarProductoComoPreparado(int $idPedido, int $idProducto): bool
     {
-        $sql = "UPDATE pedido_productos
-                SET preparado = 1
-                WHERE pedido_id = ? AND producto_id = ?";
+        $sql = "UPDATE pedido_productos pp
+                INNER JOIN productos p ON pp.producto_id = p.id
+                SET pp.preparado = 1
+                WHERE pp.pedido_id = ?
+                  AND pp.producto_id = ?
+                  AND p.requiere_cocina = 1";
 
         $stmt = $this->db->prepare($sql);
         $stmt->bind_param('ii', $idPedido, $idProducto);
@@ -320,6 +327,27 @@ class PedidoDAO
         $stmt->close();
 
         return $exito;
+    }
+
+    public function todosProductosCocinaPreparados(int $idPedido): bool
+    {
+        $sql = "SELECT COUNT(*) AS pendientes
+                FROM pedido_productos pp
+                INNER JOIN productos p ON pp.producto_id = p.id
+                WHERE pp.pedido_id = ?
+                  AND p.requiere_cocina = 1
+                  AND pp.preparado = 0";
+
+        $stmt = $this->db->prepare($sql);
+        $stmt->bind_param('i', $idPedido);
+        $stmt->execute();
+
+        $rs = $stmt->get_result();
+        $fila = $rs->fetch_assoc();
+        $rs->free();
+        $stmt->close();
+
+        return ((int) ($fila['pendientes'] ?? 0)) === 0;
     }
 
     private function crearPedidoDTODesdeFila(array $fila): PedidoDTO

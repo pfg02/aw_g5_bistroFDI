@@ -55,6 +55,7 @@ class ProductoController
             'options' => ['min_range' => 1]
         ]);
         $ofertado = filter_input(INPUT_POST, 'ofertado', FILTER_VALIDATE_INT);
+        $requiereCocina = filter_input(INPUT_POST, 'requiere_cocina', FILTER_VALIDATE_INT);
         $iva = filter_input(INPUT_POST, 'iva', FILTER_VALIDATE_INT);
         $imagenActual = trim((string) (filter_input(INPUT_POST, 'imagen_actual', FILTER_UNSAFE_RAW) ?? ''));
 
@@ -64,6 +65,8 @@ class ProductoController
             $idCategoria === false ||
             $idCategoria === null ||
             $ofertado === false ||
+            $requiereCocina === false ||
+            $requiereCocina === null ||
             $iva === false
         ) {
             $this->redirigirEdicion($id, '1');
@@ -104,6 +107,7 @@ class ProductoController
             $imagenFinal,
             (int) $idCategoria,
             (int) $ofertado,
+            (int) $requiereCocina,
             (int) $iva
         );
 

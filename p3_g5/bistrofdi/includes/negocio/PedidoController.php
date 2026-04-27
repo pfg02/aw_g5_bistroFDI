@@ -66,5 +66,9 @@ class PedidoController {
 	public function marcarProductoComoPreparado($idPedido, $idProducto) {
         return $this->service->marcarProductoComoPreparado($idPedido, $idProducto);
     }
+
+	public function todosProductosCocinaPreparados($idPedido) {
+        return $this->service->todosProductosCocinaPreparados($idPedido);
+    }
 }
 ?>

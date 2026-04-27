@@ -12,20 +12,20 @@ INSERT INTO categorias (nombre, descripcion, imagen) VALUES
 -- --------------------------------------------------------
 -- POBLAR PRODUCTOS
 -- --------------------------------------------------------
-INSERT INTO productos (id_categoria, nombre, descripcion, precio_base, stock, imagen, iva, ofertado) VALUES
-	(1, 'Nachos con Queso', 'Nachos crujientes con mezcla de quesos, jalapeños y guacamole', 8.50, 50, 'nachos.png', 10, 1),
-	(1, 'Croquetas Caseras', 'Ración de croquetas cremosas de jamón ibérico (6 uds)', 9.00, 40, 'croquetas.png', 10, 1),
-	(1, 'Patatas Bravas', 'Patatas rústicas con nuestra salsa brava secreta', 6.50, 60, 'bravas.png', 10, 1),
-	(2, 'Hamburguesa FDI', 'Doble carne de ternera, queso cheddar, bacon y salsa BBQ', 12.50, 30, 'burger.png', 10, 1),
-	(2, 'Risotto de Setas', 'Risotto cremoso con setas de temporada y parmesano', 14.00, 25, 'risotto.png', 10, 1),
-	(2, 'Salmón a la Plancha', 'Lomo de salmón fresco con guarnición de verduritas', 16.00, 20, 'salmon.png', 10, 1),
-	(3, 'Tarta de Queso', 'Nuestra famosa tarta de queso horneada', 6.50, 15, 'tarta_queso.png', 10, 1),
-	(3, 'Brownie con Helado', 'Brownie de chocolate caliente con helado de vainilla', 6.00, 20, 'brownie.png', 10, 1),
-	(4, 'Refresco de Cola', 'Lata 33cl bien fría', 2.50, 100, 'cola.png', 10, 1),
-	(4, 'Cerveza Artesanal', 'Pinta de cerveza rubia de barril', 3.50, 80, 'cerveza.png', 21, 1),
-	(4, 'Agua Mineral', 'Botella 50cl', 1.50, 150, 'agua.png', 10, 1),
-	(5, 'Café Solo', 'Café espresso de especialidad', 1.50, 200, 'cafe_solo.png', 10, 1),
-	(5, 'Café con Leche', 'Café espresso con leche espumada', 1.80, 200, 'cafe_leche.png', 10, 1);
+INSERT INTO productos (id_categoria, nombre, descripcion, precio_base, stock, imagen, iva, ofertado, requiere_cocina) VALUES
+	(1, 'Nachos con Queso', 'Nachos crujientes con mezcla de quesos, jalapeños y guacamole', 8.50, 50, 'nachos.png', 10, 1, 1),
+	(1, 'Croquetas Caseras', 'Ración de croquetas cremosas de jamón ibérico (6 uds)', 9.00, 40, 'croquetas.png', 10, 1, 1),
+	(1, 'Patatas Bravas', 'Patatas rústicas con nuestra salsa brava secreta', 6.50, 60, 'bravas.png', 10, 1, 1),
+	(2, 'Hamburguesa FDI', 'Doble carne de ternera, queso cheddar, bacon y salsa BBQ', 12.50, 30, 'burger.png', 10, 1, 1),
+	(2, 'Risotto de Setas', 'Risotto cremoso con setas de temporada y parmesano', 14.00, 25, 'risotto.png', 10, 1, 1),
+	(2, 'Salmón a la Plancha', 'Lomo de salmón fresco con guarnición de verduritas', 16.00, 20, 'salmon.png', 10, 1, 1),
+	(3, 'Tarta de Queso', 'Nuestra famosa tarta de queso horneada', 6.50, 15, 'tarta_queso.png', 10, 1, 1),
+	(3, 'Brownie con Helado', 'Brownie de chocolate caliente con helado de vainilla', 6.00, 20, 'brownie.png', 10, 1, 1),
+	(4, 'Refresco de Cola', 'Lata 33cl bien fría', 2.50, 100, 'cola.png', 10, 1, 0),
+	(4, 'Cerveza Artesanal', 'Pinta de cerveza rubia de barril', 3.50, 80, 'cerveza.png', 21, 1, 0),
+	(4, 'Agua Mineral', 'Botella 50cl', 1.50, 150, 'agua.png', 10, 1, 0),
+	(5, 'Café Solo', 'Café espresso de especialidad', 1.50, 200, 'cafe_solo.png', 10, 1, 0),
+	(5, 'Café con Leche', 'Café espresso con leche espumada', 1.80, 200, 'cafe_leche.png', 10, 1, 0);
 
 -- --------------------------------------------------------
 -- POBLAR USUARIOS

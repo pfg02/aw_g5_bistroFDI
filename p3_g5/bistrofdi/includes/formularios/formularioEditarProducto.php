@@ -73,6 +73,7 @@ class FormularioEditarProducto extends Formulario
         $ivaSeleccionado = (string) ($datos['iva'] ?? $this->obtenerDatoProducto('iva') ?? 21);
         $categoriaSeleccionada = (string) ($datos['id_categoria'] ?? $this->obtenerDatoProducto('id_categoria') ?? 0);
         $ofertadoSeleccionado = (string) ($datos['ofertado'] ?? $this->obtenerDatoProducto('ofertado') ?? 1);
+        $requiereCocinaSeleccionado = (string) ($datos['requiere_cocina'] ?? $this->obtenerDatoProducto('requiere_cocina') ?? 1);
 
         $opcionesCategorias = '<option value="">Selecciona una categoría</option>';
         foreach ($this->categorias as $cat) {
@@ -113,6 +114,9 @@ class FormularioEditarProducto extends Formulario
 
         $selAct = ($ofertadoSeleccionado === '1') ? 'selected' : '';
         $selInact = ($ofertadoSeleccionado === '0') ? 'selected' : '';
+
+        $selCocinaSi = ($requiereCocinaSeleccionado === '1') ? 'selected' : '';
+        $selCocinaNo = ($requiereCocinaSeleccionado === '0') ? 'selected' : '';
 
         $urlListado = BASE_URL . '/includes/vistas/admin/gestion_productos.php';
 
@@ -164,6 +168,14 @@ $erroresHtml
     <select id="ofertado" name="ofertado" required>
         <option value="1" $selAct>Activo (En carta)</option>
         <option value="0" $selInact>Inactivo (Oculto)</option>
+    </select>
+</div>
+
+<div class="grupo-control">
+    <label for="requiere_cocina">Preparación en cocina:</label>
+    <select id="requiere_cocina" name="requiere_cocina" required>
+        <option value="1" $selCocinaSi>Sí, se prepara en cocina</option>
+        <option value="0" $selCocinaNo>No, no se prepara en cocina</option>
     </select>
 </div>
 

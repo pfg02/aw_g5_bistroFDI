@@ -11,6 +11,7 @@ class ProductoDTO
     public ?string $imagen;
     public ?int $id_categoria;
     public int $ofertado;
+    public int $requiere_cocina;
     public int $iva;
     public ?string $categoria_nombre;
 
@@ -23,6 +24,7 @@ class ProductoDTO
         ?string $imagen = null,
         ?int $id_categoria = null,
         int $ofertado = 1,
+        int $requiere_cocina = 1,
         int $iva = 21,
         ?string $categoria_nombre = null
     ) {
@@ -34,6 +36,7 @@ class ProductoDTO
         $this->imagen = $imagen;
         $this->id_categoria = $id_categoria;
         $this->ofertado = $ofertado;
+        $this->requiere_cocina = $requiere_cocina;
         $this->iva = $iva;
         $this->categoria_nombre = $categoria_nombre;
     }
@@ -78,6 +81,11 @@ class ProductoDTO
         return $this->ofertado;
     }
 
+    public function getRequiereCocina(): int
+    {
+        return $this->requiere_cocina;
+    }
+
     public function getIva(): int
     {
         return $this->iva;
@@ -96,5 +104,10 @@ class ProductoDTO
     public function obtenerEstadoStock(): string
     {
         return $this->stock > 0 ? 'En stock' : 'Sin stock';
+    }
+
+    public function requiereCocina(): bool
+    {
+        return $this->requiere_cocina === 1;
     }
 }

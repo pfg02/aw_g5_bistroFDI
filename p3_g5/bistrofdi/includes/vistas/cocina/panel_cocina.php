@@ -48,10 +48,13 @@ if ($miPedido) {
             $todosPreparados = true;
 
             foreach ($platos as &$plato) {
-                $estaPreparado = ((int) ($plato['preparado'] ?? 0) === 1);
+                $requiereCocina = ((int) ($plato['requiere_cocina'] ?? 1) === 1);
+                $estaPreparado = !$requiereCocina || ((int) ($plato['preparado'] ?? 0) === 1);
+
+                $plato['requiere_cocina'] = $requiereCocina;
                 $plato['preparado'] = $estaPreparado;
 
-                if (!$estaPreparado) {
+                if ($requiereCocina && !$estaPreparado) {
                     $todosPreparados = false;
                 }
             }
@@ -174,6 +177,7 @@ ob_start();
                                 $nombre = (string) ($plato['nombre'] ?? '');
                                 $productoId = (int) ($plato['producto_id'] ?? 0);
                                 $preparado = !empty($plato['preparado']);
+                                $requiereCocina = !empty($plato['requiere_cocina']);
                             ?>
                             <tr>
                                 <td data-label="Cantidad"><strong><?= $cantidad ?>x</strong></td>
@@ -181,7 +185,9 @@ ob_start();
                                     <?= htmlspecialchars($nombre) ?>
                                 </td>
                                 <td data-label="Acción">
-                                    <?php if (!$preparado): ?>
+                                    <?php if (!$requiereCocina): ?>
+                                        <span>No requiere cocina</span>
+                                    <?php elseif (!$preparado): ?>
                                         <form action="<?= BASE_URL ?>/includes/acciones/cocina/procesar_cocina.php" method="POST">
                                             <input type="hidden" name="accion" value="marcar_plato">
                                             <input type="hidden" name="id_pedido" value="<?= htmlspecialchars((string) $idPedidoActivo) ?>">
@@ -204,7 +210,7 @@ ob_start();
                         <button
                             type="submit"
                             class="btn-login btn-pasar-sala <?= $todosPreparados ? 'estado-sala-listo' : 'estado-sala-pte' ?>"
-                            <?= !$todosPreparados ? 'disabled title="Marca todos los platos primero"' : '' ?>
+                            <?= !$todosPreparados ? 'disabled title="Marca primero los productos que requieren cocina"' : '' ?>
                         >
                             ¡Pasar a Sala!
                         </button>

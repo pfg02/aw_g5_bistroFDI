@@ -43,6 +43,7 @@ class ProductoService
         $stock = (int) $this->obtenerDatoProducto($dto, 'stock');
         $iva = (int) $this->obtenerDatoProducto($dto, 'iva');
         $ofertado = (int) $this->obtenerDatoProducto($dto, 'ofertado');
+        $requiereCocina = (int) $this->obtenerDatoProducto($dto, 'requiere_cocina');
         $idCategoria = (int) $this->obtenerDatoProducto($dto, 'id_categoria');
 
         $ivasPermitidos = [4, 10, 21];
@@ -65,6 +66,10 @@ class ProductoService
 
         if (!in_array($ofertado, [0, 1], true)) {
             $this->ultimosErrores[] = 'El estado del producto no es válido.';
+        }
+
+        if (!in_array($requiereCocina, [0, 1], true)) {
+            $this->ultimosErrores[] = 'El valor de preparación en cocina no es válido.';
         }
 
         if ($idCategoria <= 0) {

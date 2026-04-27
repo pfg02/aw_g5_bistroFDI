@@ -27,6 +27,7 @@ class ProductoDAO
             (string) ($row['imagen'] ?? ''),
             isset($row['id_categoria']) ? (int) $row['id_categoria'] : 0,
             isset($row['ofertado']) ? (int) $row['ofertado'] : 1,
+            isset($row['requiere_cocina']) ? (int) $row['requiere_cocina'] : 1,
             isset($row['iva']) ? (int) $row['iva'] : 21
         );
     }
@@ -82,12 +83,31 @@ class ProductoDAO
         $imagen = (string) $this->obtenerDatoProducto($p, 'imagen');
         $idCategoria = (int) $this->obtenerDatoProducto($p, 'id_categoria');
         $ofertado = (int) $this->obtenerDatoProducto($p, 'ofertado');
+        $requiereCocina = (int) $this->obtenerDatoProducto($p, 'requiere_cocina');
         $iva = (int) $this->obtenerDatoProducto($p, 'iva');
 
         if ($id !== null) {
             $sql = "UPDATE productos
-                    SET nombre = ?, descripcion = ?, precio_base = ?, stock = ?, imagen = ?, id_categoria = ?, ofertado = ?, iva = ?
+                    SET nombre = ?, descripcion = ?, precio_base = ?, stock = ?, imagen = ?, id_categoria = ?, ofertado = ?, requiere_cocina = ?, iva = ?
                     WHERE id = ?";
+            $stmt = $this->db->prepare($sql);
+            $stmt->bind_param(
+                'ssdisiiiii',
+                $nombre,
+                $descripcion,
+                $precio,
+                $stock,
+                $imagen,
+                $idCategoria,
+                $ofertado,
+                $requiereCocina,
+                $iva,
+                $id
+            );
+        } else {
+            $sql = "INSERT INTO productos
+                    (nombre, descripcion, precio_base, stock, imagen, id_categoria, ofertado, requiere_cocina, iva)
+                    VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)";
             $stmt = $this->db->prepare($sql);
             $stmt->bind_param(
                 'ssdisiiii',
@@ -98,23 +118,7 @@ class ProductoDAO
                 $imagen,
                 $idCategoria,
                 $ofertado,
-                $iva,
-                $id
-            );
-        } else {
-            $sql = "INSERT INTO productos
-                    (nombre, descripcion, precio_base, stock, imagen, id_categoria, ofertado, iva)
-                    VALUES (?, ?, ?, ?, ?, ?, ?, ?)";
-            $stmt = $this->db->prepare($sql);
-            $stmt->bind_param(
-                'ssdisiii',
-                $nombre,
-                $descripcion,
-                $precio,
-                $stock,
-                $imagen,
-                $idCategoria,
-                $ofertado,
+                $requiereCocina,
                 $iva
             );
         }
