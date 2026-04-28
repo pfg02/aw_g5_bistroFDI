@@ -1,176 +1,221 @@
--- --------------------------------------------------------
--- Base de datos: 'bistrofdi'
--- --------------------------------------------------------
-
-DROP DATABASE IF EXISTS bistrofdi;
-CREATE DATABASE bistrofdi
-    DEFAULT CHARACTER SET utf8mb4
-    COLLATE utf8mb4_general_ci;
-
 USE bistrofdi;
 
--- --------------------------------------------------------
--- Borrado de tablas
--- --------------------------------------------------------
+SET NAMES utf8mb4;
+SET FOREIGN_KEY_CHECKS = 0;
 
 DROP TABLE IF EXISTS pedidos_ofertas;
 DROP TABLE IF EXISTS ofertas_productos;
-DROP TABLE IF EXISTS pedido_productos;
+DROP TABLE IF EXISTS pedidos_productos;
 DROP TABLE IF EXISTS pedidos;
+DROP TABLE IF EXISTS ofertas;
 DROP TABLE IF EXISTS productos;
 DROP TABLE IF EXISTS categorias;
 DROP TABLE IF EXISTS usuarios;
-DROP TABLE IF EXISTS ofertas;
+
+SET FOREIGN_KEY_CHECKS = 1;
 
 -- --------------------------------------------------------
--- Creación de usuario con contraseña
--- --------------------------------------------------------
-
-CREATE USER IF NOT EXISTS 'bistro_user'@'localhost' IDENTIFIED BY 'bistro_pass';
-GRANT ALL PRIVILEGES ON bistrofdi.* TO 'bistro_user'@'localhost';
-FLUSH PRIVILEGES;
-
--- --------------------------------------------------------
--- Estructura de tabla para la tabla 'categorias'
--- --------------------------------------------------------
-
-CREATE TABLE categorias (
-    id INT(11) AUTO_INCREMENT PRIMARY KEY,
-    nombre VARCHAR(100) NOT NULL UNIQUE,
-    descripcion TEXT DEFAULT NULL,
-    imagen TEXT DEFAULT NULL
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
-
--- --------------------------------------------------------
--- Estructura de tabla para la tabla 'productos'
--- --------------------------------------------------------
-
-CREATE TABLE productos (
-    id INT(11) AUTO_INCREMENT PRIMARY KEY,
-    id_categoria INT(11) DEFAULT NULL,
-    nombre VARCHAR(100) NOT NULL,
-    descripcion TEXT DEFAULT NULL,
-    precio_base DECIMAL(10,2) DEFAULT NULL,
-    stock INT(11) DEFAULT 0,
-    imagen VARCHAR(255) DEFAULT 'default_prod.png',
-    iva INT(11) DEFAULT 10,
-    ofertado TINYINT(1) DEFAULT 1,
-    requiere_cocina TINYINT(1) NOT NULL DEFAULT 1,
-    KEY `id_categoria` (`id_categoria`),
-    CONSTRAINT `productos_categoria_fk`
-        FOREIGN KEY (`id_categoria`) REFERENCES `categorias`(`id`)
-        ON DELETE CASCADE ON UPDATE CASCADE
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
-
--- --------------------------------------------------------
--- Estructura de tabla para la tabla 'usuarios'
+-- TABLA USUARIOS
 -- --------------------------------------------------------
 
 CREATE TABLE usuarios (
-    id INT(11) AUTO_INCREMENT PRIMARY KEY,
-    nombre_usuario VARCHAR(50) NOT NULL UNIQUE,
-    email VARCHAR(100) NOT NULL UNIQUE,
-    nombre VARCHAR(50) NOT NULL,
-    apellidos VARCHAR(100) NOT NULL,
-    password_hash VARCHAR(255) NOT NULL,
-    rol ENUM('cliente','camarero','cocinero','gerente') NOT NULL DEFAULT 'cliente',
-    avatar VARCHAR(255) DEFAULT 'img/avatares/default.jpg',
-    fecha_alta DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP()
+    id INT AUTO_INCREMENT PRIMARY KEY,
+    nombre VARCHAR(100) NOT NULL,
+    apellidos VARCHAR(150) DEFAULT NULL,
+    nombre_usuario VARCHAR(100) NOT NULL UNIQUE,
+    email VARCHAR(150) NOT NULL UNIQUE,
+    password VARCHAR(255) NOT NULL,
+    rol ENUM('cliente', 'camarero', 'cocinero', 'gerente') NOT NULL DEFAULT 'cliente',
+    activo TINYINT(1) NOT NULL DEFAULT 1,
+    fecha_registro DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 
 -- --------------------------------------------------------
--- Estructura de tabla para la tabla 'pedidos'
+-- TABLA CATEGORIAS
 -- --------------------------------------------------------
 
-CREATE TABLE pedidos (
-    id INT(11) AUTO_INCREMENT PRIMARY KEY,
-    cliente_id INT(11) NOT NULL,
-    cocinero_id INT(11) DEFAULT NULL,
-    numero_pedido INT NOT NULL,
-    tipo VARCHAR(20) NOT NULL,
-    estado VARCHAR(20) NOT NULL,
-    fecha DATETIME NOT NULL,
-    total DECIMAL(10,2) NOT NULL DEFAULT 0.00,
-    descuento_total DECIMAL(10,2) NOT NULL DEFAULT 0.00,
-    total_sin_descuento DECIMAL(10,2) NOT NULL DEFAULT 0.00,
-    UNIQUE KEY `numero_pedido` (`numero_pedido`),
-    KEY `cliente_id` (`cliente_id`),
-    KEY `cocinero_id` (`cocinero_id`),
-    CONSTRAINT `pedidos_cliente_fk`
-        FOREIGN KEY (`cliente_id`) REFERENCES `usuarios`(`id`)
-        ON DELETE CASCADE ON UPDATE CASCADE,
-    CONSTRAINT `pedidos_cocinero_fk`
-        FOREIGN KEY (`cocinero_id`) REFERENCES `usuarios`(`id`)
-        ON DELETE SET NULL ON UPDATE CASCADE
+CREATE TABLE categorias (
+    id INT AUTO_INCREMENT PRIMARY KEY,
+    nombre VARCHAR(100) NOT NULL,
+    descripcion TEXT DEFAULT NULL,
+    imagen VARCHAR(255) DEFAULT NULL,
+    activa TINYINT(1) NOT NULL DEFAULT 1
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 
 -- --------------------------------------------------------
--- Estructura de tabla para la tabla 'pedido_productos'
+-- TABLA PRODUCTOS
+-- IMPORTANTE: coincide con datos.sql
 -- --------------------------------------------------------
 
-CREATE TABLE pedido_productos (
-    pedido_id INT(11) NOT NULL,
-    producto_id INT(11) NOT NULL,
-    cantidad INT(11) NOT NULL,
-    preparado TINYINT(1) NOT NULL DEFAULT 0,
-    PRIMARY KEY (pedido_id, producto_id),
-    KEY `producto_id` (`producto_id`),
-    CONSTRAINT `pedido_productos_pedido_fk`
-        FOREIGN KEY (`pedido_id`) REFERENCES `pedidos`(`id`)
-        ON DELETE CASCADE ON UPDATE CASCADE,
-    CONSTRAINT `pedido_productos_producto_fk`
-        FOREIGN KEY (`producto_id`) REFERENCES `productos`(`id`)
-        ON DELETE CASCADE ON UPDATE CASCADE
+CREATE TABLE productos (
+    id INT AUTO_INCREMENT PRIMARY KEY,
+    id_categoria INT NOT NULL,
+    nombre VARCHAR(150) NOT NULL,
+    descripcion TEXT DEFAULT NULL,
+    precio_base DECIMAL(10,2) NOT NULL DEFAULT 0.00,
+    stock INT NOT NULL DEFAULT 0,
+    imagen VARCHAR(255) DEFAULT NULL,
+    iva DECIMAL(5,2) NOT NULL DEFAULT 10.00,
+    ofertado TINYINT(1) NOT NULL DEFAULT 0,
+    requiere_cocina TINYINT(1) NOT NULL DEFAULT 1,
+    disponible TINYINT(1) NOT NULL DEFAULT 1,
+
+    CONSTRAINT fk_productos_categoria
+        FOREIGN KEY (id_categoria) REFERENCES categorias(id)
+        ON UPDATE CASCADE
+        ON DELETE RESTRICT,
+
+    INDEX idx_productos_categoria (id_categoria),
+    INDEX idx_productos_disponible (disponible),
+    INDEX idx_productos_ofertado (ofertado)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 
 -- --------------------------------------------------------
--- Estructura de tabla para la tabla 'ofertas'
+-- TABLA OFERTAS
 -- --------------------------------------------------------
 
 CREATE TABLE ofertas (
-    id INT(11) AUTO_INCREMENT PRIMARY KEY,
-    nombre VARCHAR(100) NOT NULL,
+    id INT AUTO_INCREMENT PRIMARY KEY,
+    nombre VARCHAR(150) NOT NULL,
     descripcion TEXT DEFAULT NULL,
-    fecha_inicio DATETIME NOT NULL,
-    fecha_fin DATETIME NOT NULL,
-    descuento_porcentaje DECIMAL(5,2) NOT NULL
+    descuento_porcentaje DECIMAL(5,2) NOT NULL DEFAULT 0.00,
+    fecha_inicio DATE DEFAULT NULL,
+    fecha_fin DATE DEFAULT NULL,
+    activa TINYINT(1) NOT NULL DEFAULT 1,
+
+    INDEX idx_ofertas_activa (activa),
+    INDEX idx_ofertas_fechas (fecha_inicio, fecha_fin)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 
 -- --------------------------------------------------------
--- Estructura de tabla para la tabla 'ofertas_productos'
+-- TABLA OFERTAS_PRODUCTOS
 -- --------------------------------------------------------
 
 CREATE TABLE ofertas_productos (
-    oferta_id INT(11) NOT NULL,
-    producto_id INT(11) NOT NULL,
-    cantidad INT(11) NOT NULL,
-    PRIMARY KEY (oferta_id, producto_id),
-    KEY `producto_id` (`producto_id`),
-    CONSTRAINT `ofertas_productos_oferta_fk`
-        FOREIGN KEY (`oferta_id`) REFERENCES `ofertas`(`id`)
-        ON DELETE CASCADE ON UPDATE CASCADE,
-    CONSTRAINT `ofertas_productos_producto_fk`
-        FOREIGN KEY (`producto_id`) REFERENCES `productos`(`id`)
-        ON DELETE CASCADE ON UPDATE CASCADE
+    id INT AUTO_INCREMENT PRIMARY KEY,
+    oferta_id INT NOT NULL,
+    producto_id INT NOT NULL,
+    cantidad INT NOT NULL DEFAULT 1,
+
+    CONSTRAINT fk_ofertas_productos_oferta
+        FOREIGN KEY (oferta_id) REFERENCES ofertas(id)
+        ON UPDATE CASCADE
+        ON DELETE CASCADE,
+
+    CONSTRAINT fk_ofertas_productos_producto
+        FOREIGN KEY (producto_id) REFERENCES productos(id)
+        ON UPDATE CASCADE
+        ON DELETE RESTRICT,
+
+    UNIQUE KEY uk_oferta_producto (oferta_id, producto_id),
+    INDEX idx_ofertas_productos_oferta (oferta_id),
+    INDEX idx_ofertas_productos_producto (producto_id)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 
 -- --------------------------------------------------------
--- Estructura de tabla para la tabla 'pedidos_ofertas'
+-- TABLA PEDIDOS
+-- --------------------------------------------------------
+
+CREATE TABLE pedidos (
+    id INT AUTO_INCREMENT PRIMARY KEY,
+    cliente_id INT NOT NULL,
+    cocinero_id INT DEFAULT NULL,
+    camarero_id INT DEFAULT NULL,
+
+    -- No es UNIQUE porque el número de pedido puede repetirse en días distintos.
+    numero_pedido INT NOT NULL,
+
+    tipo ENUM('Local', 'Llevar') NOT NULL,
+    estado ENUM(
+        'Nuevo',
+        'Recibido',
+        'En preparación',
+        'Cocinando',
+        'Listo cocina',
+        'Terminado',
+        'Entregado',
+        'Cancelado'
+    ) NOT NULL DEFAULT 'Nuevo',
+
+    -- Sirve para impedir cancelar cuando sala ya lo ha servido.
+    servido_sala TINYINT(1) NOT NULL DEFAULT 0,
+
+    fecha DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    total DECIMAL(10,2) NOT NULL DEFAULT 0.00,
+    total_sin_descuento DECIMAL(10,2) NOT NULL DEFAULT 0.00,
+    descuento_total DECIMAL(10,2) NOT NULL DEFAULT 0.00,
+
+    CONSTRAINT fk_pedidos_cliente
+        FOREIGN KEY (cliente_id) REFERENCES usuarios(id)
+        ON UPDATE CASCADE
+        ON DELETE RESTRICT,
+
+    CONSTRAINT fk_pedidos_cocinero
+        FOREIGN KEY (cocinero_id) REFERENCES usuarios(id)
+        ON UPDATE CASCADE
+        ON DELETE SET NULL,
+
+    CONSTRAINT fk_pedidos_camarero
+        FOREIGN KEY (camarero_id) REFERENCES usuarios(id)
+        ON UPDATE CASCADE
+        ON DELETE SET NULL,
+
+    INDEX idx_pedidos_cliente (cliente_id),
+    INDEX idx_pedidos_cocinero (cocinero_id),
+    INDEX idx_pedidos_camarero (camarero_id),
+    INDEX idx_pedidos_estado (estado),
+    INDEX idx_pedidos_fecha (fecha),
+    INDEX idx_pedidos_numero_fecha (numero_pedido, fecha),
+    INDEX idx_pedidos_servido_sala (servido_sala)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+
+-- --------------------------------------------------------
+-- TABLA PEDIDOS_PRODUCTOS
+-- --------------------------------------------------------
+
+CREATE TABLE pedidos_productos (
+    id INT AUTO_INCREMENT PRIMARY KEY,
+    pedido_id INT NOT NULL,
+    producto_id INT NOT NULL,
+    cantidad INT NOT NULL DEFAULT 1,
+    precio_unitario DECIMAL(10,2) NOT NULL DEFAULT 0.00,
+    subtotal DECIMAL(10,2) NOT NULL DEFAULT 0.00,
+
+    CONSTRAINT fk_pedidos_productos_pedido
+        FOREIGN KEY (pedido_id) REFERENCES pedidos(id)
+        ON UPDATE CASCADE
+        ON DELETE CASCADE,
+
+    CONSTRAINT fk_pedidos_productos_producto
+        FOREIGN KEY (producto_id) REFERENCES productos(id)
+        ON UPDATE CASCADE
+        ON DELETE RESTRICT,
+
+    INDEX idx_pedidos_productos_pedido (pedido_id),
+    INDEX idx_pedidos_productos_producto (producto_id)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+
+-- --------------------------------------------------------
+-- TABLA PEDIDOS_OFERTAS
 -- --------------------------------------------------------
 
 CREATE TABLE pedidos_ofertas (
-    id INT(11) AUTO_INCREMENT PRIMARY KEY,
-    pedido_id INT(11) NOT NULL,
-    oferta_id INT(11) NOT NULL,
-    veces_aplicada INT(11) NOT NULL DEFAULT 1,
-    orden_aplicacion INT(11) NOT NULL,
-    descuento_aplicado DECIMAL(10,2) NOT NULL,
-    KEY `pedido_id` (`pedido_id`),
-    KEY `oferta_id` (`oferta_id`),
-    CONSTRAINT `pedidos_ofertas_pedido_fk`
-        FOREIGN KEY (`pedido_id`) REFERENCES `pedidos`(`id`)
-        ON DELETE CASCADE ON UPDATE CASCADE,
-    CONSTRAINT `pedidos_ofertas_oferta_fk`
-        FOREIGN KEY (`oferta_id`) REFERENCES `ofertas`(`id`)
-        ON DELETE CASCADE ON UPDATE CASCADE
+    id INT AUTO_INCREMENT PRIMARY KEY,
+    pedido_id INT NOT NULL,
+    oferta_id INT NOT NULL,
+    descuento_aplicado DECIMAL(10,2) NOT NULL DEFAULT 0.00,
+
+    CONSTRAINT fk_pedidos_ofertas_pedido
+        FOREIGN KEY (pedido_id) REFERENCES pedidos(id)
+        ON UPDATE CASCADE
+        ON DELETE CASCADE,
+
+    CONSTRAINT fk_pedidos_ofertas_oferta
+        FOREIGN KEY (oferta_id) REFERENCES ofertas(id)
+        ON UPDATE CASCADE
+        ON DELETE RESTRICT,
+
+    UNIQUE KEY uk_pedido_oferta (pedido_id, oferta_id),
+    INDEX idx_pedidos_ofertas_pedido (pedido_id),
+    INDEX idx_pedidos_ofertas_oferta (oferta_id)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
