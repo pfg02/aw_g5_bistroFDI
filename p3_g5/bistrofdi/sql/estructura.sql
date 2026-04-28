@@ -5,7 +5,7 @@ SET FOREIGN_KEY_CHECKS = 0;
 
 DROP TABLE IF EXISTS pedidos_ofertas;
 DROP TABLE IF EXISTS ofertas_productos;
-DROP TABLE IF EXISTS pedidos_productos;
+DROP TABLE IF EXISTS pedido_productos;
 DROP TABLE IF EXISTS pedidos;
 DROP TABLE IF EXISTS ofertas;
 DROP TABLE IF EXISTS productos;
@@ -16,22 +16,27 @@ SET FOREIGN_KEY_CHECKS = 1;
 
 -- --------------------------------------------------------
 -- TABLA USUARIOS
+-- Compatible con tu datos.sql original:
+-- password_hash y avatar
 -- --------------------------------------------------------
 
 CREATE TABLE usuarios (
     id INT AUTO_INCREMENT PRIMARY KEY,
-    nombre VARCHAR(100) NOT NULL,
-    apellidos VARCHAR(150) DEFAULT NULL,
     nombre_usuario VARCHAR(100) NOT NULL UNIQUE,
     email VARCHAR(150) NOT NULL UNIQUE,
-    password VARCHAR(255) NOT NULL,
+    nombre VARCHAR(100) NOT NULL,
+    apellidos VARCHAR(150) DEFAULT NULL,
+    password_hash VARCHAR(255) NOT NULL,
     rol ENUM('cliente', 'camarero', 'cocinero', 'gerente') NOT NULL DEFAULT 'cliente',
+    avatar VARCHAR(255) DEFAULT 'img/avatares/default.png',
     activo TINYINT(1) NOT NULL DEFAULT 1,
     fecha_registro DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 
 -- --------------------------------------------------------
 -- TABLA CATEGORIAS
+-- Compatible con:
+-- INSERT INTO categorias (nombre, descripcion, imagen)
 -- --------------------------------------------------------
 
 CREATE TABLE categorias (
@@ -44,7 +49,8 @@ CREATE TABLE categorias (
 
 -- --------------------------------------------------------
 -- TABLA PRODUCTOS
--- IMPORTANTE: coincide con datos.sql
+-- Compatible con tu datos.sql original:
+-- id_categoria, precio_base, stock, iva, ofertado
 -- --------------------------------------------------------
 
 CREATE TABLE productos (
@@ -72,6 +78,7 @@ CREATE TABLE productos (
 
 -- --------------------------------------------------------
 -- TABLA OFERTAS
+-- La dejo creada aunque tu datos.sql no inserte ofertas.
 -- --------------------------------------------------------
 
 CREATE TABLE ofertas (
@@ -114,6 +121,8 @@ CREATE TABLE ofertas_productos (
 
 -- --------------------------------------------------------
 -- TABLA PEDIDOS
+-- Compatible con:
+-- INSERT INTO pedidos (cliente_id, cocinero_id, numero_pedido, tipo, estado, fecha, total, descuento_total, total_sin_descuento)
 -- --------------------------------------------------------
 
 CREATE TABLE pedidos (
@@ -122,7 +131,6 @@ CREATE TABLE pedidos (
     cocinero_id INT DEFAULT NULL,
     camarero_id INT DEFAULT NULL,
 
-    -- No es UNIQUE porque el número de pedido puede repetirse en días distintos.
     numero_pedido INT NOT NULL,
 
     tipo ENUM('Local', 'Llevar') NOT NULL,
@@ -137,13 +145,14 @@ CREATE TABLE pedidos (
         'Cancelado'
     ) NOT NULL DEFAULT 'Nuevo',
 
-    -- Sirve para impedir cancelar cuando sala ya lo ha servido.
+    -- Sirve para impedir cancelar si el camarero ya lo sirvió.
+    -- No rompe tu datos.sql porque tiene DEFAULT 0.
     servido_sala TINYINT(1) NOT NULL DEFAULT 0,
 
     fecha DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
     total DECIMAL(10,2) NOT NULL DEFAULT 0.00,
-    total_sin_descuento DECIMAL(10,2) NOT NULL DEFAULT 0.00,
     descuento_total DECIMAL(10,2) NOT NULL DEFAULT 0.00,
+    total_sin_descuento DECIMAL(10,2) NOT NULL DEFAULT 0.00,
 
     CONSTRAINT fk_pedidos_cliente
         FOREIGN KEY (cliente_id) REFERENCES usuarios(id)
@@ -170,29 +179,31 @@ CREATE TABLE pedidos (
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 
 -- --------------------------------------------------------
--- TABLA PEDIDOS_PRODUCTOS
+-- TABLA PEDIDO_PRODUCTOS
+-- Compatible con tu datos.sql original:
+-- INSERT INTO pedido_productos (pedido_id, producto_id, cantidad, preparado)
 -- --------------------------------------------------------
 
-CREATE TABLE pedidos_productos (
+CREATE TABLE pedido_productos (
     id INT AUTO_INCREMENT PRIMARY KEY,
     pedido_id INT NOT NULL,
     producto_id INT NOT NULL,
     cantidad INT NOT NULL DEFAULT 1,
-    precio_unitario DECIMAL(10,2) NOT NULL DEFAULT 0.00,
-    subtotal DECIMAL(10,2) NOT NULL DEFAULT 0.00,
+    preparado TINYINT(1) NOT NULL DEFAULT 0,
 
-    CONSTRAINT fk_pedidos_productos_pedido
+    CONSTRAINT fk_pedido_productos_pedido
         FOREIGN KEY (pedido_id) REFERENCES pedidos(id)
         ON UPDATE CASCADE
         ON DELETE CASCADE,
 
-    CONSTRAINT fk_pedidos_productos_producto
+    CONSTRAINT fk_pedido_productos_producto
         FOREIGN KEY (producto_id) REFERENCES productos(id)
         ON UPDATE CASCADE
         ON DELETE RESTRICT,
 
-    INDEX idx_pedidos_productos_pedido (pedido_id),
-    INDEX idx_pedidos_productos_producto (producto_id)
+    INDEX idx_pedido_productos_pedido (pedido_id),
+    INDEX idx_pedido_productos_producto (producto_id),
+    INDEX idx_pedido_productos_preparado (preparado)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 
 -- --------------------------------------------------------
