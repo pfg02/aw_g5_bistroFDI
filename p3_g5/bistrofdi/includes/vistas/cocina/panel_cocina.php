@@ -20,7 +20,22 @@ if ($idCocinero === false || $idCocinero === null) {
 
 $controller = PedidoController::getInstance();
 
-$pedidosNuevos = $controller->verPedidosPorEstado('En preparación');
+/*
+ * Pedidos en preparación, pero solo si tienen productos que requieren cocina.
+ * Así no aparecen comandas solo de bebidas/cafés.
+ */
+$pedidosNuevos = array_filter(
+    $controller->verPedidosPorEstado('En preparación'),
+    function ($pedido) use ($controller) {
+        $idPedido = (int) (obtenerDatoPedido($pedido, 'id', 'getId') ?? 0);
+
+        if ($idPedido <= 0) {
+            return false;
+        }
+
+        return pedidoTieneProductosDeCocina($controller, $idPedido);
+    }
+);
 
 // Recuperar el pedido activo desde BD para que no se pierda al cerrar sesión o salir
 $miPedido = $controller->obtenerPedidoActivoDeCocinero((int) $idCocinero);
@@ -44,27 +59,26 @@ if ($miPedido) {
 
     if ($idPedidoActivo !== null) {
         /*
-         * Esta consulta devuelve TODO el pedido:
-         * comida + bebida.
+         * Cocina solo debe ver productos que requieren cocina.
+         * Bebidas/cafés quedan fuera de la mesa de cocina.
          */
-        $platos = $controller->obtenerProductosDePedido((int) $idPedidoActivo);
+        $productosPedidoActivo = $controller->obtenerProductosDePedido((int) $idPedidoActivo);
+
+        $platos = array_values(array_filter(
+            $productosPedidoActivo,
+            fn($producto) => (int) ($producto['requiere_cocina'] ?? 1) === 1
+        ));
 
         if (!empty($platos)) {
             $todosPreparados = true;
 
             foreach ($platos as &$plato) {
-                $requiereCocina = ((int) ($plato['requiere_cocina'] ?? 1) === 1);
+                $estaPreparado = ((int) ($plato['preparado'] ?? 0) === 1);
 
-                /*
-                 * Si no requiere cocina, se considera listo para cocina,
-                 * pero sigue mostrándose para que no desaparezca del pedido.
-                 */
-                $estaPreparado = !$requiereCocina || ((int) ($plato['preparado'] ?? 0) === 1);
-
-                $plato['requiere_cocina'] = $requiereCocina;
+                $plato['requiere_cocina'] = true;
                 $plato['preparado'] = $estaPreparado;
 
-                if ($requiereCocina && !$estaPreparado) {
+                if (!$estaPreparado) {
                     $todosPreparados = false;
                 }
             }
@@ -133,13 +147,16 @@ ob_start();
                                 }
 
                                 /*
-                                 * Productos del pedido para que el cocinero pueda verlos
-                                 * antes de reclamar la comanda.
+                                 * Solo productos que requieren cocina.
+                                 * Bebidas/cafés no se muestran en cocina.
                                  */
                                 $productosPedidoNuevo = [];
 
                                 if ($idPedido > 0) {
-                                    $productosPedidoNuevo = $controller->obtenerProductosDePedido($idPedido);
+                                    $productosPedidoNuevo = array_values(array_filter(
+                                        $controller->obtenerProductosDePedido($idPedido),
+                                        fn($producto) => (int) ($producto['requiere_cocina'] ?? 1) === 1
+                                    ));
                                 }
                             ?>
                             <tr>
@@ -157,7 +174,7 @@ ob_start();
 
                                 <td data-label="Detalles">
                                     <?php if (empty($productosPedidoNuevo)): ?>
-                                        <span class="txt-sin-platos">Sin productos</span>
+                                        <span class="txt-sin-platos">Sin productos de cocina</span>
                                     <?php else: ?>
                                         <details class="details-progreso">
                                             <summary class="summary-progreso">
@@ -169,19 +186,16 @@ ob_start();
                                                     <?php
                                                         $cantidadProducto = (int) ($productoPedido['cantidad'] ?? 0);
                                                         $nombreProducto = (string) ($productoPedido['nombre'] ?? '');
-                                                        $requiereCocinaProducto = ((int) ($productoPedido['requiere_cocina'] ?? 1) === 1);
                                                         $preparadoProducto = ((int) ($productoPedido['preparado'] ?? 0) === 1);
                                                     ?>
 
-                                                    <li class="li-progreso <?= $requiereCocinaProducto ? 'pte' : 'listo' ?>">
+                                                    <li class="li-progreso <?= $preparadoProducto ? 'listo' : 'pte' ?>">
                                                         <strong><?= $cantidadProducto ?>x</strong>
                                                         <span>
                                                             <?= htmlspecialchars($nombreProducto) ?>
                                                         </span>
 
-                                                        <?php if (!$requiereCocinaProducto): ?>
-                                                            <small>No requiere cocina</small>
-                                                        <?php elseif ($preparadoProducto): ?>
+                                                        <?php if ($preparadoProducto): ?>
                                                             <small>Ya preparado</small>
                                                         <?php else: ?>
                                                             <small>Pendiente de cocina</small>
@@ -232,64 +246,65 @@ ob_start();
                     <strong>Preparando Ticket #<?= htmlspecialchars((string) $numeroMiPedido) ?> (<?= htmlspecialchars($tipoMiPedido) ?>)</strong>
                 </p>
 
-                <table class="tabla-pedidos tabla-cocina-movil">
-                    <thead>
-                        <tr>
-                            <th>Cant.</th>
-                            <th>Producto</th>
-                            <th>Acción</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        <?php foreach ($platos as $plato): ?>
-                            <?php
-                                $cantidad = (int) ($plato['cantidad'] ?? 0);
-                                $nombre = (string) ($plato['nombre'] ?? '');
-                                $productoId = (int) ($plato['producto_id'] ?? 0);
-                                $preparado = !empty($plato['preparado']);
-                                $requiereCocina = !empty($plato['requiere_cocina']);
-                            ?>
+                <?php if (empty($platos)): ?>
+                    <p class="p-vacio">Este pedido no tiene productos que requieran cocina.</p>
+                <?php else: ?>
+                    <table class="tabla-pedidos tabla-cocina-movil">
+                        <thead>
                             <tr>
-                                <td data-label="Cantidad">
-                                    <strong><?= $cantidad ?>x</strong>
-                                </td>
-
-                                <td data-label="Producto" class="<?= $preparado ? 'plato-preparado' : '' ?>">
-                                    <?= htmlspecialchars($nombre) ?>
-                                </td>
-
-                                <td data-label="Acción">
-                                    <?php if (!$requiereCocina): ?>
-                                        <span>No requiere cocina</span>
-                                    <?php elseif (!$preparado): ?>
-                                        <form action="<?= BASE_URL ?>/includes/acciones/cocina/procesar_cocina.php" method="POST">
-                                            <input type="hidden" name="accion" value="marcar_plato">
-                                            <input type="hidden" name="id_pedido" value="<?= htmlspecialchars((string) $idPedidoActivo) ?>">
-                                            <input type="hidden" name="id_producto" value="<?= htmlspecialchars((string) $productoId) ?>">
-                                            <button type="submit" class="btn-accion btn-entregar">Listo</button>
-                                        </form>
-                                    <?php else: ?>
-                                        <span>✅</span>
-                                    <?php endif; ?>
-                                </td>
+                                <th>Cant.</th>
+                                <th>Producto</th>
+                                <th>Acción</th>
                             </tr>
-                        <?php endforeach; ?>
-                    </tbody>
-                </table>
+                        </thead>
+                        <tbody>
+                            <?php foreach ($platos as $plato): ?>
+                                <?php
+                                    $cantidad = (int) ($plato['cantidad'] ?? 0);
+                                    $nombre = (string) ($plato['nombre'] ?? '');
+                                    $productoId = (int) ($plato['producto_id'] ?? 0);
+                                    $preparado = !empty($plato['preparado']);
+                                ?>
+                                <tr>
+                                    <td data-label="Cantidad">
+                                        <strong><?= $cantidad ?>x</strong>
+                                    </td>
 
-                <div class="contenedor-botones-index">
-                    <form action="<?= BASE_URL ?>/includes/acciones/cocina/procesar_cocina.php" method="POST">
-                        <input type="hidden" name="accion" value="finalizar_pedido">
-                        <input type="hidden" name="id_pedido" value="<?= htmlspecialchars((string) $idPedidoActivo) ?>">
-                        <button
-                            type="submit"
-                            class="btn-login btn-pasar-sala <?= $todosPreparados ? 'estado-sala-listo' : 'estado-sala-pte' ?>"
-                            <?= !$todosPreparados ? 'disabled title="Marca primero los productos que requieren cocina"' : '' ?>
-                        >
-                            ¡Pasar a Sala!
-                        </button>
-                    </form>
-                </div>
+                                    <td data-label="Producto" class="<?= $preparado ? 'plato-preparado' : '' ?>">
+                                        <?= htmlspecialchars($nombre) ?>
+                                    </td>
+
+                                    <td data-label="Acción">
+                                        <?php if (!$preparado): ?>
+                                            <form action="<?= BASE_URL ?>/includes/acciones/cocina/procesar_cocina.php" method="POST">
+                                                <input type="hidden" name="accion" value="marcar_plato">
+                                                <input type="hidden" name="id_pedido" value="<?= htmlspecialchars((string) $idPedidoActivo) ?>">
+                                                <input type="hidden" name="id_producto" value="<?= htmlspecialchars((string) $productoId) ?>">
+                                                <button type="submit" class="btn-accion btn-entregar">Listo</button>
+                                            </form>
+                                        <?php else: ?>
+                                            <span>✅</span>
+                                        <?php endif; ?>
+                                    </td>
+                                </tr>
+                            <?php endforeach; ?>
+                        </tbody>
+                    </table>
+
+                    <div class="contenedor-botones-index">
+                        <form action="<?= BASE_URL ?>/includes/acciones/cocina/procesar_cocina.php" method="POST">
+                            <input type="hidden" name="accion" value="finalizar_pedido">
+                            <input type="hidden" name="id_pedido" value="<?= htmlspecialchars((string) $idPedidoActivo) ?>">
+                            <button
+                                type="submit"
+                                class="btn-login btn-pasar-sala <?= $todosPreparados ? 'estado-sala-listo' : 'estado-sala-pte' ?>"
+                                <?= !$todosPreparados ? 'disabled title="Marca primero los productos que requieren cocina"' : '' ?>
+                            >
+                                ¡Pasar a Sala!
+                            </button>
+                        </form>
+                    </div>
+                <?php endif; ?>
             <?php endif; ?>
         </div>
 
@@ -314,5 +329,18 @@ function obtenerDatoPedido($pedido, string $claveArray, string $getter)
     }
 
     return null;
+}
+
+function pedidoTieneProductosDeCocina($controller, int $idPedido): bool
+{
+    $productos = $controller->obtenerProductosDePedido($idPedido);
+
+    foreach ($productos as $producto) {
+        if ((int) ($producto['requiere_cocina'] ?? 1) === 1) {
+            return true;
+        }
+    }
+
+    return false;
 }
 ?>
