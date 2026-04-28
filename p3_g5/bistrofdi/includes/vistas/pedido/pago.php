@@ -86,6 +86,14 @@ ob_start();
 
                 <div class="caja-metodo-pago">
                     <h3 class="titulo-metodo">Pagar ahora con Tarjeta</h3>
+
+                    <?php if (isset($_SESSION['mensaje_error'])): ?>
+                        <div class="alerta alerta-error">
+                            <?= htmlspecialchars($_SESSION['mensaje_error'], ENT_QUOTES, 'UTF-8') ?>
+                            <?php unset($_SESSION['mensaje_error']); ?>
+                        </div>
+                    <?php endif; ?>
+
                     <?= $formularioPago->gestiona() ?>
                 </div>
 

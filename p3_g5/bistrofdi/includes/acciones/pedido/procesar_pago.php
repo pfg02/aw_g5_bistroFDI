@@ -12,6 +12,9 @@ require_once __DIR__ . '/../../negocio/PedidoController.php';
 exigirLogin();
 exigirRol('cliente');
 
+unset($_SESSION['mensaje_error']);
+unset($_SESSION['mensaje_exito']);
+
 $redirectMisPedidos = BASE_URL . '/includes/vistas/pedido/mis_pedidos.php';
 $redirectIndex = BASE_URL . '/index.php';
 
@@ -66,26 +69,26 @@ if ($metodo === 'tarjeta') {
     $caducidad = trim((string) (filter_input(INPUT_POST, 'caducidad', FILTER_UNSAFE_RAW) ?? ''));
     $cvv = preg_replace('/\D+/', '', (string) (filter_input(INPUT_POST, 'cvv', FILTER_UNSAFE_RAW) ?? ''));
 
-    if (!preg_match('/^[0-9]{13,16}$/', $tarjeta)) {
-        $_SESSION['mensaje_error'] = 'El número de tarjeta no es válido.';
+    if (!preg_match('/^[0-9]{13,19}$/', $tarjeta)) {
+        $_SESSION['mensaje_error'] = 'El número de tarjeta no tiene un formato válido.';
         header('Location: ' . BASE_URL . '/includes/vistas/pedido/pago.php?id=' . urlencode((string) $idPedido));
         exit();
     }
 
     if (!preg_match('/^(0[1-9]|1[0-2])\/[0-9]{2}$/', $caducidad)) {
-        $_SESSION['mensaje_error'] = 'La fecha de caducidad no es válida.';
+        $_SESSION['mensaje_error'] = 'La fecha de caducidad no tiene un formato válido.';
         header('Location: ' . BASE_URL . '/includes/vistas/pedido/pago.php?id=' . urlencode((string) $idPedido));
         exit();
     }
 
-    if (!caducidadNoExpirada($caducidad)) {
-        $_SESSION['mensaje_error'] = 'La tarjeta está caducada.';
+    if (!caducidadSuperiorAlMesActual($caducidad)) {
+        $_SESSION['mensaje_error'] = 'La fecha de caducidad debe ser posterior al mes actual.';
         header('Location: ' . BASE_URL . '/includes/vistas/pedido/pago.php?id=' . urlencode((string) $idPedido));
         exit();
     }
 
     if (!preg_match('/^[0-9]{3,4}$/', $cvv)) {
-        $_SESSION['mensaje_error'] = 'El CVV no es válido.';
+        $_SESSION['mensaje_error'] = 'El CVV no tiene un formato válido.';
         header('Location: ' . BASE_URL . '/includes/vistas/pedido/pago.php?id=' . urlencode((string) $idPedido));
         exit();
     }
@@ -110,9 +113,6 @@ $_SESSION['mensaje_error'] = 'Ha ocurrido un error con el método de pago selecc
 header('Location: ' . $redirectMisPedidos);
 exit();
 
-/**
- * Obtiene el cliente_id de un pedido, tanto si viene como array como si viene como DTO.
- */
 function obtenerClienteIdPedido($pedido): ?int
 {
     if (is_array($pedido)) {
@@ -128,9 +128,6 @@ function obtenerClienteIdPedido($pedido): ?int
     return null;
 }
 
-/**
- * Obtiene el estado de un pedido, tanto si viene como array como si viene como DTO.
- */
 function obtenerEstadoPedido($pedido): ?string
 {
     if (is_array($pedido)) {
@@ -146,23 +143,19 @@ function obtenerEstadoPedido($pedido): ?string
     return null;
 }
 
-/**
- * Comprueba si una fecha MM/AA no está expirada.
- */
-function caducidadNoExpirada(string $caducidad): bool
+function caducidadSuperiorAlMesActual(string $caducidad): bool
 {
     if (!preg_match('/^(0[1-9]|1[0-2])\/([0-9]{2})$/', $caducidad, $matches)) {
         return false;
     }
 
-    $mes = (int) $matches[1];
-    $anio = 2000 + (int) $matches[2];
+    $mesTarjeta = (int) $matches[1];
+    $anioTarjeta = 2000 + (int) $matches[2];
 
-    $ultimoInstanteMes = strtotime(sprintf('%04d-%02d-01 23:59:59 +1 month -1 day', $anio, $mes));
-    if ($ultimoInstanteMes === false) {
-        return false;
-    }
+    $mesActual = (int) date('m');
+    $anioActual = (int) date('Y');
 
-    return $ultimoInstanteMes >= time();
+    return $anioTarjeta > $anioActual
+        || ($anioTarjeta === $anioActual && $mesTarjeta > $mesActual);
 }
 ?>

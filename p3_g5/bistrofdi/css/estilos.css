@@ -3343,3 +3343,57 @@ body.fondo-madera {
 .form-logout-nav {
     margin: 0;
 }
+
+/* VISTA CARRITO ACTUALIZAR PRODUCTOS */
+
+.form-cantidad-carrito {
+    display: flex;
+    flex-direction: row;
+    justify-content: center;
+    align-items: center;
+    gap: 8px;
+    margin: 0;
+}
+
+.form-cantidad-carrito .input-cantidad-carrito {
+    width: 56px !important;
+    min-width: 56px;
+    max-width: 56px;
+    padding: 6px 4px;
+    text-align: center;
+}
+
+.form-cantidad-carrito .btn-accion {
+    padding: 6px 10px;
+    font-size: 0.85rem;
+    white-space: nowrap;
+}
+
+/* MÁS FOTOS EN CATÁLOGO-VER DETALLE */
+
+.modal-galeria {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 12px;
+    justify-content: center;
+    margin: 18px 0 22px 0;
+}
+
+.modal-img-galeria {
+    width: 110px;
+    height: 110px;
+    object-fit: cover;
+    border-radius: 10px;
+    border: 1px solid #ddd;
+    background: #fff;
+    display: block;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.08);
+}
+
+.txt-sin-imagenes {
+    color: #666;
+    font-style: italic;
+    margin: 10px 0;
+    text-align: center;
+    width: 100%;
+}

@@ -10,7 +10,7 @@ require_once __DIR__ . '/../../core/sesion.php';
 require_once __DIR__ . '/../../negocio/PedidoController.php';
 
 exigirLogin();
-exigirRol('cliente', 'gerente', 'camarero');
+exigirRol('cliente', 'gerente', 'camarero', 'cocinero');
 
 $idPedido = filter_input(INPUT_GET, 'id', FILTER_VALIDATE_INT, [
     'options' => ['min_range' => 1]
@@ -25,7 +25,7 @@ $idUsuario = filter_var($_SESSION['id_usuario'] ?? null, FILTER_VALIDATE_INT, [
 ]);
 
 $rolUsuario = $_SESSION['rol'] ?? null;
-$esPersonal = in_array($rolUsuario, ['gerente', 'camarero'], true);
+$esPersonal = in_array($rolUsuario, ['gerente', 'camarero', 'cocinero'], true);
 
 if ($idPedido === false || $idPedido === null) {
     header('Location: ' . BASE_URL . '/includes/vistas/pedido/mis_pedidos.php');
@@ -136,7 +136,9 @@ ob_start();
             </div>
 
             <div class="contenedor-botones-index">
-                <?php if ($esPersonal && $idClienteContexto !== false && $idClienteContexto !== null): ?>
+                <?php if ($rolUsuario === 'cocinero'): ?>
+                    <a href="<?= BASE_URL ?>/includes/vistas/cocina/panel_cocina.php" class="btn-login">Volver al Panel de Cocina</a>
+                <?php elseif ($esPersonal && $idClienteContexto !== false && $idClienteContexto !== null): ?>
                     <a href="<?= BASE_URL ?>/includes/vistas/pedido/mis_pedidos.php?id_cliente=<?= urlencode((string) $idClienteContexto) ?>" class="btn-login">Volver a Pedidos del Usuario</a>
                 <?php elseif ($esPersonal): ?>
                     <a href="<?= BASE_URL ?>/includes/vistas/camarero/panel_camarero.php" class="btn-login">Volver al Panel</a>

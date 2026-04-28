@@ -11,6 +11,54 @@ exigirRol('camarero');
 $controller = PedidoController::getInstance();
 $pedidosActivos = $controller->verPedidosActivos();
 
+$productosSalaPendientes = [];
+
+foreach ($pedidosActivos as $pedidoActivo) {
+    $estadoPedido = obtenerDatoPedido($pedidoActivo, 'estado', 'getEstado');
+
+    /*
+     * Las bebidas/cafés deben aparecer al camarero mientras el pedido está
+     * en preparación, aunque todavía no haya pasado entero a "Listo cocina".
+     */
+    if (!in_array($estadoPedido, ['En preparación', 'Cocinando', 'Listo cocina'], true)) {
+        continue;
+    }
+
+    $idPedido = (int) (obtenerDatoPedido($pedidoActivo, 'id', 'getId') ?? 0);
+
+    if ($idPedido <= 0) {
+        continue;
+    }
+
+    $productosPedido = $controller->obtenerProductosDePedido($idPedido);
+
+    foreach ($productosPedido as $producto) {
+        $requiereCocina = ((int) ($producto['requiere_cocina'] ?? 1) === 1);
+        $servidoSala = ((int) ($producto['servido_sala'] ?? 0) === 1);
+
+        /*
+         * Solo queremos productos que NO requieren cocina:
+         * bebidas, cafés, refrescos, etc.
+         */
+        if ($requiereCocina || $servidoSala) {
+            continue;
+        }
+
+        $productosSalaPendientes[] = [
+            'id_pedido' => $idPedido,
+            'numero_pedido' => obtenerDatoPedido($pedidoActivo, 'numero_pedido', 'getNumeroPedido') ?? $idPedido,
+            'tipo' => obtenerDatoPedido($pedidoActivo, 'tipo', 'getTipo') ?? 'Local',
+            'nombre_cliente' => trim(
+                (string) (obtenerDatoPedido($pedidoActivo, 'nombre_cliente', 'getNombreCliente') ?? '') . ' ' .
+                (string) (obtenerDatoPedido($pedidoActivo, 'apellidos_cliente', 'getApellidosCliente') ?? '')
+            ),
+            'producto_id' => (int) ($producto['producto_id'] ?? 0),
+            'cantidad' => (int) ($producto['cantidad'] ?? 0),
+            'nombre' => (string) ($producto['nombre'] ?? ''),
+        ];
+    }
+}
+
 $rolUsuario = $_SESSION['rol'] ?? null;
 $esGerente = ($rolUsuario === 'gerente');
 
@@ -40,6 +88,20 @@ ob_start();
         <h1>Panel de <span><?= $esGerente ? 'Gerencia' : 'Sala' ?></span></h1>
         <p class="lema"><?= $esGerente ? 'Supervisión global de pedidos pendientes' : 'Gestión de flujo de pedidos' ?></p>
         <div class="divisor"></div>
+
+        <?php if (isset($_SESSION['mensaje_error'])): ?>
+            <div class="error-msg">
+                <?= htmlspecialchars($_SESSION['mensaje_error']) ?>
+                <?php unset($_SESSION['mensaje_error']); ?>
+            </div>
+        <?php endif; ?>
+
+        <?php if (isset($_SESSION['mensaje_exito'])): ?>
+            <div class="alerta alerta-exito">
+                <?= htmlspecialchars($_SESSION['mensaje_exito']) ?>
+                <?php unset($_SESSION['mensaje_exito']); ?>
+            </div>
+        <?php endif; ?>
 
         <?php if ($esGerente): ?>
         <div class="seccion-camarero">
@@ -174,6 +236,74 @@ ob_start();
         </div>
         <div class="divisor"></div>
         <?php endif; ?>
+
+        <div class="seccion-camarero">
+            <h2 class="titulo-seccion">Bebidas y cafés pendientes</h2>
+
+            <?php if (empty($productosSalaPendientes)): ?>
+                <p class="p-vacio">No hay bebidas ni cafés pendientes de preparar.</p>
+            <?php else: ?>
+                <table class="tabla-pedidos tabla-sala-movil">
+                    <thead>
+                        <tr>
+                            <th>Ticket</th>
+                            <th>Tipo</th>
+                            <th>Cliente / Mesa</th>
+                            <th>Cant.</th>
+                            <th>Producto</th>
+                            <th>Acción</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <?php foreach ($productosSalaPendientes as $productoSala): ?>
+                            <?php
+                                $idPedido = (int) ($productoSala['id_pedido'] ?? 0);
+                                $productoId = (int) ($productoSala['producto_id'] ?? 0);
+                                $numeroPedido = $productoSala['numero_pedido'] ?? $idPedido;
+                                $tipoPedido = (string) ($productoSala['tipo'] ?? 'Local');
+                                $nombreCliente = (string) ($productoSala['nombre_cliente'] ?? '');
+                                $cantidad = (int) ($productoSala['cantidad'] ?? 0);
+                                $nombreProducto = (string) ($productoSala['nombre'] ?? '');
+                            ?>
+                            <tr>
+                                <td data-label="Ticket">
+                                    <strong>#<?= htmlspecialchars((string) $numeroPedido) ?></strong>
+                                </td>
+
+                                <td data-label="Tipo">
+                                    <?= htmlspecialchars($tipoPedido) ?>
+                                </td>
+
+                                <td data-label="Cliente / Mesa">
+                                    <?= htmlspecialchars($nombreCliente) ?>
+                                </td>
+
+                                <td data-label="Cant.">
+                                    <?= htmlspecialchars((string) $cantidad) ?>x
+                                </td>
+
+                                <td data-label="Producto">
+                                    <?= htmlspecialchars($nombreProducto) ?>
+                                </td>
+
+                                <td data-label="Acción">
+                                    <form action="<?= BASE_URL ?>/includes/acciones/pedido/procesar_estado.php" method="POST">
+                                        <input type="hidden" name="accion" value="servir_producto_sala">
+                                        <input type="hidden" name="id_pedido" value="<?= htmlspecialchars((string) $idPedido) ?>">
+                                        <input type="hidden" name="id_producto" value="<?= htmlspecialchars((string) $productoId) ?>">
+                                        <button type="submit" class="btn-accion">
+                                            Servido
+                                        </button>
+                                    </form>
+                                </td>
+                            </tr>
+                        <?php endforeach; ?>
+                    </tbody>
+                </table>
+            <?php endif; ?>
+        </div>
+
+        <div class="divisor"></div>
 
         <div class="seccion-camarero">
             <h2 class="titulo-seccion">Pedidos Pendientes de Cobro (Recibidos)</h2>

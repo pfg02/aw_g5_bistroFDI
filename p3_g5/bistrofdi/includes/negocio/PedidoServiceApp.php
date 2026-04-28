@@ -42,27 +42,33 @@ class PedidoServiceApp
 
     public function obtenerPedido($idPedido)
     {
-        return $this->pedidoDAO->buscarPedido($idPedido);
+        return $this->pedidoDAO->buscarPedido((int) $idPedido);
     }
 
     public function actualizarEstado($idPedido, $nuevoEstado)
     {
-        return $this->pedidoDAO->actualizarEstado($idPedido, $nuevoEstado);
+        return $this->pedidoDAO->actualizarEstado((int) $idPedido, (string) $nuevoEstado);
     }
 
     public function asignarCocinero($idPedido, $idCocinero, $nuevoEstado = 'Cocinando')
     {
-        return $this->pedidoDAO->asignarCocinero($idPedido, $idCocinero, $nuevoEstado);
+        $idCocineroFinal = $idCocinero !== null ? (int) $idCocinero : null;
+
+        return $this->pedidoDAO->asignarCocinero(
+            (int) $idPedido,
+            $idCocineroFinal,
+            (string) $nuevoEstado
+        );
     }
 
     public function obtenerPedidoActivoDeCocinero($idCocinero)
     {
-        return $this->pedidoDAO->obtenerPedidoActivoDeCocinero($idCocinero);
+        return $this->pedidoDAO->obtenerPedidoActivoDeCocinero((int) $idCocinero);
     }
 
     public function obtenerPedidosPorCliente($idCliente)
     {
-        return $this->pedidoDAO->obtenerPedidosPorCliente($idCliente);
+        return $this->pedidoDAO->obtenerPedidosPorCliente((int) $idCliente);
     }
 
     public function obtenerPedidosActivos()
@@ -72,26 +78,38 @@ class PedidoServiceApp
 
     public function obtenerProductosDePedido($idPedido)
     {
-        return $this->pedidoDAO->obtenerProductosDePedido($idPedido);
+        return $this->pedidoDAO->obtenerProductosDePedido((int) $idPedido);
     }
 
     public function verPedidosPorEstado($estado)
     {
-        return $this->pedidoDAO->verPedidosPorEstado($estado);
+        return $this->pedidoDAO->verPedidosPorEstado((string) $estado);
     }
 
     public function eliminarPedido($idPedido)
     {
-        return $this->pedidoDAO->eliminarPedido($idPedido);
+        return $this->pedidoDAO->eliminarPedido((int) $idPedido);
     }
 
     public function marcarProductoComoPreparado($idPedido, $idProducto)
     {
-        return $this->pedidoDAO->marcarProductoComoPreparado($idPedido, $idProducto);
+        return $this->pedidoDAO->marcarProductoComoPreparado(
+            (int) $idPedido,
+            (int) $idProducto
+        );
     }
 
     public function todosProductosCocinaPreparados($idPedido)
     {
         return $this->pedidoDAO->todosProductosCocinaPreparados((int) $idPedido);
     }
+
+    public function marcarProductoServidoSala($idPedido, $idProducto)
+    {
+        return $this->pedidoDAO->marcarProductoServidoSala(
+            (int) $idPedido,
+            (int) $idProducto
+        );
+    }
 }
+?>

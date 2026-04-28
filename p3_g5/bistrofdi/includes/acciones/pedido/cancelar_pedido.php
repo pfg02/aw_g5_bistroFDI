@@ -2,7 +2,7 @@
 declare(strict_types=1);
 
 /**
- * Cancela un pedido recibido o vacía el carrito actual.
+ * Cancela un pedido permitido o vacía el carrito actual.
  */
 
 require_once __DIR__ . '/../../core/config.php';
@@ -40,7 +40,7 @@ $accion = trim((string) (filter_input(INPUT_POST, 'accion', FILTER_UNSAFE_RAW) ?
 $controller = PedidoController::getInstance();
 
 /*
- * Caso 1: cancelar un pedido ya creado
+ * Caso 1: cancelar un pedido ya creado.
  */
 if ($idPedido !== false && $idPedido !== null) {
     $pedido = $controller->verPedido((int) $idPedido);
@@ -53,6 +53,7 @@ if ($idPedido !== false && $idPedido !== null) {
 
     $clienteIdPedido = obtenerClienteIdPedido($pedido);
     $estadoPedido = obtenerEstadoPedido($pedido);
+    $cocineroIdPedido = obtenerCocineroIdPedido($pedido);
 
     if ($clienteIdPedido === null || $clienteIdPedido !== (int) $idUsuario) {
         $_SESSION['mensaje_error'] = 'Acceso denegado o pedido no encontrado.';
@@ -60,15 +61,33 @@ if ($idPedido !== false && $idPedido !== null) {
         exit();
     }
 
-    if ($estadoPedido !== 'Recibido') {
-        $_SESSION['mensaje_error'] = "Solo puedes cancelar pedidos en estado 'Recibido'.";
+    /*
+     * Se puede cancelar si:
+     * - Está Recibido.
+     * - Está En preparación y todavía no tiene cocinero asignado.
+     *
+     * Esto permite cancelar pedidos de bebidas/cafés que pasan directamente a sala,
+     * pero impide cancelar pedidos que ya ha empezado cocina.
+     */
+    $sePuedeCancelar = $estadoPedido === 'Recibido'
+        || (
+            $estadoPedido === 'En preparación'
+            && ($cocineroIdPedido === null || $cocineroIdPedido <= 0)
+        );
+
+    if (!$sePuedeCancelar) {
+        $_SESSION['mensaje_error'] = 'No puedes cancelar este pedido porque ya está siendo preparado o ya ha avanzado de estado.';
         header('Location: ' . $redirectMisPedidos);
         exit();
     }
 
-    $eliminado = $controller->eliminarPedido((int) $idPedido);
+    /*
+     * Mejor marcar como Cancelado que borrar el pedido.
+     * Así queda historial y no se pierden datos.
+     */
+    $cancelado = $controller->actualizarEstadoPedido((int) $idPedido, 'Cancelado');
 
-    if ($eliminado) {
+    if ($cancelado) {
         $_SESSION['mensaje_exito'] = 'El pedido ha sido cancelado correctamente.';
     } else {
         $_SESSION['mensaje_error'] = 'Hubo un error en la base de datos al cancelar el pedido.';
@@ -79,7 +98,7 @@ if ($idPedido !== false && $idPedido !== null) {
 }
 
 /*
- * Caso 2: vaciar carrito actual
+ * Caso 2: vaciar carrito actual.
  */
 if ($accion === 'vaciar_carrito') {
     unset($_SESSION['carrito'], $_SESSION['tipoPedido']);
@@ -100,12 +119,20 @@ function obtenerClienteIdPedido($pedido): ?int
 {
     if (is_array($pedido)) {
         $valor = $pedido['cliente_id'] ?? null;
-        return filter_var($valor, FILTER_VALIDATE_INT, ['options' => ['min_range' => 1]]) ?: null;
+        $valor = filter_var($valor, FILTER_VALIDATE_INT, [
+            'options' => ['min_range' => 1]
+        ]);
+
+        return $valor === false ? null : (int) $valor;
     }
 
     if (is_object($pedido) && method_exists($pedido, 'getClienteId')) {
         $valor = $pedido->getClienteId();
-        return is_int($valor) ? $valor : null;
+        $valor = filter_var($valor, FILTER_VALIDATE_INT, [
+            'options' => ['min_range' => 1]
+        ]);
+
+        return $valor === false ? null : (int) $valor;
     }
 
     return null;
@@ -128,3 +155,40 @@ function obtenerEstadoPedido($pedido): ?string
 
     return null;
 }
+
+/**
+ * Obtiene el cocinero_id de un pedido, tanto si viene como array como si viene como DTO.
+ */
+function obtenerCocineroIdPedido($pedido): ?int
+{
+    if (is_array($pedido)) {
+        $valor = $pedido['cocinero_id'] ?? null;
+
+        if ($valor === null || $valor === '') {
+            return null;
+        }
+
+        $valor = filter_var($valor, FILTER_VALIDATE_INT, [
+            'options' => ['min_range' => 1]
+        ]);
+
+        return $valor === false ? null : (int) $valor;
+    }
+
+    if (is_object($pedido) && method_exists($pedido, 'getCocineroId')) {
+        $valor = $pedido->getCocineroId();
+
+        if ($valor === null || $valor === '') {
+            return null;
+        }
+
+        $valor = filter_var($valor, FILTER_VALIDATE_INT, [
+            'options' => ['min_range' => 1]
+        ]);
+
+        return $valor === false ? null : (int) $valor;
+    }
+
+    return null;
+}
+?>

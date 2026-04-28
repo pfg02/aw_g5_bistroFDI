@@ -28,16 +28,16 @@ class FormularioPago extends Formulario
 <input type="hidden" name="metodo_pago" value="tarjeta">
 
 <div class="grupo-form-pedido">
-    <label for="tarjeta" class="label-pedido">Número de Tarjeta</label>
+    <label for="cc-number" class="label-pedido">Número de Tarjeta</label>
     <input
         type="text"
-        id="tarjeta"
+        id="cc-number"
         name="tarjeta"
         placeholder="1234567890123456"
         required
-        maxlength="16"
+        maxlength="19"
         minlength="13"
-        pattern="[0-9]{13,16}"
+        pattern="[0-9]{13,19}"
         inputmode="numeric"
         autocomplete="cc-number"
         class="select-pedido input-pago"
@@ -46,10 +46,10 @@ class FormularioPago extends Formulario
 
 <div class="grid-tarjeta-datos">
     <div class="grupo-form-pedido">
-        <label for="caducidad" class="label-pedido">Caducidad</label>
+        <label for="cc-exp" class="label-pedido">Caducidad</label>
         <input
             type="text"
-            id="caducidad"
+            id="cc-exp"
             name="caducidad"
             placeholder="MM/AA"
             required
@@ -62,10 +62,10 @@ class FormularioPago extends Formulario
     </div>
 
     <div class="grupo-form-pedido">
-        <label for="cvv" class="label-pedido">CVV</label>
+        <label for="cc-csc" class="label-pedido">CVV</label>
         <input
             type="text"
-            id="cvv"
+            id="cc-csc"
             name="cvv"
             placeholder="123"
             required
@@ -80,6 +80,28 @@ class FormularioPago extends Formulario
 </div>
 
 <button type="submit" class="btn-confirmar-compra">Procesar Pago Online</button>
+
+<script>
+document.addEventListener('DOMContentLoaded', function () {
+    const caducidad = document.getElementById('cc-exp');
+
+    if (caducidad) {
+        caducidad.addEventListener('input', function () {
+            let valor = this.value.replace(/\\D/g, '');
+
+            if (valor.length > 4) {
+                valor = valor.substring(0, 4);
+            }
+
+            if (valor.length >= 3) {
+                valor = valor.substring(0, 2) + '/' + valor.substring(2);
+            }
+
+            this.value = valor;
+        });
+    }
+});
+</script>
 HTML;
     }
 

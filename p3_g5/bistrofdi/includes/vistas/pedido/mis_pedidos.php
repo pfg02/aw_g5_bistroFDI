@@ -56,20 +56,20 @@ ob_start();
     <section class="tarjeta-presentacion tarjeta-ancha">
 
         <h1><?= $esGerente ? 'Pedidos del <span>Usuario</span>' : 'Mis <span>Pedidos</span>' ?></h1>
-        <p class="lema"><?= htmlspecialchars($subtituloListado) ?></p>
+        <p class="lema"><?= htmlspecialchars($subtituloListado, ENT_QUOTES, 'UTF-8') ?></p>
 
         <div class="divisor"></div>
 
         <?php if (isset($_SESSION['mensaje_exito'])): ?>
             <div class="error-msg">
-                <?= htmlspecialchars($_SESSION['mensaje_exito']) ?>
+                <?= htmlspecialchars($_SESSION['mensaje_exito'], ENT_QUOTES, 'UTF-8') ?>
                 <?php unset($_SESSION['mensaje_exito']); ?>
             </div>
         <?php endif; ?>
 
         <?php if (isset($_SESSION['mensaje_error'])): ?>
             <div class="error-msg">
-                <?= htmlspecialchars($_SESSION['mensaje_error']) ?>
+                <?= htmlspecialchars($_SESSION['mensaje_error'], ENT_QUOTES, 'UTF-8') ?>
                 <?php unset($_SESSION['mensaje_error']); ?>
             </div>
         <?php endif; ?>
@@ -77,9 +77,13 @@ ob_start();
         <div class="mensaje-sesion">
             <?php if (empty($historialPedidos)): ?>
                 <p>No hay pedidos para mostrar.</p>
+
                 <?php if (!$esGerente): ?>
-                    <a href="<?= BASE_URL ?>/includes/vistas/pedido/pedido_inicio.php" class="btn-login">Hacer un Pedido</a>
+                    <a href="<?= BASE_URL ?>/includes/vistas/pedido/pedido_inicio.php" class="btn-login">
+                        Hacer un Pedido
+                    </a>
                 <?php endif; ?>
+
             <?php else: ?>
                 <table class="tabla-pedidos tabla-mis-pedidos-movil">
                     <thead>
@@ -92,6 +96,7 @@ ob_start();
                             <th>Acciones</th>
                         </tr>
                     </thead>
+
                     <tbody>
                         <?php foreach ($historialPedidos as $pedido): ?>
                             <?php
@@ -101,6 +106,7 @@ ob_start();
                                 $tipoPedido = obtenerDatoPedido($pedido, 'tipo', 'getTipo');
                                 $estadoPedido = obtenerDatoPedido($pedido, 'estado', 'getEstado');
                                 $totalPedido = obtenerDatoPedido($pedido, 'total', 'getTotal');
+                                $cocineroId = obtenerDatoPedido($pedido, 'cocinero_id', 'getCocineroId');
 
                                 $numeroMostrar = $numeroPedido !== null ? (string) $numeroPedido : (string) $pedidoId;
 
@@ -111,40 +117,70 @@ ob_start();
                                         $fechaFormateada = date('d/m/Y H:i', $timestamp);
                                     }
                                 }
+
+                                /*
+                                 * Se puede cancelar si:
+                                 * - Está Recibido.
+                                 * - Está En preparación y todavía no lo ha cogido ningún cocinero.
+                                 *
+                                 * Esto permite cancelar pedidos solo de bebidas/cafés que pasan directamente a sala.
+                                 */
+                                $sePuedeCancelar = !$esGerente
+                                    && (
+                                        $estadoPedido === 'Recibido'
+                                        || (
+                                            $estadoPedido === 'En preparación'
+                                            && ($cocineroId === null || (int) $cocineroId <= 0)
+                                        )
+                                    );
                             ?>
+
                             <tr>
                                 <td data-label="Nº Pedido">
-                                    <strong>#<?= htmlspecialchars($numeroMostrar) ?></strong>
+                                    <strong>#<?= htmlspecialchars($numeroMostrar, ENT_QUOTES, 'UTF-8') ?></strong>
                                 </td>
+
                                 <td data-label="Fecha">
-                                    <?= htmlspecialchars($fechaFormateada) ?>
+                                    <?= htmlspecialchars($fechaFormateada, ENT_QUOTES, 'UTF-8') ?>
                                 </td>
+
                                 <td data-label="Tipo">
-                                    <?= htmlspecialchars((string) $tipoPedido) ?>
+                                    <?= htmlspecialchars((string) $tipoPedido, ENT_QUOTES, 'UTF-8') ?>
                                 </td>
+
                                 <td data-label="Estado">
                                     <span class="badge-success">
-                                        <?= htmlspecialchars((string) $estadoPedido) ?>
+                                        <?= htmlspecialchars((string) $estadoPedido, ENT_QUOTES, 'UTF-8') ?>
                                     </span>
                                 </td>
+
                                 <td data-label="Total">
                                     <strong><?= number_format((float) $totalPedido, 2) ?> €</strong>
                                 </td>
+
                                 <td data-label="Acciones">
                                     <?php if ($esGerente): ?>
-                                        <a href="<?= BASE_URL ?>/includes/vistas/pedido/detalle_pedido.php?id=<?= urlencode((string) $pedidoId) ?>&id_cliente=<?= urlencode((string) $idCliente) ?>">Ver Detalle</a>
+                                        <a href="<?= BASE_URL ?>/includes/vistas/pedido/detalle_pedido.php?id=<?= urlencode((string) $pedidoId) ?>&id_cliente=<?= urlencode((string) $idCliente) ?>">
+                                            Ver Detalle
+                                        </a>
                                     <?php else: ?>
-                                        <a href="<?= BASE_URL ?>/includes/vistas/pedido/detalle_pedido.php?id=<?= urlencode((string) $pedidoId) ?>">Ver Detalle</a>
+                                        <a href="<?= BASE_URL ?>/includes/vistas/pedido/detalle_pedido.php?id=<?= urlencode((string) $pedidoId) ?>">
+                                            Ver Detalle
+                                        </a>
                                     <?php endif; ?>
-                                    <br>
-                                    <?php if (!$esGerente && $estadoPedido === 'Recibido'): ?>
+
+                                    <?php if ($sePuedeCancelar): ?>
+                                        <br>
                                         <form action="<?= BASE_URL ?>/includes/acciones/pedido/cancelar_pedido.php" method="POST" class="form-actualizar-estado">
-                                            <input type="hidden" name="id_pedido" value="<?= htmlspecialchars((string) $pedidoId) ?>">
-                                            <button type="submit" class="btn-accion btn-peligro">Cancelar</button>
+                                            <input type="hidden" name="id_pedido" value="<?= htmlspecialchars((string) $pedidoId, ENT_QUOTES, 'UTF-8') ?>">
+                                            <button type="submit" class="btn-accion btn-peligro">
+                                                Cancelar
+                                            </button>
                                         </form>
                                     <?php endif; ?>
                                 </td>
                             </tr>
+
                         <?php endforeach; ?>
                     </tbody>
                 </table>
@@ -153,9 +189,13 @@ ob_start();
 
         <div class="contenedor-volver">
             <?php if ($esGerente): ?>
-                <a href="<?= BASE_URL ?>/includes/vistas/admin/gestionarUsuarios.php" class="btn-login">Volver a Usuarios</a>
+                <a href="<?= BASE_URL ?>/includes/vistas/admin/gestionarUsuarios.php" class="btn-login">
+                    Volver a Usuarios
+                </a>
             <?php else: ?>
-                <a href="<?= BASE_URL ?>/index.php" class="btn-login">Volver al Inicio</a>
+                <a href="<?= BASE_URL ?>/index.php" class="btn-login">
+                    Volver al Inicio
+                </a>
             <?php endif; ?>
         </div>
 

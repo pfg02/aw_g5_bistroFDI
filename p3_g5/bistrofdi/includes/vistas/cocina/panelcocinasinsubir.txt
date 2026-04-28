@@ -27,7 +27,6 @@ $miPedido = $controller->obtenerPedidoActivoDeCocinero((int) $idCocinero);
 
 if ($miPedido) {
     $idPedidoActivoSesion = obtenerDatoPedido($miPedido, 'id', 'getId');
-
     if ($idPedidoActivoSesion !== null) {
         $_SESSION['pedido_activo_cocinero'][(int) $idCocinero] = (int) $idPedidoActivoSesion;
     }
@@ -43,10 +42,6 @@ if ($miPedido) {
     $idPedidoActivo = obtenerDatoPedido($miPedido, 'id', 'getId');
 
     if ($idPedidoActivo !== null) {
-        /*
-         * Esta consulta devuelve TODO el pedido:
-         * comida + bebida.
-         */
         $platos = $controller->obtenerProductosDePedido((int) $idPedidoActivo);
 
         if (!empty($platos)) {
@@ -54,11 +49,6 @@ if ($miPedido) {
 
             foreach ($platos as &$plato) {
                 $requiereCocina = ((int) ($plato['requiere_cocina'] ?? 1) === 1);
-
-                /*
-                 * Si no requiere cocina, se considera listo para cocina,
-                 * pero sigue mostrándose para que no desaparezca del pedido.
-                 */
                 $estaPreparado = !$requiereCocina || ((int) ($plato['preparado'] ?? 0) === 1);
 
                 $plato['requiere_cocina'] = $requiereCocina;
@@ -68,7 +58,6 @@ if ($miPedido) {
                     $todosPreparados = false;
                 }
             }
-
             unset($plato);
         }
     }
@@ -112,7 +101,6 @@ ob_start();
                             <th>Ticket</th>
                             <th>Tipo</th>
                             <th>Hora</th>
-                            <th>Detalles</th>
                             <th>Acción</th>
                         </tr>
                     </thead>
@@ -131,68 +119,11 @@ ob_start();
                                         $horaFormateada = date('H:i', $timestamp);
                                     }
                                 }
-
-                                /*
-                                 * Productos del pedido para que el cocinero pueda verlos
-                                 * antes de reclamar la comanda.
-                                 */
-                                $productosPedidoNuevo = [];
-
-                                if ($idPedido > 0) {
-                                    $productosPedidoNuevo = $controller->obtenerProductosDePedido($idPedido);
-                                }
                             ?>
                             <tr>
-                                <td data-label="Ticket">
-                                    <strong>#<?= htmlspecialchars((string) $numeroPedido) ?></strong>
-                                </td>
-
-                                <td data-label="Tipo">
-                                    <?= htmlspecialchars($tipoPedido) ?>
-                                </td>
-
-                                <td data-label="Hora">
-                                    <?= htmlspecialchars($horaFormateada) ?>
-                                </td>
-
-                                <td data-label="Detalles">
-                                    <?php if (empty($productosPedidoNuevo)): ?>
-                                        <span class="txt-sin-platos">Sin productos</span>
-                                    <?php else: ?>
-                                        <details class="details-progreso">
-                                            <summary class="summary-progreso">
-                                                Ver productos
-                                            </summary>
-
-                                            <ul class="ul-progreso">
-                                                <?php foreach ($productosPedidoNuevo as $productoPedido): ?>
-                                                    <?php
-                                                        $cantidadProducto = (int) ($productoPedido['cantidad'] ?? 0);
-                                                        $nombreProducto = (string) ($productoPedido['nombre'] ?? '');
-                                                        $requiereCocinaProducto = ((int) ($productoPedido['requiere_cocina'] ?? 1) === 1);
-                                                        $preparadoProducto = ((int) ($productoPedido['preparado'] ?? 0) === 1);
-                                                    ?>
-
-                                                    <li class="li-progreso <?= $requiereCocinaProducto ? 'pte' : 'listo' ?>">
-                                                        <strong><?= $cantidadProducto ?>x</strong>
-                                                        <span>
-                                                            <?= htmlspecialchars($nombreProducto) ?>
-                                                        </span>
-
-                                                        <?php if (!$requiereCocinaProducto): ?>
-                                                            <small>No requiere cocina</small>
-                                                        <?php elseif ($preparadoProducto): ?>
-                                                            <small>Ya preparado</small>
-                                                        <?php else: ?>
-                                                            <small>Pendiente de cocina</small>
-                                                        <?php endif; ?>
-                                                    </li>
-                                                <?php endforeach; ?>
-                                            </ul>
-                                        </details>
-                                    <?php endif; ?>
-                                </td>
-
+                                <td data-label="Ticket"><strong>#<?= htmlspecialchars((string) $numeroPedido) ?></strong></td>
+                                <td data-label="Tipo"><?= htmlspecialchars($tipoPedido) ?></td>
+                                <td data-label="Hora"><?= htmlspecialchars($horaFormateada) ?></td>
                                 <td data-label="Acción">
                                     <form action="<?= BASE_URL ?>/includes/acciones/cocina/procesar_cocina.php" method="POST">
                                         <input type="hidden" name="accion" value="reclamar">
@@ -227,7 +158,6 @@ ob_start();
                     $numeroMiPedido = obtenerDatoPedido($miPedido, 'numero_pedido', 'getNumeroPedido') ?? $idPedidoActivo;
                     $tipoMiPedido = (string) (obtenerDatoPedido($miPedido, 'tipo', 'getTipo') ?? 'Local');
                 ?>
-
                 <p>
                     <strong>Preparando Ticket #<?= htmlspecialchars((string) $numeroMiPedido) ?> (<?= htmlspecialchars($tipoMiPedido) ?>)</strong>
                 </p>
@@ -250,14 +180,10 @@ ob_start();
                                 $requiereCocina = !empty($plato['requiere_cocina']);
                             ?>
                             <tr>
-                                <td data-label="Cantidad">
-                                    <strong><?= $cantidad ?>x</strong>
-                                </td>
-
+                                <td data-label="Cantidad"><strong><?= $cantidad ?>x</strong></td>
                                 <td data-label="Producto" class="<?= $preparado ? 'plato-preparado' : '' ?>">
                                     <?= htmlspecialchars($nombre) ?>
                                 </td>
-
                                 <td data-label="Acción">
                                     <?php if (!$requiereCocina): ?>
                                         <span>No requiere cocina</span>
