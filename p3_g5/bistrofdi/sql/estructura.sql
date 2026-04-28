@@ -1,9 +1,8 @@
 -- --------------------------------------------------------
--- Base de datos: bistrofdi
+-- Base de datos: 'bistrofdi'
 -- --------------------------------------------------------
 
 DROP DATABASE IF EXISTS bistrofdi;
-
 CREATE DATABASE bistrofdi
     DEFAULT CHARACTER SET utf8mb4
     COLLATE utf8mb4_general_ci;
@@ -24,7 +23,15 @@ DROP TABLE IF EXISTS usuarios;
 DROP TABLE IF EXISTS ofertas;
 
 -- --------------------------------------------------------
--- Tabla categorias
+-- Creación de usuario con contraseña
+-- --------------------------------------------------------
+
+CREATE USER IF NOT EXISTS 'bistro_user'@'localhost' IDENTIFIED BY 'bistro_pass';
+GRANT ALL PRIVILEGES ON bistrofdi.* TO 'bistro_user'@'localhost';
+FLUSH PRIVILEGES;
+
+-- --------------------------------------------------------
+-- Estructura de tabla para la tabla 'categorias'
 -- --------------------------------------------------------
 
 CREATE TABLE categorias (
@@ -35,7 +42,7 @@ CREATE TABLE categorias (
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 
 -- --------------------------------------------------------
--- Tabla productos
+-- Estructura de tabla para la tabla 'productos'
 -- --------------------------------------------------------
 
 CREATE TABLE productos (
@@ -56,7 +63,7 @@ CREATE TABLE productos (
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 
 -- --------------------------------------------------------
--- Tabla usuarios
+-- Estructura de tabla para la tabla 'usuarios'
 -- --------------------------------------------------------
 
 CREATE TABLE usuarios (
@@ -72,7 +79,7 @@ CREATE TABLE usuarios (
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 
 -- --------------------------------------------------------
--- Tabla pedidos
+-- Estructura de tabla para la tabla 'pedidos'
 -- --------------------------------------------------------
 
 CREATE TABLE pedidos (
@@ -98,7 +105,7 @@ CREATE TABLE pedidos (
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 
 -- --------------------------------------------------------
--- Tabla pedido_productos
+-- Estructura de tabla para la tabla 'pedido_productos'
 -- --------------------------------------------------------
 
 CREATE TABLE pedido_productos (
@@ -106,7 +113,6 @@ CREATE TABLE pedido_productos (
     producto_id INT(11) NOT NULL,
     cantidad INT(11) NOT NULL,
     preparado TINYINT(1) NOT NULL DEFAULT 0,
-    servido_sala TINYINT(1) NOT NULL DEFAULT 0,
     PRIMARY KEY (pedido_id, producto_id),
     KEY `producto_id` (`producto_id`),
     CONSTRAINT `pedido_productos_pedido_fk`
@@ -118,7 +124,7 @@ CREATE TABLE pedido_productos (
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 
 -- --------------------------------------------------------
--- Tabla ofertas
+-- Estructura de tabla para la tabla 'ofertas'
 -- --------------------------------------------------------
 
 CREATE TABLE ofertas (
@@ -131,7 +137,7 @@ CREATE TABLE ofertas (
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 
 -- --------------------------------------------------------
--- Tabla ofertas_productos
+-- Estructura de tabla para la tabla 'ofertas_productos'
 -- --------------------------------------------------------
 
 CREATE TABLE ofertas_productos (
@@ -149,7 +155,7 @@ CREATE TABLE ofertas_productos (
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 
 -- --------------------------------------------------------
--- Tabla pedidos_ofertas
+-- Estructura de tabla para la tabla 'pedidos_ofertas'
 -- --------------------------------------------------------
 
 CREATE TABLE pedidos_ofertas (
