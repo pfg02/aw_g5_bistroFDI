@@ -54,9 +54,20 @@ if ($idPedido !== false && $idPedido !== null) {
     $clienteIdPedido = obtenerClienteIdPedido($pedido);
     $estadoPedido = obtenerEstadoPedido($pedido);
     $cocineroIdPedido = obtenerCocineroIdPedido($pedido);
+    $servidoSala = obtenerServidoSalaPedido($pedido);
 
     if ($clienteIdPedido === null || $clienteIdPedido !== (int) $idUsuario) {
         $_SESSION['mensaje_error'] = 'Acceso denegado o pedido no encontrado.';
+        header('Location: ' . $redirectMisPedidos);
+        exit();
+    }
+
+    /*
+     * Si sala ya ha servido/preparado alguna bebida o café,
+     * el cliente ya no puede cancelar el pedido.
+     */
+    if ($servidoSala === 1) {
+        $_SESSION['mensaje_error'] = 'No puedes cancelar este pedido porque ya ha sido servido por sala.';
         header('Location: ' . $redirectMisPedidos);
         exit();
     }
@@ -66,8 +77,8 @@ if ($idPedido !== false && $idPedido !== null) {
      * - Está Recibido.
      * - Está En preparación y todavía no tiene cocinero asignado.
      *
-     * Esto permite cancelar pedidos de bebidas/cafés que pasan directamente a sala,
-     * pero impide cancelar pedidos que ya ha empezado cocina.
+     * Esto permite cancelar pedidos solo de bebidas/cafés mientras sala
+     * todavía no haya marcado ninguna bebida como servida/preparada.
      */
     $sePuedeCancelar = $estadoPedido === 'Recibido'
         || (
@@ -190,5 +201,21 @@ function obtenerCocineroIdPedido($pedido): ?int
     }
 
     return null;
+}
+
+/**
+ * Obtiene servido_sala de un pedido, tanto si viene como array como si viene como DTO.
+ */
+function obtenerServidoSalaPedido($pedido): int
+{
+    if (is_array($pedido)) {
+        return isset($pedido['servido_sala']) ? (int) $pedido['servido_sala'] : 0;
+    }
+
+    if (is_object($pedido) && method_exists($pedido, 'getServidoSala')) {
+        return (int) $pedido->getServidoSala();
+    }
+
+    return 0;
 }
 ?>

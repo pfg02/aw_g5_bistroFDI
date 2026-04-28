@@ -18,7 +18,7 @@ foreach ($pedidosActivos as $pedidoActivo) {
 
     /*
      * Las bebidas/cafés deben aparecer al camarero mientras el pedido está
-     * en preparación, aunque todavía no haya pasado entero a "Listo cocina".
+     * en preparación, cocinando o listo cocina.
      */
     if (!in_array($estadoPedido, ['En preparación', 'Cocinando', 'Listo cocina'], true)) {
         continue;
@@ -34,13 +34,19 @@ foreach ($pedidosActivos as $pedidoActivo) {
 
     foreach ($productosPedido as $producto) {
         $requiereCocina = ((int) ($producto['requiere_cocina'] ?? 1) === 1);
-        $servidoSala = ((int) ($producto['servido_sala'] ?? 0) === 1);
+        $preparado = ((int) ($producto['preparado'] ?? 0) === 1);
 
         /*
          * Solo queremos productos que NO requieren cocina:
          * bebidas, cafés, refrescos, etc.
+         *
+         * Y solo los que todavía NO estén preparados/servidos.
+         *
+         * Importante:
+         * No usamos servido_sala aquí, porque servido_sala pertenece al pedido completo.
+         * Si usáramos servido_sala, al servir una bebida desaparecerían todas las demás.
          */
-        if ($requiereCocina || $servidoSala) {
+        if ($requiereCocina || $preparado) {
             continue;
         }
 

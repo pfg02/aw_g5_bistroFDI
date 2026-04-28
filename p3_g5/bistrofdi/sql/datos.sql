@@ -32,22 +32,27 @@ INSERT INTO productos (id_categoria, nombre, descripcion, precio_base, stock, im
     (5, 'Café Solo', 'Café espresso de especialidad', 1.50, 200, 'cafe_solo.png', 10, 1),
     (5, 'Café con Leche', 'Café espresso con leche espumada', 1.80, 200, 'cafe_leche.png', 10, 1);
 
+-- Bebidas y cafés no pasan por cocina.
+UPDATE productos
+SET requiere_cocina = 0
+WHERE id_categoria IN (4, 5);
+
 -- --------------------------------------------------------
 -- POBLAR USUARIOS
--- Contraseña para todos: 1234
+-- Contraseña para todos: 123456
 -- --------------------------------------------------------
 
 INSERT INTO usuarios (nombre_usuario, email, nombre, apellidos, password_hash, rol, avatar) VALUES
-    ('admin', 'gerente@bistrofdi.es', 'Carlos', 'Gerente', '$2y$12$Br7.fv3KdIJ4uZ5.um6P4OWWQ0pVJAyqEJzT2HEV.J8zTPWz5xoP.', 'gerente', 'img/avatares/gerente.png'),
-    ('chef_chicote', 'chicote@bistrofdi.es', 'Alberto', 'Chicote', '$2y$12$Br7.fv3KdIJ4uZ5.um6P4OWWQ0pVJAyqEJzT2HEV.J8zTPWz5xoP.', 'cocinero', 'img/avatares/cocinero.png'),
-    ('camarero_juan', 'juan@bistrofdi.es', 'Juan', 'Pérez', '$2y$12$Br7.fv3KdIJ4uZ5.um6P4OWWQ0pVJAyqEJzT2HEV.J8zTPWz5xoP.', 'camarero', 'img/avatares/camarero.png'),
-    ('ana_cliente', 'ana@gmail.com', 'Ana', 'Martínez', '$2y$12$Br7.fv3KdIJ4uZ5.um6P4OWWQ0pVJAyqEJzT2HEV.J8zTPWz5xoP.', 'cliente', 'img/avatares/cliente.png'),
-    ('luis_cliente', 'luis@hotmail.com', 'Luis', 'Fernández', '$2y$12$Br7.fv3KdIJ4uZ5.um6P4OWWQ0pVJAyqEJzT2HEV.J8zTPWz5xoP.', 'cliente', 'img/avatares/default.png'),
-    ('maria_cliente', 'maria@yahoo.es', 'María', 'Sánchez', '$2y$12$Br7.fv3KdIJ4uZ5.um6P4OWWQ0pVJAyqEJzT2HEV.J8zTPWz5xoP.', 'cliente', 'img/avatares/default.png');
+    ('admin', 'gerente@bistrofdi.es', 'Carlos', 'Gerente', '$2y$12$Lc2PDu06QRwCV1.1aRdlSOKfweDE6w6.PZDXLlzSX0RRDta4JSuHm', 'gerente', 'img/avatares/gerente.png'),
+    ('chef_chicote', 'chicote@bistrofdi.es', 'Alberto', 'Chicote', '$2y$12$Lc2PDu06QRwCV1.1aRdlSOKfweDE6w6.PZDXLlzSX0RRDta4JSuHm', 'cocinero', 'img/avatares/cocinero.png'),
+    ('camarero_juan', 'juan@bistrofdi.es', 'Juan', 'Pérez', '$2y$12$Lc2PDu06QRwCV1.1aRdlSOKfweDE6w6.PZDXLlzSX0RRDta4JSuHm', 'camarero', 'img/avatares/camarero.png'),
+    ('ana_cliente', 'ana@gmail.com', 'Ana', 'Martínez', '$2y$12$Lc2PDu06QRwCV1.1aRdlSOKfweDE6w6.PZDXLlzSX0RRDta4JSuHm', 'cliente', 'img/avatares/cliente.png'),
+    ('luis_cliente', 'luis@hotmail.com', 'Luis', 'Fernández', '$2y$12$Lc2PDu06QRwCV1.1aRdlSOKfweDE6w6.PZDXLlzSX0RRDta4JSuHm', 'cliente', 'img/avatares/default.png'),
+    ('maria_cliente', 'maria@yahoo.es', 'María', 'Sánchez', '$2y$12$Lc2PDu06QRwCV1.1aRdlSOKfweDE6w6.PZDXLlzSX0RRDta4JSuHm', 'cliente', 'img/avatares/default.png');
 
 -- --------------------------------------------------------
 -- POBLAR PEDIDOS
--- servido_sala no se inserta porque tiene DEFAULT 0 en estructura.sql
+-- servido_sala no se inserta porque tiene DEFAULT 0 en estructura.sql.
 -- --------------------------------------------------------
 
 INSERT INTO pedidos (
@@ -62,7 +67,7 @@ INSERT INTO pedidos (
     (4, NULL, 7, 'Llevar', 'Recibido',      '2026-03-02 14:40:00', 13.75, 0.00, 13.75),
     (5, NULL, 8, 'Local',  'Nuevo',         '2026-03-02 15:00:00',  0.00, 0.00,  0.00);
 
--- Si el pedido ya está entregado, lo marcamos como servido en sala.
+-- Los pedidos ya entregados se consideran servidos en sala.
 UPDATE pedidos
 SET servido_sala = 1
 WHERE estado = 'Entregado';
@@ -89,3 +94,11 @@ INSERT INTO pedido_productos (pedido_id, producto_id, cantidad, preparado) VALUE
 
     (6, 1, 1, 0),
     (6, 5, 1, 0);
+
+-- En pedidos activos, las bebidas y cafés deben poder marcarlas sala una a una.
+UPDATE pedido_productos pp
+INNER JOIN productos p ON pp.producto_id = p.id
+INNER JOIN pedidos ped ON pp.pedido_id = ped.id
+SET pp.preparado = 0
+WHERE p.requiere_cocina = 0
+  AND ped.estado NOT IN ('Entregado', 'Terminado', 'Cancelado');

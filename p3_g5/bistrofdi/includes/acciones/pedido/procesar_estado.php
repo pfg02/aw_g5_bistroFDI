@@ -31,9 +31,8 @@ if ($idPedido === false || $idPedido === null) {
 $controller = PedidoController::getInstance();
 
 /*
- * Acción especial para bebidas, cafés o productos que no pasan por cocina.
- * No cambia el estado del pedido completo.
- * Solo marca ese producto como servido por sala.
+ * Acción especial: sala marca una bebida/café concreta como servida.
+ * No cambia todo el pedido de golpe.
  */
 if ($accion === 'servir_producto_sala') {
     $idProducto = filter_input(INPUT_POST, 'id_producto', FILTER_VALIDATE_INT, [
@@ -46,12 +45,12 @@ if ($accion === 'servir_producto_sala') {
         exit();
     }
 
-    $resultado = $controller->marcarProductoServidoSala((int) $idPedido, (int) $idProducto);
+    $marcado = $controller->marcarProductoServidoSala((int) $idPedido, (int) $idProducto);
 
-    if ($resultado === false) {
-        $_SESSION['mensaje_error'] = 'Error al marcar el producto como servido.';
+    if ($marcado) {
+        $_SESSION['mensaje_exito'] = 'Producto marcado como servido correctamente.';
     } else {
-        $_SESSION['mensaje_exito'] = 'Producto marcado como servido.';
+        $_SESSION['mensaje_error'] = 'No se pudo marcar el producto como servido. Puede que ya estuviera servido o que no sea una bebida/café.';
     }
 
     header('Location: ' . $redirect);

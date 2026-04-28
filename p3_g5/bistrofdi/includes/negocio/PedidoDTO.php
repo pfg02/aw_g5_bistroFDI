@@ -17,6 +17,7 @@ class PedidoDTO
     private float $total;
     private float $subtotal;
     private float $descuentoTotal;
+    private int $servidoSala;
 
     private ?string $nombreCliente;
     private ?string $apellidosCliente;
@@ -37,6 +38,7 @@ class PedidoDTO
         $this->total = 0.00;
         $this->subtotal = 0.00;
         $this->descuentoTotal = 0.00;
+        $this->servidoSala = 0;
 
         $this->nombreCliente = null;
         $this->apellidosCliente = null;
@@ -103,6 +105,11 @@ class PedidoDTO
     public function getDescuentoTotal(): float
     {
         return $this->descuentoTotal;
+    }
+
+    public function getServidoSala(): int
+    {
+        return $this->servidoSala;
     }
 
     public function getNombreCliente(): ?string
@@ -188,6 +195,11 @@ class PedidoDTO
     public function setDescuentoTotal(float $descuentoTotal): void
     {
         $this->descuentoTotal = $descuentoTotal;
+    }
+
+    public function setServidoSala(int $servidoSala): void
+    {
+        $this->servidoSala = $servidoSala;
     }
 
     public function setNombreCliente(?string $nombreCliente): void

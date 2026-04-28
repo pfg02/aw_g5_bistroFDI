@@ -91,5 +91,20 @@ class PedidoController
     {
         return $this->service->marcarProductoServidoSala($idPedido, $idProducto);
     }
+
+    public function marcarPedidoServidoSala($idPedido)
+    {
+        return $this->service->marcarPedidoServidoSala($idPedido);
+    }
+
+    public function pedidoPuedeCancelarse($pedido)
+    {
+        return $this->service->pedidoPuedeCancelarse($pedido);
+    }
+
+    public function cancelarPedido($idPedido)
+    {
+        return $this->service->cancelarPedido($idPedido);
+    }
 }
 ?>
