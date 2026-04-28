@@ -250,10 +250,7 @@ ob_start();
                                 $requiereCocina = !empty($plato['requiere_cocina']);
                             ?>
                             <tr>
-                                <td data-label="Cantidad">
-                                    <strong><?= $cantidad ?>x</strong>
-                                </td>
-
+                                <td data-label="Cantidad"><strong><?= $cantidad ?>x</strong></td>
                                 <td data-label="Producto" class="<?= $preparado ? 'plato-preparado' : '' ?>">
                                     <?= htmlspecialchars($nombre) ?>
                                 </td>
