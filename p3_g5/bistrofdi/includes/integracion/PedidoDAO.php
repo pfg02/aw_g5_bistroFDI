@@ -9,7 +9,7 @@ class PedidoDAO
 
     public function __construct(mysqli $db)
     {
-    $this->db = $db;
+        $this->db = $db;
     }
 
     public function guardarPedido(PedidoDTO $pedidoDTO): int
@@ -59,7 +59,14 @@ class PedidoDAO
             $pedidoId = (int) $this->db->insert_id;
             $stmtPedido->close();
 
+            /*
+             * Se insertan TODOS los productos del pedido.
+             * Los que requieren cocina empiezan como preparado = 0.
+             * Los que NO requieren cocina, por ejemplo bebidas o cafés, empiezan como preparado = 1.
+             * Además, servido_sala queda por defecto en 0 hasta que el camarero lo marque como servido.
+             */
             $productos = $pedidoDTO->getProductos();
+
             $sqlProductos = "INSERT INTO pedido_productos (pedido_id, producto_id, cantidad, preparado)
                              SELECT ?, p.id, ?, CASE WHEN p.requiere_cocina = 1 THEN 0 ELSE 1 END
                              FROM productos p
@@ -124,11 +131,15 @@ class PedidoDAO
         return $exito;
     }
 
-    public function asignarCocinero(int $idPedido, int $idCocinero, string $nuevoEstado): bool
+    public function asignarCocinero(int $idPedido, ?int $idCocinero, string $nuevoEstado): bool
     {
         $sql = "UPDATE pedidos
                 SET cocinero_id = ?, estado = ?
-                WHERE id = ? AND estado = 'En preparación'";
+                WHERE id = ?";
+
+        if ($idCocinero !== null) {
+            $sql .= " AND estado = 'En preparación'";
+        }
 
         $stmt = $this->db->prepare($sql);
         $stmt->bind_param('isi', $idCocinero, $nuevoEstado, $idPedido);
@@ -229,6 +240,11 @@ class PedidoDAO
         return $pedidos;
     }
 
+    /*
+     * Este método NO filtra por requiere_cocina.
+     * Devuelve comida + bebida.
+     * Lo usa cocina, camarero, detalle del pedido, etc.
+     */
     public function obtenerProductosDePedido(int $idPedido): array
     {
         $sql = "SELECT p.id AS producto_id,
@@ -237,7 +253,8 @@ class PedidoDAO
                        p.precio_base,
                        p.iva,
                        p.requiere_cocina,
-                       MAX(pp.preparado) AS preparado
+                       MAX(pp.preparado) AS preparado,
+                       MAX(pp.servido_sala) AS servido_sala
                 FROM pedido_productos pp
                 INNER JOIN productos p ON pp.producto_id = p.id
                 WHERE pp.pedido_id = ?
@@ -259,6 +276,7 @@ class PedidoDAO
                 'iva' => (int) $fila['iva'],
                 'requiere_cocina' => (int) $fila['requiere_cocina'],
                 'preparado' => (int) $fila['preparado'],
+                'servido_sala' => (int) $fila['servido_sala'],
             ];
         }
 
@@ -311,6 +329,10 @@ class PedidoDAO
         return $exito;
     }
 
+    /*
+     * Solo se puede marcar como preparado un producto que realmente requiera cocina.
+     * Las bebidas no se marcan desde cocina.
+     */
     public function marcarProductoComoPreparado(int $idPedido, int $idProducto): bool
     {
         $sql = "UPDATE pedido_productos pp
@@ -329,6 +351,10 @@ class PedidoDAO
         return $exito;
     }
 
+    /*
+     * Comprueba solo los productos que requieren cocina.
+     * Las bebidas no bloquean el paso a sala.
+     */
     public function todosProductosCocinaPreparados(int $idPedido): bool
     {
         $sql = "SELECT COUNT(*) AS pendientes
@@ -344,10 +370,33 @@ class PedidoDAO
 
         $rs = $stmt->get_result();
         $fila = $rs->fetch_assoc();
+
         $rs->free();
         $stmt->close();
 
         return ((int) ($fila['pendientes'] ?? 0)) === 0;
+    }
+
+    /*
+     * Marca como servido por sala un producto que NO requiere cocina.
+     * Por ejemplo: bebidas, cafés, refrescos, etc.
+     */
+    public function marcarProductoServidoSala(int $idPedido, int $idProducto): bool
+    {
+        $sql = "UPDATE pedido_productos pp
+                INNER JOIN productos p ON pp.producto_id = p.id
+                SET pp.servido_sala = 1
+                WHERE pp.pedido_id = ?
+                  AND pp.producto_id = ?
+                  AND p.requiere_cocina = 0";
+
+        $stmt = $this->db->prepare($sql);
+        $stmt->bind_param('ii', $idPedido, $idProducto);
+
+        $exito = $stmt->execute();
+        $stmt->close();
+
+        return $exito;
     }
 
     private function crearPedidoDTODesdeFila(array $fila): PedidoDTO

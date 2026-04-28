@@ -27,6 +27,7 @@ $miPedido = $controller->obtenerPedidoActivoDeCocinero((int) $idCocinero);
 
 if ($miPedido) {
     $idPedidoActivoSesion = obtenerDatoPedido($miPedido, 'id', 'getId');
+
     if ($idPedidoActivoSesion !== null) {
         $_SESSION['pedido_activo_cocinero'][(int) $idCocinero] = (int) $idPedidoActivoSesion;
     }
@@ -42,6 +43,10 @@ if ($miPedido) {
     $idPedidoActivo = obtenerDatoPedido($miPedido, 'id', 'getId');
 
     if ($idPedidoActivo !== null) {
+        /*
+         * Esta consulta devuelve TODO el pedido:
+         * comida + bebida.
+         */
         $platos = $controller->obtenerProductosDePedido((int) $idPedidoActivo);
 
         if (!empty($platos)) {
@@ -49,6 +54,11 @@ if ($miPedido) {
 
             foreach ($platos as &$plato) {
                 $requiereCocina = ((int) ($plato['requiere_cocina'] ?? 1) === 1);
+
+                /*
+                 * Si no requiere cocina, se considera listo para cocina,
+                 * pero sigue mostrándose para que no desaparezca del pedido.
+                 */
                 $estaPreparado = !$requiereCocina || ((int) ($plato['preparado'] ?? 0) === 1);
 
                 $plato['requiere_cocina'] = $requiereCocina;
@@ -58,6 +68,7 @@ if ($miPedido) {
                     $todosPreparados = false;
                 }
             }
+
             unset($plato);
         }
     }
@@ -158,6 +169,7 @@ ob_start();
                     $numeroMiPedido = obtenerDatoPedido($miPedido, 'numero_pedido', 'getNumeroPedido') ?? $idPedidoActivo;
                     $tipoMiPedido = (string) (obtenerDatoPedido($miPedido, 'tipo', 'getTipo') ?? 'Local');
                 ?>
+
                 <p>
                     <strong>Preparando Ticket #<?= htmlspecialchars((string) $numeroMiPedido) ?> (<?= htmlspecialchars($tipoMiPedido) ?>)</strong>
                 </p>
@@ -181,9 +193,11 @@ ob_start();
                             ?>
                             <tr>
                                 <td data-label="Cantidad"><strong><?= $cantidad ?>x</strong></td>
+
                                 <td data-label="Producto" class="<?= $preparado ? 'plato-preparado' : '' ?>">
                                     <?= htmlspecialchars($nombre) ?>
                                 </td>
+
                                 <td data-label="Acción">
                                     <?php if (!$requiereCocina): ?>
                                         <span>No requiere cocina</span>
