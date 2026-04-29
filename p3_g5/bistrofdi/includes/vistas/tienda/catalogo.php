@@ -272,6 +272,7 @@ ob_start();
                 <?php foreach($ofertasDisponibles as $of): ?>
                     <div class="detalle-oferta-item">
                         <h4><?= htmlspecialchars($of->getNombre(), ENT_QUOTES, 'UTF-8') ?></h4>
+						<p>Descuento: <?= number_format((float) $of->getDescuentoPorcentaje(), 2) ?> %</p>
                         <p><?= htmlspecialchars($of->getDescripcion(), ENT_QUOTES, 'UTF-8') ?></p>
                         
                         <ul>

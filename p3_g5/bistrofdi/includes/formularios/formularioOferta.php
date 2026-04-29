@@ -43,6 +43,7 @@ class FormularioOferta extends Formulario
 
         $erroresHtml = self::generaListaErrores($this->errores);
         $urlListado = BASE_URL . '/includes/vistas/admin/gestion_ofertas.php';
+		$rutaJs = BASE_URL . '/js/admin_ofertas.js';
 
         $filasProductosHtml = '';
         for ($i = 0; $i < $numFilas; $i++) {
@@ -124,64 +125,24 @@ $erroresHtml
     <input type="text" id="precio_pack_mostrado" value="0.00 €" readonly>
 </div>
 
-<div class="grupo-control">
-    <label for="precio_final">Precio final de la oferta</label>
-    <input type="number" name="precio_final" id="precio_final" min="0" step="0.01" value="$precioFinal" required>
-</div>
 
-<div class="grupo-control">
-    <label for="descuento_mostrado">Descuento (%)</label>
-    <input type="text" id="descuento_mostrado" value="0.00 %" readonly>
-</div>
+<div class="grupo-control" style="flex: 1;">
+        <label for="descuento_porcentaje">Descuento a aplicar (%)</label>
+        <input type="number" name="descuento_porcentaje" id="descuento_porcentaje_dinamico" min="0" max="100" step="0.01" value="$descuentoPorcentaje" required>
+    </div>
+
+	<div class="grupo-control" style="flex: 1;">
+        <label>Precio Final Oferta</label>
+        <input type="text" id="precio_final_mostrado" value="0.00 €" readonly>
+        <input type="hidden" name="precio_final" id="precio_final_hidden">
+    </div>
 
 <div class="acciones-form">
     <button type="submit" class="btn-primario">Guardar oferta</button>
     <a href="$urlListado" class="btn-secundario">Volver al listado</a>
 </div>
 
-<script>
-document.addEventListener('DOMContentLoaded', function () {
-    const selects = document.querySelectorAll('.js-producto-oferta');
-    const cantidades = document.querySelectorAll('.js-cantidad-oferta');
-    const precioFinal = document.getElementById('precio_final');
-    const precioPackMostrado = document.getElementById('precio_pack_mostrado');
-    const descuentoMostrado = document.getElementById('descuento_mostrado');
-    const descuentoHidden = document.getElementById('descuento_porcentaje');
-
-    function recalcularOferta() {
-        let totalPack = 0;
-
-        selects.forEach((select, index) => {
-            const option = select.options[select.selectedIndex];
-            const precio = option ? parseFloat(option.dataset.precio || '0') : 0;
-            const cantidad = cantidades[index] ? parseInt(cantidades[index].value || '0', 10) : 0;
-
-            if (!isNaN(precio) && !isNaN(cantidad) && cantidad > 0) {
-                totalPack += precio * cantidad;
-            }
-        });
-
-        precioPackMostrado.value = totalPack.toFixed(2) + ' €';
-
-        const final = parseFloat(precioFinal.value || '0');
-        let descuento = 0;
-
-        if (!isNaN(final) && totalPack > 0) {
-            descuento = ((totalPack - final) / totalPack) * 100;
-            if (descuento < 0) descuento = 0;
-        }
-
-        descuentoMostrado.value = descuento.toFixed(2) + ' %';
-        descuentoHidden.value = descuento.toFixed(2);
-    }
-
-    selects.forEach(select => select.addEventListener('change', recalcularOferta));
-    cantidades.forEach(input => input.addEventListener('input', recalcularOferta));
-    precioFinal.addEventListener('input', recalcularOferta);
-
-    recalcularOferta();
-});
-</script>
+<script src="$rutaJs"></script>
 HTML;
     }
 
@@ -194,7 +155,7 @@ HTML;
         $descripcion = trim((string) ($datos['descripcion'] ?? ''));
         $fechaInicio = trim((string) ($datos['fecha_inicio'] ?? ''));
         $fechaFin = trim((string) ($datos['fecha_fin'] ?? ''));
-        $precioFinalRaw = $datos['precio_final'] ?? null;
+		$descuentoRaw = $datos['descuento_porcentaje'] ?? null;
         $productosIds = $datos['producto_id'] ?? [];
         $cantidades = $datos['cantidad'] ?? [];
 
@@ -287,18 +248,21 @@ HTML;
             $this->errores[] = 'No se ha podido calcular el precio del pack.';
         }
 
-        $precioFinal = filter_var($precioFinalRaw, FILTER_VALIDATE_FLOAT);
-        if ($precioFinal === false || $precioFinal < 0) {
-            $this->errores[] = 'El precio final de la oferta no es válido.';
-        } elseif ($precioPack > 0 && $precioFinal > $precioPack) {
-            $this->errores[] = 'El precio final no puede ser mayor que el precio del pack sin descuento.';
+		$descuentoPorcentaje = filter_var($descuentoRaw, FILTER_VALIDATE_FLOAT);
+        if ($descuentoPorcentaje === false || $descuentoPorcentaje < 0 || $descuentoPorcentaje > 100) {
+            $this->errores[] = 'El porcentaje de descuento debe estar entre 0 y 100.';
         }
 
         if (!empty($this->errores)) {
             return null;
         }
 
-        $descuentoPorcentaje = round((($precioPack - (float) $precioFinal) / $precioPack) * 100, 2);
+
+        if (!empty($this->errores)) {
+            return null;
+        }
+
+		$precioFinalCalculado = round($precioPack - ($precioPack * ($descuentoPorcentaje / 100)), 2);
 
         $oferta = new OfertaDTO();
         $oferta->setId($id);
@@ -312,7 +276,7 @@ HTML;
         $this->datosValidados = [
             'oferta' => $oferta,
             'precio_pack' => $precioPack,
-            'precio_final' => (float) $precioFinal,
+            'precio_final' => (float) $precioFinalCalculado,
             'descuento_porcentaje' => $descuentoPorcentaje,
         ];
 
