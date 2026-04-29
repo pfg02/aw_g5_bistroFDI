@@ -6,10 +6,13 @@ require_once __DIR__ . '/../../core/sesion.php';
 require_once __DIR__ . '/../../negocio/PedidoController.php';
 
 exigirLogin();
-exigirRol('camarero');
+exigirRol('camarero', 'gerente');
 
 $controller = PedidoController::getInstance();
 $pedidosActivos = $controller->verPedidosActivos();
+
+$rolUsuario = $_SESSION['rol'] ?? null;
+$esGerente = ($rolUsuario === 'gerente');
 
 $productosSalaPendientes = [];
 
@@ -37,14 +40,8 @@ foreach ($pedidosActivos as $pedidoActivo) {
         $preparado = ((int) ($producto['preparado'] ?? 0) === 1);
 
         /*
-         * Solo queremos productos que NO requieren cocina:
+         * Solo productos que NO requieren cocina:
          * bebidas, cafés, refrescos, etc.
-         *
-         * Y solo los que todavía NO estén preparados/servidos.
-         *
-         * Importante:
-         * No usamos servido_sala aquí, porque servido_sala pertenece al pedido completo.
-         * Si usáramos servido_sala, al servir una bebida desaparecerían todas las demás.
          */
         if ($requiereCocina || $preparado) {
             continue;
@@ -64,9 +61,6 @@ foreach ($pedidosActivos as $pedidoActivo) {
         ];
     }
 }
-
-$rolUsuario = $_SESSION['rol'] ?? null;
-$esGerente = ($rolUsuario === 'gerente');
 
 $pedidosRecibidos = array_filter(
     $pedidosActivos,
@@ -97,150 +91,201 @@ ob_start();
 
         <?php if (isset($_SESSION['mensaje_error'])): ?>
             <div class="error-msg">
-                <?= htmlspecialchars($_SESSION['mensaje_error']) ?>
+                <?= htmlspecialchars($_SESSION['mensaje_error'], ENT_QUOTES, 'UTF-8') ?>
                 <?php unset($_SESSION['mensaje_error']); ?>
             </div>
         <?php endif; ?>
 
         <?php if (isset($_SESSION['mensaje_exito'])): ?>
             <div class="alerta alerta-exito">
-                <?= htmlspecialchars($_SESSION['mensaje_exito']) ?>
+                <?= htmlspecialchars($_SESSION['mensaje_exito'], ENT_QUOTES, 'UTF-8') ?>
                 <?php unset($_SESSION['mensaje_exito']); ?>
             </div>
         <?php endif; ?>
 
         <?php if ($esGerente): ?>
-        <div class="seccion-camarero">
-            <h2 class="titulo-seccion">Vista global de pedidos pendientes</h2>
-            <?php
-                $pedidosPendientesGerente = array_filter(
-                    $pedidosActivos,
-                    fn($p) => in_array(
-                        obtenerDatoPedido($p, 'estado', 'getEstado'),
-                        ['Recibido', 'En preparación', 'Cocinando'],
-                        true
-                    )
-                );
-            ?>
-            <?php if (empty($pedidosPendientesGerente)): ?>
-                <p class="p-vacio">No hay pedidos en preparación o recibidos ahora mismo.</p>
-            <?php else: ?>
-                <table class="tabla-pedidos tabla-sala-movil">
-                    <thead>
-                        <tr>
-                            <th>Ticket</th>
-                            <th>Tipo</th>
-                            <th>Cliente</th>
-                            <th>Estado</th>
-                            <th>Hora</th>
-                            <th>Cocinero asignado</th>
-                            <th>Progreso de Cocina</th>
-                            <th>Detalles</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        <?php foreach ($pedidosPendientesGerente as $p): ?>
-                            <?php
-                                $idPedido = (int) (obtenerDatoPedido($p, 'id', 'getId') ?? 0);
-                                $numeroPedido = obtenerDatoPedido($p, 'numero_pedido', 'getNumeroPedido') ?? $idPedido;
-                                $tipoPedido = (string) (obtenerDatoPedido($p, 'tipo', 'getTipo') ?? 'Local');
-                                $estadoPedido = (string) (obtenerDatoPedido($p, 'estado', 'getEstado') ?? '');
-                                $fechaPedido = (string) (obtenerDatoPedido($p, 'fecha', 'getFecha') ?? '');
+            <div class="seccion-camarero">
+                <h2 class="titulo-seccion">Vista global de pedidos pendientes</h2>
 
-                                $nombreCliente = trim(
-                                    (string) (obtenerDatoPedido($p, 'nombre_cliente', 'getNombreCliente') ?? '') . ' ' .
-                                    (string) (obtenerDatoPedido($p, 'apellidos_cliente', 'getApellidosCliente') ?? '')
-                                );
+                <?php
+                    /*
+                     * El gerente ve todos los pedidos que aún no están cerrados.
+                     * No incluimos Entregado ni Cancelado.
+                     */
+                    $pedidosPendientesGerente = array_filter(
+                        $pedidosActivos,
+                        fn($p) => in_array(
+                            obtenerDatoPedido($p, 'estado', 'getEstado'),
+                            ['Recibido', 'En preparación', 'Cocinando', 'Listo cocina', 'Terminado'],
+                            true
+                        )
+                    );
+                ?>
 
-                                $nombreCocinero = trim(
-                                    (string) (obtenerDatoPedido($p, 'nombre_cocinero', 'getNombreCocinero') ?? '') . ' ' .
-                                    (string) (obtenerDatoPedido($p, 'apellidos_cocinero', 'getApellidosCocinero') ?? '')
-                                );
+                <?php if (empty($pedidosPendientesGerente)): ?>
+                    <p class="p-vacio">No hay pedidos pendientes ahora mismo.</p>
+                <?php else: ?>
+                    <table class="tabla-pedidos tabla-sala-movil">
+                        <thead>
+                            <tr>
+                                <th>Ticket</th>
+                                <th>Tipo</th>
+                                <th>Cliente</th>
+                                <th>Estado</th>
+                                <th>Hora</th>
+                                <th>Cocinero asignado</th>
+                                <th>Progreso del pedido</th>
+                                <th>Detalles</th>
+                            </tr>
+                        </thead>
 
-                                $avatarCocineroDato = obtenerDatoPedido($p, 'avatar_cocinero', 'getAvatarCocinero');
-                                $avatarCocinero = !empty($avatarCocineroDato)
-                                    ? BASE_URL . '/' . ltrim((string) $avatarCocineroDato, '/')
-                                    : BASE_URL . '/img/avatares/default.png';
+                        <tbody>
+                            <?php foreach ($pedidosPendientesGerente as $p): ?>
+                                <?php
+                                    $idPedido = (int) (obtenerDatoPedido($p, 'id', 'getId') ?? 0);
+                                    $numeroPedido = obtenerDatoPedido($p, 'numero_pedido', 'getNumeroPedido') ?? $idPedido;
+                                    $tipoPedido = (string) (obtenerDatoPedido($p, 'tipo', 'getTipo') ?? 'Local');
+                                    $estadoPedido = (string) (obtenerDatoPedido($p, 'estado', 'getEstado') ?? '');
+                                    $fechaPedido = (string) (obtenerDatoPedido($p, 'fecha', 'getFecha') ?? '');
 
-                                $platos = $controller->obtenerProductosDePedido($idPedido);
-                                $platosListos = 0;
-                                $totalPlatos = 0;
+                                    $nombreCliente = trim(
+                                        (string) (obtenerDatoPedido($p, 'nombre_cliente', 'getNombreCliente') ?? '') . ' ' .
+                                        (string) (obtenerDatoPedido($p, 'apellidos_cliente', 'getApellidosCliente') ?? '')
+                                    );
 
-                                if (!empty($platos)) {
-                                    $totalPlatos = count($platos);
-                                    foreach ($platos as &$plato) {
-                                        $estaPreparado = ((int) ($plato['preparado'] ?? 0) === 1);
-                                        $plato['preparado'] = $estaPreparado;
-                                        if ($estaPreparado) {
-                                            $platosListos++;
+                                    $nombreCocinero = trim(
+                                        (string) (obtenerDatoPedido($p, 'nombre_cocinero', 'getNombreCocinero') ?? '') . ' ' .
+                                        (string) (obtenerDatoPedido($p, 'apellidos_cocinero', 'getApellidosCocinero') ?? '')
+                                    );
+
+                                    $avatarCocineroDato = obtenerDatoPedido($p, 'avatar_cocinero', 'getAvatarCocinero');
+                                    $avatarCocinero = !empty($avatarCocineroDato)
+                                        ? BASE_URL . '/' . ltrim((string) $avatarCocineroDato, '/')
+                                        : BASE_URL . '/img/avatares/default.png';
+
+                                    $productosDelPedido = $idPedido > 0
+                                        ? $controller->obtenerProductosDePedido($idPedido)
+                                        : [];
+
+                                    $productosListos = 0;
+                                    $totalProductos = 0;
+
+                                    if (!empty($productosDelPedido)) {
+                                        foreach ($productosDelPedido as &$productoPedido) {
+                                            $cantidadProducto = (int) ($productoPedido['cantidad'] ?? 0);
+                                            $estaPreparado = ((int) ($productoPedido['preparado'] ?? 0) === 1);
+
+                                            $productoPedido['preparado'] = $estaPreparado;
+                                            $totalProductos += max(1, $cantidadProducto);
+
+                                            if ($estaPreparado) {
+                                                $productosListos += max(1, $cantidadProducto);
+                                            }
+                                        }
+
+                                        unset($productoPedido);
+                                    }
+
+                                    $horaFormateada = '';
+                                    if ($fechaPedido !== '') {
+                                        $timestamp = strtotime($fechaPedido);
+                                        if ($timestamp !== false) {
+                                            $horaFormateada = date('H:i', $timestamp);
                                         }
                                     }
-                                    unset($plato);
-                                }
+                                ?>
 
-                                $horaFormateada = '';
-                                if ($fechaPedido !== '') {
-                                    $timestamp = strtotime($fechaPedido);
-                                    if ($timestamp !== false) {
-                                        $horaFormateada = date('H:i', $timestamp);
-                                    }
-                                }
-                            ?>
-                            <tr>
-                                <td data-label="Ticket"><strong>#<?= htmlspecialchars((string) $numeroPedido) ?></strong></td>
-                                <td data-label="Tipo"><?= htmlspecialchars($tipoPedido) ?></td>
-                                <td data-label="Cliente"><?= htmlspecialchars($nombreCliente) ?></td>
-                                <td data-label="Estado">
-                                    <span class="badge-success"><?= htmlspecialchars($estadoPedido) ?></span>
-                                </td>
-                                <td data-label="Hora"><?= htmlspecialchars($horaFormateada) ?></td>
-                                <td data-label="Cocinero asignado">
-                                    <?php if ($nombreCocinero !== ''): ?>
-                                        <div class="wrapper-cocinero">
-                                            <img src="<?= htmlspecialchars($avatarCocinero) ?>" alt="Avatar" class="avatar-cocinero">
-                                            <div>
-                                                <strong><?= htmlspecialchars($nombreCocinero) ?></strong>
+                                <tr>
+                                    <td data-label="Ticket">
+                                        <strong>#<?= htmlspecialchars((string) $numeroPedido, ENT_QUOTES, 'UTF-8') ?></strong>
+                                    </td>
+
+                                    <td data-label="Tipo">
+                                        <?= htmlspecialchars($tipoPedido, ENT_QUOTES, 'UTF-8') ?>
+                                    </td>
+
+                                    <td data-label="Cliente">
+                                        <?= htmlspecialchars($nombreCliente, ENT_QUOTES, 'UTF-8') ?>
+                                    </td>
+
+                                    <td data-label="Estado">
+                                        <span class="badge-success">
+                                            <?= htmlspecialchars($estadoPedido, ENT_QUOTES, 'UTF-8') ?>
+                                        </span>
+                                    </td>
+
+                                    <td data-label="Hora">
+                                        <?= htmlspecialchars($horaFormateada, ENT_QUOTES, 'UTF-8') ?>
+                                    </td>
+
+                                    <td data-label="Cocinero asignado">
+                                        <?php if ($nombreCocinero !== ''): ?>
+                                            <div class="wrapper-cocinero">
+                                                <img
+                                                    src="<?= htmlspecialchars($avatarCocinero, ENT_QUOTES, 'UTF-8') ?>"
+                                                    alt="Avatar del cocinero"
+                                                    class="avatar-cocinero"
+                                                >
+                                                <div>
+                                                    <strong><?= htmlspecialchars($nombreCocinero, ENT_QUOTES, 'UTF-8') ?></strong>
+                                                </div>
                                             </div>
-                                        </div>
-                                    <?php else: ?>
-                                        <span class="txt-sin-asignar">Sin asignar</span>
-                                    <?php endif; ?>
-                                </td>
+                                        <?php else: ?>
+                                            <span class="txt-sin-asignar">Sin asignar</span>
+                                        <?php endif; ?>
+                                    </td>
 
-                                <td class="celda-progreso" data-label="Progreso de Cocina">
-                                    <?php if ($totalPlatos > 0): ?>
-                                        <details class="details-progreso">
-                                            <summary class="summary-progreso">
-                                                Ver Progreso (<?= $platosListos ?>/<?= $totalPlatos ?> listos)
-                                            </summary>
-                                            <ul class="ul-progreso">
-                                                <?php foreach ($platos as $plato): ?>
-                                                    <li class="li-progreso <?= !empty($plato['preparado']) ? 'listo' : 'pte' ?>">
-                                                        <strong class="<?= !empty($plato['preparado']) ? 'texto-tachado' : '' ?>">
-                                                            <?= (int) ($plato['cantidad'] ?? 0) ?>x
-                                                        </strong>
-                                                        <span class="<?= !empty($plato['preparado']) ? 'texto-tachado' : '' ?>">
-                                                            <?= htmlspecialchars((string) ($plato['nombre'] ?? '')) ?>
-                                                        </span>
-                                                    </li>
-                                                <?php endforeach; ?>
-                                            </ul>
-                                        </details>
-                                    <?php else: ?>
-                                        <span class="txt-sin-platos">Sin platos</span>
-                                    <?php endif; ?>
-                                </td>
+                                    <td class="celda-progreso" data-label="Progreso del pedido">
+                                        <?php if (!empty($productosDelPedido)): ?>
+                                            <details class="details-progreso">
+                                                <summary class="summary-progreso">
+                                                    Ver productos (<?= $productosListos ?>/<?= $totalProductos ?> listos)
+                                                </summary>
 
-                                <td data-label="Detalles">
-                                    <a href="<?= BASE_URL ?>/includes/vistas/pedido/detalle_pedido.php?id=<?= urlencode((string) $idPedido) ?>">Ver Detalle</a>
-                                </td>
-                            </tr>
-                        <?php endforeach; ?>
-                    </tbody>
-                </table>
-            <?php endif; ?>
-        </div>
-        <div class="divisor"></div>
+                                                <ul class="ul-progreso">
+                                                    <?php foreach ($productosDelPedido as $productoPedido): ?>
+                                                        <?php
+                                                            $productoPreparado = !empty($productoPedido['preparado']);
+                                                            $nombreProducto = (string) ($productoPedido['nombre'] ?? '');
+                                                            $cantidadProducto = (int) ($productoPedido['cantidad'] ?? 0);
+                                                        ?>
+
+                                                        <li class="li-progreso <?= $productoPreparado ? 'listo' : 'pte' ?>">
+                                                            <strong class="<?= $productoPreparado ? 'texto-tachado' : '' ?>">
+                                                                <?= $cantidadProducto ?>x
+                                                            </strong>
+
+                                                            <span class="<?= $productoPreparado ? 'texto-tachado' : '' ?>">
+                                                                <?= htmlspecialchars($nombreProducto, ENT_QUOTES, 'UTF-8') ?>
+                                                            </span>
+
+                                                            <?php if ($productoPreparado): ?>
+                                                                <small>Listo</small>
+                                                            <?php else: ?>
+                                                                <small>Pendiente</small>
+                                                            <?php endif; ?>
+                                                        </li>
+                                                    <?php endforeach; ?>
+                                                </ul>
+                                            </details>
+                                        <?php else: ?>
+                                            <span class="txt-sin-platos">Sin productos</span>
+                                        <?php endif; ?>
+                                    </td>
+
+                                    <td data-label="Detalles">
+                                        <a href="<?= BASE_URL ?>/includes/vistas/pedido/detalle_pedido.php?id=<?= urlencode((string) $idPedido) ?>">
+                                            Ver Detalle
+                                        </a>
+                                    </td>
+                                </tr>
+                            <?php endforeach; ?>
+                        </tbody>
+                    </table>
+                <?php endif; ?>
+            </div>
+
+            <div class="divisor"></div>
         <?php endif; ?>
 
         <div class="seccion-camarero">
@@ -260,6 +305,7 @@ ob_start();
                             <th>Acción</th>
                         </tr>
                     </thead>
+
                     <tbody>
                         <?php foreach ($productosSalaPendientes as $productoSala): ?>
                             <?php
@@ -271,32 +317,33 @@ ob_start();
                                 $cantidad = (int) ($productoSala['cantidad'] ?? 0);
                                 $nombreProducto = (string) ($productoSala['nombre'] ?? '');
                             ?>
+
                             <tr>
                                 <td data-label="Ticket">
-                                    <strong>#<?= htmlspecialchars((string) $numeroPedido) ?></strong>
+                                    <strong>#<?= htmlspecialchars((string) $numeroPedido, ENT_QUOTES, 'UTF-8') ?></strong>
                                 </td>
 
                                 <td data-label="Tipo">
-                                    <?= htmlspecialchars($tipoPedido) ?>
+                                    <?= htmlspecialchars($tipoPedido, ENT_QUOTES, 'UTF-8') ?>
                                 </td>
 
                                 <td data-label="Cliente / Mesa">
-                                    <?= htmlspecialchars($nombreCliente) ?>
+                                    <?= htmlspecialchars($nombreCliente, ENT_QUOTES, 'UTF-8') ?>
                                 </td>
 
                                 <td data-label="Cant.">
-                                    <?= htmlspecialchars((string) $cantidad) ?>x
+                                    <?= htmlspecialchars((string) $cantidad, ENT_QUOTES, 'UTF-8') ?>x
                                 </td>
 
                                 <td data-label="Producto">
-                                    <?= htmlspecialchars($nombreProducto) ?>
+                                    <?= htmlspecialchars($nombreProducto, ENT_QUOTES, 'UTF-8') ?>
                                 </td>
 
                                 <td data-label="Acción">
                                     <form action="<?= BASE_URL ?>/includes/acciones/pedido/procesar_estado.php" method="POST">
                                         <input type="hidden" name="accion" value="servir_producto_sala">
-                                        <input type="hidden" name="id_pedido" value="<?= htmlspecialchars((string) $idPedido) ?>">
-                                        <input type="hidden" name="id_producto" value="<?= htmlspecialchars((string) $productoId) ?>">
+                                        <input type="hidden" name="id_pedido" value="<?= htmlspecialchars((string) $idPedido, ENT_QUOTES, 'UTF-8') ?>">
+                                        <input type="hidden" name="id_producto" value="<?= htmlspecialchars((string) $productoId, ENT_QUOTES, 'UTF-8') ?>">
                                         <button type="submit" class="btn-accion">
                                             Servido
                                         </button>
@@ -313,6 +360,7 @@ ob_start();
 
         <div class="seccion-camarero">
             <h2 class="titulo-seccion">Pedidos Pendientes de Cobro (Recibidos)</h2>
+
             <?php if (empty($pedidosRecibidos)): ?>
                 <p class="p-vacio">No hay pedidos por cobrar.</p>
             <?php else: ?>
@@ -327,6 +375,7 @@ ob_start();
                             <th>Acción</th>
                         </tr>
                     </thead>
+
                     <tbody>
                         <?php foreach ($pedidosRecibidos as $p): ?>
                             <?php
@@ -340,19 +389,37 @@ ob_start();
                                     (string) (obtenerDatoPedido($p, 'apellidos_cliente', 'getApellidosCliente') ?? '')
                                 );
                             ?>
+
                             <tr>
-                                <td data-label="Ticket"><strong>#<?= htmlspecialchars((string) $numeroPedido) ?></strong></td>
-                                <td data-label="Tipo"><?= htmlspecialchars($tipoPedido) ?></td>
-                                <td data-label="Cliente / Mesa"><?= htmlspecialchars($nombreCliente) ?></td>
-                                <td data-label="Total"><?= number_format($totalPedido, 2) ?> €</td>
-                                <td data-label="Detalles">
-                                    <a href="<?= BASE_URL ?>/includes/vistas/pedido/detalle_pedido.php?id=<?= urlencode((string) $idPedido) ?>">Ver Detalle</a>
+                                <td data-label="Ticket">
+                                    <strong>#<?= htmlspecialchars((string) $numeroPedido, ENT_QUOTES, 'UTF-8') ?></strong>
                                 </td>
+
+                                <td data-label="Tipo">
+                                    <?= htmlspecialchars($tipoPedido, ENT_QUOTES, 'UTF-8') ?>
+                                </td>
+
+                                <td data-label="Cliente / Mesa">
+                                    <?= htmlspecialchars($nombreCliente, ENT_QUOTES, 'UTF-8') ?>
+                                </td>
+
+                                <td data-label="Total">
+                                    <?= number_format($totalPedido, 2) ?> €
+                                </td>
+
+                                <td data-label="Detalles">
+                                    <a href="<?= BASE_URL ?>/includes/vistas/pedido/detalle_pedido.php?id=<?= urlencode((string) $idPedido) ?>">
+                                        Ver Detalle
+                                    </a>
+                                </td>
+
                                 <td data-label="Acción">
                                     <form action="<?= BASE_URL ?>/includes/acciones/pedido/procesar_estado.php" method="POST">
-                                        <input type="hidden" name="id_pedido" value="<?= htmlspecialchars((string) $idPedido) ?>">
+                                        <input type="hidden" name="id_pedido" value="<?= htmlspecialchars((string) $idPedido, ENT_QUOTES, 'UTF-8') ?>">
                                         <input type="hidden" name="accion" value="cobrar">
-                                        <button type="submit" class="btn-accion">Marcar como Pagado</button>
+                                        <button type="submit" class="btn-accion">
+                                            Marcar como Pagado
+                                        </button>
                                     </form>
                                 </td>
                             </tr>
@@ -366,6 +433,7 @@ ob_start();
 
         <div class="seccion-camarero">
             <h2 class="titulo-seccion">Listos en Cocina (Para recoger)</h2>
+
             <?php if (empty($pedidosListosCocina)): ?>
                 <p class="p-vacio">No hay platos listos para recoger.</p>
             <?php else: ?>
@@ -378,6 +446,7 @@ ob_start();
                             <th>Acción</th>
                         </tr>
                     </thead>
+
                     <tbody>
                         <?php foreach ($pedidosListosCocina as $p): ?>
                             <?php
@@ -385,17 +454,29 @@ ob_start();
                                 $numeroPedido = obtenerDatoPedido($p, 'numero_pedido', 'getNumeroPedido') ?? $idPedido;
                                 $tipoPedido = (string) (obtenerDatoPedido($p, 'tipo', 'getTipo') ?? 'Local');
                             ?>
+
                             <tr>
-                                <td data-label="Ticket"><strong>#<?= htmlspecialchars((string) $numeroPedido) ?></strong></td>
-                                <td data-label="Tipo"><?= htmlspecialchars($tipoPedido) ?></td>
-                                <td data-label="Detalles">
-                                    <a href="<?= BASE_URL ?>/includes/vistas/pedido/detalle_pedido.php?id=<?= urlencode((string) $idPedido) ?>">Ver Detalle</a>
+                                <td data-label="Ticket">
+                                    <strong>#<?= htmlspecialchars((string) $numeroPedido, ENT_QUOTES, 'UTF-8') ?></strong>
                                 </td>
+
+                                <td data-label="Tipo">
+                                    <?= htmlspecialchars($tipoPedido, ENT_QUOTES, 'UTF-8') ?>
+                                </td>
+
+                                <td data-label="Detalles">
+                                    <a href="<?= BASE_URL ?>/includes/vistas/pedido/detalle_pedido.php?id=<?= urlencode((string) $idPedido) ?>">
+                                        Ver Detalle
+                                    </a>
+                                </td>
+
                                 <td data-label="Acción">
                                     <form action="<?= BASE_URL ?>/includes/acciones/pedido/procesar_estado.php" method="POST">
-                                        <input type="hidden" name="id_pedido" value="<?= htmlspecialchars((string) $idPedido) ?>">
+                                        <input type="hidden" name="id_pedido" value="<?= htmlspecialchars((string) $idPedido, ENT_QUOTES, 'UTF-8') ?>">
                                         <input type="hidden" name="accion" value="terminar">
-                                        <button type="submit" class="btn-accion">Pasar a Terminado</button>
+                                        <button type="submit" class="btn-accion">
+                                            Pasar a Terminado
+                                        </button>
                                     </form>
                                 </td>
                             </tr>
@@ -409,6 +490,7 @@ ob_start();
 
         <div class="seccion-camarero">
             <h2 class="titulo-seccion">Pedidos Terminados (Para entregar)</h2>
+
             <?php if (empty($pedidosTerminados)): ?>
                 <p class="p-vacio">No hay pedidos pendientes de entrega final.</p>
             <?php else: ?>
@@ -422,6 +504,7 @@ ob_start();
                             <th>Acción</th>
                         </tr>
                     </thead>
+
                     <tbody>
                         <?php foreach ($pedidosTerminados as $p): ?>
                             <?php
@@ -430,18 +513,33 @@ ob_start();
                                 $tipoPedido = (string) (obtenerDatoPedido($p, 'tipo', 'getTipo') ?? 'Local');
                                 $nombreCliente = (string) (obtenerDatoPedido($p, 'nombre_cliente', 'getNombreCliente') ?? '');
                             ?>
+
                             <tr>
-                                <td data-label="Ticket"><strong>#<?= htmlspecialchars((string) $numeroPedido) ?></strong></td>
-                                <td data-label="Tipo"><?= htmlspecialchars($tipoPedido) ?></td>
-                                <td data-label="Cliente"><?= htmlspecialchars($nombreCliente) ?></td>
-                                <td data-label="Detalles">
-                                    <a href="<?= BASE_URL ?>/includes/vistas/pedido/detalle_pedido.php?id=<?= urlencode((string) $idPedido) ?>" class="link-detalle-texto">Ver Detalle</a>
+                                <td data-label="Ticket">
+                                    <strong>#<?= htmlspecialchars((string) $numeroPedido, ENT_QUOTES, 'UTF-8') ?></strong>
                                 </td>
+
+                                <td data-label="Tipo">
+                                    <?= htmlspecialchars($tipoPedido, ENT_QUOTES, 'UTF-8') ?>
+                                </td>
+
+                                <td data-label="Cliente">
+                                    <?= htmlspecialchars($nombreCliente, ENT_QUOTES, 'UTF-8') ?>
+                                </td>
+
+                                <td data-label="Detalles">
+                                    <a href="<?= BASE_URL ?>/includes/vistas/pedido/detalle_pedido.php?id=<?= urlencode((string) $idPedido) ?>" class="link-detalle-texto">
+                                        Ver Detalle
+                                    </a>
+                                </td>
+
                                 <td data-label="Acción">
                                     <form action="<?= BASE_URL ?>/includes/acciones/pedido/procesar_estado.php" method="POST">
-                                        <input type="hidden" name="id_pedido" value="<?= htmlspecialchars((string) $idPedido) ?>">
+                                        <input type="hidden" name="id_pedido" value="<?= htmlspecialchars((string) $idPedido, ENT_QUOTES, 'UTF-8') ?>">
                                         <input type="hidden" name="accion" value="entregar">
-                                        <button type="submit" class="btn-accion">Marcar como Entregado</button>
+                                        <button type="submit" class="btn-accion">
+                                            Marcar como Entregado
+                                        </button>
                                     </form>
                                 </td>
                             </tr>

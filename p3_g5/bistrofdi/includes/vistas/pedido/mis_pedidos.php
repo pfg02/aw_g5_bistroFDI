@@ -45,7 +45,7 @@ if ($esGerente) {
 }
 
 /*
- * Solo mostramos la columna del cocinero cuando el gerente está viendo
+ * Solo mostramos herramientas de gerente cuando está viendo
  * los pedidos de un cliente concreto mediante ?id_cliente=...
  */
 $esVistaGerenteCliente = $esGerente && $idClienteParam !== false && $idClienteParam !== null;
@@ -78,6 +78,28 @@ ob_start();
                 <?= htmlspecialchars($_SESSION['mensaje_error'], ENT_QUOTES, 'UTF-8') ?>
                 <?php unset($_SESSION['mensaje_error']); ?>
             </div>
+        <?php endif; ?>
+
+        <?php if ($esVistaGerenteCliente): ?>
+            <div class="contenedor-botones-index">
+                <a href="<?= BASE_URL ?>/includes/vistas/camarero/panel_camarero.php" class="btn-admin">
+                    Ver panel de sala
+                </a>
+
+                <a href="<?= BASE_URL ?>/includes/vistas/cocina/panel_cocina.php" class="btn-admin">
+                    Ver panel de cocina
+                </a>
+
+                <a href="<?= BASE_URL ?>/includes/vistas/admin/gestionarUsuarios.php" class="btn-secundario">
+                    Volver a usuarios
+                </a>
+            </div>
+
+            <p class="lema">
+                Desde aquí puedes revisar pedidos de clientes concretos y acceder a los paneles de sala o cocina para consultar atascos y progreso de preparación.
+            </p>
+
+            <div class="divisor"></div>
         <?php endif; ?>
 
         <div class="mensaje-sesion">
@@ -119,7 +141,6 @@ ob_start();
                                 $totalPedido = obtenerDatoPedido($pedido, 'total', 'getTotal');
 
                                 $estadoPedidoNormalizado = trim((string) $estadoPedido);
-
                                 $numeroMostrar = $numeroPedido !== null ? (string) $numeroPedido : (string) $pedidoId;
 
                                 $fechaFormateada = '';
@@ -132,7 +153,7 @@ ob_start();
 
                                 /*
                                  * Datos del cocinero.
-                                 * Estos campos tienen que venir desde PedidoDAO::obtenerPedidosPorCliente().
+                                 * Estos campos deben venir desde PedidoDAO::obtenerPedidosPorCliente().
                                  */
                                 $nombreCocinero = trim(
                                     (string) (obtenerDatoPedido($pedido, 'nombre_cocinero', 'getNombreCocinero') ?? '') . ' ' .
