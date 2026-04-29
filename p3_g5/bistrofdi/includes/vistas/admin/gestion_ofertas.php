@@ -8,18 +8,22 @@ require_once __DIR__ . '/../../integracion/OfertasDAO.php';
 exigirLogin();
 exigirRol('gerente');
 
-global $db;
+$db = Application::getInstance()->conexionBd();
 $ofertaDAO = new OfertaDAO($db);
 
-$ofertas = $ofertaDAO->obtenerOfertasActivas();
+/*
+ * En gestión/admin queremos ver todas las ofertas no borradas.
+ * No usamos obtenerOfertasActivas(), porque esa función filtra por fechas.
+ */
+$ofertas = obtenerTodasLasOfertasAdmin($db);
 
 $ahora = time();
 $ofertasActuales = [];
 $ofertasCaducadas = [];
 
 foreach ($ofertas as $oferta) {
-    $fechaFin = obtenerDatoOferta($oferta, 'fecha_fin', 'getFechaFin');
-    $timestampFin = is_string($fechaFin) ? strtotime($fechaFin) : false;
+    $fechaFin = (string) obtenerDatoOferta($oferta, 'fecha_fin', 'getFechaFin');
+    $timestampFin = strtotime($fechaFin);
 
     if ($timestampFin !== false && $timestampFin < $ahora) {
         $ofertasCaducadas[] = $oferta;
@@ -52,6 +56,20 @@ ob_start();
             <div class="alerta alerta-error">Ha ocurrido un error al procesar la oferta.</div>
         <?php endif; ?>
 
+        <?php if (isset($_SESSION['mensaje_error'])): ?>
+            <div class="alerta alerta-error">
+                <?= htmlspecialchars($_SESSION['mensaje_error'], ENT_QUOTES, 'UTF-8') ?>
+                <?php unset($_SESSION['mensaje_error']); ?>
+            </div>
+        <?php endif; ?>
+
+        <?php if (isset($_SESSION['mensaje_exito'])): ?>
+            <div class="alerta alerta-exito">
+                <?= htmlspecialchars($_SESSION['mensaje_exito'], ENT_QUOTES, 'UTF-8') ?>
+                <?php unset($_SESSION['mensaje_exito']); ?>
+            </div>
+        <?php endif; ?>
+
         <div class="contenedor-botones-index">
             <a href="<?= BASE_URL ?>/includes/vistas/admin/crear_oferta.php" class="btn-login">Crear nueva oferta</a>
             <a href="<?= BASE_URL ?>/includes/vistas/admin/gestion_productos.php" class="btn-admin">Volver a productos</a>
@@ -73,6 +91,7 @@ ob_start();
                             <th>Acciones</th>
                         </tr>
                     </thead>
+
                     <tbody>
                         <?php foreach ($ofertasActuales as $oferta): ?>
                             <?php
@@ -84,17 +103,21 @@ ob_start();
 
                                 $productosOferta = $ofertaDAO->obtenerProductosDeOferta((int) $id);
                             ?>
+
                             <tr>
                                 <td data-label="Nombre">
-                                    <strong><?= htmlspecialchars($nombre) ?></strong>
+                                    <strong><?= htmlspecialchars($nombre, ENT_QUOTES, 'UTF-8') ?></strong>
                                 </td>
+
                                 <td data-label="Fechas">
-                                    <?= htmlspecialchars(formatearFecha($fechaInicio)) ?><br>
-                                    <span>hasta <?= htmlspecialchars(formatearFecha($fechaFin)) ?></span>
+                                    <?= htmlspecialchars(formatearFecha($fechaInicio), ENT_QUOTES, 'UTF-8') ?><br>
+                                    <span>hasta <?= htmlspecialchars(formatearFecha($fechaFin), ENT_QUOTES, 'UTF-8') ?></span>
                                 </td>
+
                                 <td data-label="Descuento">
                                     <?= number_format($descuento, 2) ?> %
                                 </td>
+
                                 <td data-label="Pack">
                                     <?php if (empty($productosOferta)): ?>
                                         <span>Sin productos</span>
@@ -103,17 +126,18 @@ ob_start();
                                             <?php foreach ($productosOferta as $producto): ?>
                                                 <li class="li-progreso">
                                                     <?= (int) ($producto['cantidad'] ?? 0) ?>x
-                                                    <?= htmlspecialchars((string) ($producto['nombre'] ?? '')) ?>
+                                                    <?= htmlspecialchars((string) ($producto['nombre'] ?? ''), ENT_QUOTES, 'UTF-8') ?>
                                                 </li>
                                             <?php endforeach; ?>
                                         </ul>
                                     <?php endif; ?>
                                 </td>
+
                                 <td data-label="Acciones">
                                     <a href="<?= BASE_URL ?>/includes/vistas/admin/editar_oferta.php?id=<?= urlencode((string) $id) ?>">Editar</a>
                                     <br>
                                     <form action="<?= BASE_URL ?>/includes/acciones/ofertas/borrar_oferta.php" method="POST" class="form-actualizar-estado">
-                                        <input type="hidden" name="id" value="<?= htmlspecialchars((string) $id) ?>">
+                                        <input type="hidden" name="id" value="<?= htmlspecialchars((string) $id, ENT_QUOTES, 'UTF-8') ?>">
                                         <button type="submit" class="btn-accion btn-peligro">Borrar</button>
                                     </form>
                                 </td>
@@ -140,6 +164,7 @@ ob_start();
                             <th>Acciones</th>
                         </tr>
                     </thead>
+
                     <tbody>
                         <?php foreach ($ofertasCaducadas as $oferta): ?>
                             <?php
@@ -151,17 +176,21 @@ ob_start();
 
                                 $productosOferta = $ofertaDAO->obtenerProductosDeOferta((int) $id);
                             ?>
+
                             <tr>
                                 <td data-label="Nombre">
-                                    <strong><?= htmlspecialchars($nombre) ?></strong>
+                                    <strong><?= htmlspecialchars($nombre, ENT_QUOTES, 'UTF-8') ?></strong>
                                 </td>
+
                                 <td data-label="Fechas">
-                                    <?= htmlspecialchars(formatearFecha($fechaInicio)) ?><br>
-                                    <span>hasta <?= htmlspecialchars(formatearFecha($fechaFin)) ?></span>
+                                    <?= htmlspecialchars(formatearFecha($fechaInicio), ENT_QUOTES, 'UTF-8') ?><br>
+                                    <span>hasta <?= htmlspecialchars(formatearFecha($fechaFin), ENT_QUOTES, 'UTF-8') ?></span>
                                 </td>
+
                                 <td data-label="Descuento">
                                     <?= number_format($descuento, 2) ?> %
                                 </td>
+
                                 <td data-label="Pack">
                                     <?php if (empty($productosOferta)): ?>
                                         <span>Sin productos</span>
@@ -170,17 +199,18 @@ ob_start();
                                             <?php foreach ($productosOferta as $producto): ?>
                                                 <li class="li-progreso">
                                                     <?= (int) ($producto['cantidad'] ?? 0) ?>x
-                                                    <?= htmlspecialchars((string) ($producto['nombre'] ?? '')) ?>
+                                                    <?= htmlspecialchars((string) ($producto['nombre'] ?? ''), ENT_QUOTES, 'UTF-8') ?>
                                                 </li>
                                             <?php endforeach; ?>
                                         </ul>
                                     <?php endif; ?>
                                 </td>
+
                                 <td data-label="Acciones">
                                     <a href="<?= BASE_URL ?>/includes/vistas/admin/editar_oferta.php?id=<?= urlencode((string) $id) ?>">Editar</a>
                                     <br>
                                     <form action="<?= BASE_URL ?>/includes/acciones/ofertas/borrar_oferta.php" method="POST" class="form-actualizar-estado">
-                                        <input type="hidden" name="id" value="<?= htmlspecialchars((string) $id) ?>">
+                                        <input type="hidden" name="id" value="<?= htmlspecialchars((string) $id, ENT_QUOTES, 'UTF-8') ?>">
                                         <button type="submit" class="btn-accion btn-peligro">Borrar</button>
                                     </form>
                                 </td>
@@ -196,6 +226,32 @@ ob_start();
 <?php
 $contenidoPrincipal = ob_get_clean();
 require_once __DIR__ . '/../partials/plantilla.php';
+
+function obtenerTodasLasOfertasAdmin(mysqli $db): array
+{
+    $sql = "
+        SELECT *
+        FROM ofertas
+        WHERE activa = 1
+        ORDER BY fecha_inicio DESC, id DESC
+    ";
+
+    $rs = $db->query($sql);
+
+    if (!$rs) {
+        return [];
+    }
+
+    $ofertas = [];
+
+    while ($fila = $rs->fetch_assoc()) {
+        $ofertas[] = $fila;
+    }
+
+    $rs->free();
+
+    return $ofertas;
+}
 
 function obtenerDatoOferta($oferta, string $claveArray, string $getter)
 {
@@ -213,6 +269,7 @@ function obtenerDatoOferta($oferta, string $claveArray, string $getter)
 function formatearFecha(string $fecha): string
 {
     $timestamp = strtotime($fecha);
+
     if ($timestamp === false) {
         return $fecha;
     }

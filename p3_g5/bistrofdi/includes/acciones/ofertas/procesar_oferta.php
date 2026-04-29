@@ -50,7 +50,7 @@ if ($accion === 'aplicar') {
 
     // Si ya la tiene aplicada, avisamos
     if (isset($_SESSION['ofertas_aplicadas'][$idOferta])) {
-        $_SESSION['mensaje_error'] = 'Ya has aplicado esta oferta. El sistema ya ha calculado las veces máximas posibles.';
+        $_SESSION['mensaje_error'] = 'Ya has aplicado esta oferta. El sistema ya ha calculado las máximas veces posibles.';
         header('Location: ../../vistas/tienda/carrito.php');
         exit();
     }

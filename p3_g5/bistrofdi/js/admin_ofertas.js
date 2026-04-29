@@ -6,7 +6,9 @@ document.addEventListener('DOMContentLoaded', function () {
     const precioFinalMostrado = document.getElementById('precio_final_mostrado');
     const precioFinalHidden = document.getElementById('precio_final_hidden');
 
-    if (!contenedor || !inputDescuento || !precioPackMostrado || !precioFinalMostrado) return;
+    if (!contenedor || !inputDescuento || !precioPackMostrado || !precioFinalMostrado) {
+        return;
+    }
 
     let actualizando = false;
 
@@ -48,8 +50,11 @@ document.addEventListener('DOMContentLoaded', function () {
         }
     }
 
-    function recalcularOfertaDesdeDescuento() {
-        if (actualizando) return;
+    function recalcularOfertaDesdeDescuento(formatearDescuento = false) {
+        if (actualizando) {
+            return;
+        }
+
         actualizando = true;
 
         const totalPack = calcularTotalPack();
@@ -58,12 +63,20 @@ document.addEventListener('DOMContentLoaded', function () {
 
         let descuento = obtenerNumero(inputDescuento.value);
 
-        if (descuento < 0) descuento = 0;
-        if (descuento > 100) descuento = 100;
+        if (descuento < 0) {
+            descuento = 0;
+        }
+
+        if (descuento > 100) {
+            descuento = 100;
+        }
 
         const precioFinal = totalPack - (totalPack * (descuento / 100));
 
-        inputDescuento.value = descuento.toFixed(2);
+        if (formatearDescuento) {
+            inputDescuento.value = descuento.toFixed(2);
+        }
+
         precioFinalMostrado.value = precioFinal.toFixed(2) + ' €';
 
         actualizarHidden(precioFinal);
@@ -72,7 +85,10 @@ document.addEventListener('DOMContentLoaded', function () {
     }
 
     function recalcularDescuentoDesdePrecioFinal() {
-        if (actualizando) return;
+        if (actualizando) {
+            return;
+        }
+
         actualizando = true;
 
         const totalPack = calcularTotalPack();
@@ -85,18 +101,25 @@ document.addEventListener('DOMContentLoaded', function () {
             precioFinal = 0;
         }
 
-        if (totalPack > 0 && precioFinal > totalPack) {
-            precioFinal = totalPack;
-        }
-
         let descuento = 0;
 
         if (totalPack > 0) {
             descuento = ((totalPack - precioFinal) / totalPack) * 100;
         }
 
-        if (descuento < 0) descuento = 0;
-        if (descuento > 100) descuento = 100;
+        /*
+         * Importante:
+         * No limitamos precioFinal al totalPack.
+         * Si precioFinal es mayor que totalPack, se envía así al servidor
+         * y el backend debe mostrar el error correspondiente.
+         */
+        if (descuento < 0) {
+            descuento = 0;
+        }
+
+        if (descuento > 100) {
+            descuento = 100;
+        }
 
         inputDescuento.value = descuento.toFixed(2);
         precioFinalMostrado.value = precioFinal.toFixed(2) + ' €';
@@ -106,41 +129,52 @@ document.addEventListener('DOMContentLoaded', function () {
         actualizando = false;
     }
 
-    contenedor.addEventListener('change', function(e) {
+    contenedor.addEventListener('change', function (e) {
         if (e.target.classList.contains('js-producto-oferta')) {
-            recalcularOfertaDesdeDescuento();
+            recalcularOfertaDesdeDescuento(false);
         }
     });
 
-    contenedor.addEventListener('input', function(e) {
+    contenedor.addEventListener('input', function (e) {
         if (e.target.classList.contains('js-cantidad-oferta')) {
-            recalcularOfertaDesdeDescuento();
+            recalcularOfertaDesdeDescuento(false);
         }
     });
 
-    contenedor.addEventListener('click', function(e) {
+    contenedor.addEventListener('click', function (e) {
         if (e.target.classList.contains('js-eliminar-fila')) {
             if (contenedor.querySelectorAll('.fila-pack-oferta').length > 1) {
                 e.target.closest('.fila-pack-oferta').remove();
-                recalcularOfertaDesdeDescuento();
+                recalcularOfertaDesdeDescuento(false);
             } else {
-                alert("La oferta debe tener al menos un producto.");
+                alert('La oferta debe tener al menos un producto.');
             }
         }
     });
 
-    inputDescuento.addEventListener('input', recalcularOfertaDesdeDescuento);
-    inputDescuento.addEventListener('change', recalcularOfertaDesdeDescuento);
+    inputDescuento.addEventListener('input', function () {
+        recalcularOfertaDesdeDescuento(false);
+    });
+
+    inputDescuento.addEventListener('change', function () {
+        recalcularOfertaDesdeDescuento(true);
+    });
+
+    inputDescuento.addEventListener('blur', function () {
+        recalcularOfertaDesdeDescuento(true);
+    });
 
     precioFinalMostrado.addEventListener('focus', function () {
         precioFinalMostrado.value = limpiarImporte(precioFinalMostrado.value);
     });
 
     precioFinalMostrado.addEventListener('input', function () {
-        if (actualizando) return;
+        if (actualizando) {
+            return;
+        }
 
         const totalPack = calcularTotalPack();
-        let precioFinal = obtenerNumero(precioFinalMostrado.value);
+        const precioFinal = obtenerNumero(precioFinalMostrado.value);
 
         let descuento = 0;
 
@@ -148,8 +182,13 @@ document.addEventListener('DOMContentLoaded', function () {
             descuento = ((totalPack - precioFinal) / totalPack) * 100;
         }
 
-        if (descuento < 0) descuento = 0;
-        if (descuento > 100) descuento = 100;
+        if (descuento < 0) {
+            descuento = 0;
+        }
+
+        if (descuento > 100) {
+            descuento = 100;
+        }
 
         precioPackMostrado.value = totalPack.toFixed(2) + ' €';
         inputDescuento.value = descuento.toFixed(2);
@@ -161,17 +200,30 @@ document.addEventListener('DOMContentLoaded', function () {
     precioFinalMostrado.addEventListener('change', recalcularDescuentoDesdePrecioFinal);
 
     if (btnAnadir) {
-        btnAnadir.addEventListener('click', function() {
+        btnAnadir.addEventListener('click', function () {
             const filaOriginal = contenedor.querySelector('.fila-pack-oferta');
+
+            if (!filaOriginal) {
+                return;
+            }
+
             const nuevaFila = filaOriginal.cloneNode(true);
 
-            nuevaFila.querySelector('.js-producto-oferta').value = "";
-            nuevaFila.querySelector('.js-cantidad-oferta').value = "1";
+            const selectProducto = nuevaFila.querySelector('.js-producto-oferta');
+            const inputCantidad = nuevaFila.querySelector('.js-cantidad-oferta');
+
+            if (selectProducto) {
+                selectProducto.value = '';
+            }
+
+            if (inputCantidad) {
+                inputCantidad.value = '1';
+            }
 
             contenedor.appendChild(nuevaFila);
-            recalcularOfertaDesdeDescuento();
+            recalcularOfertaDesdeDescuento(false);
         });
     }
 
-    recalcularOfertaDesdeDescuento();
+    recalcularOfertaDesdeDescuento(true);
 });

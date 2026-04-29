@@ -4,12 +4,14 @@ declare(strict_types=1);
 require_once __DIR__ . '/../core/config.php';
 require_once __DIR__ . '/../core/formulario.php';
 require_once __DIR__ . '/../negocio/OfertasDTO.php';
+require_once __DIR__ . '/../negocio/OfertasServiceApp.php';
 
 class FormularioOferta extends Formulario
 {
     private ?OfertaDTO $oferta;
     private array $productosDisponibles;
     private array $datosValidados = [];
+    private OfertasServiceApp $ofertasService;
 
     public function __construct(?OfertaDTO $oferta = null, array $productosDisponibles = [], string $action = '')
     {
@@ -21,6 +23,7 @@ class FormularioOferta extends Formulario
 
         $this->oferta = $oferta;
         $this->productosDisponibles = $productosDisponibles;
+        $this->ofertasService = new OfertasServiceApp();
     }
 
     public function getDatosValidados(): array
@@ -36,16 +39,23 @@ class FormularioOferta extends Formulario
         $fechaInicio = htmlspecialchars((string) ($datos['fecha_inicio'] ?? $this->formatearFechaInput($this->obtenerDatoOferta('fecha_inicio'))), ENT_QUOTES, 'UTF-8');
         $fechaFin = htmlspecialchars((string) ($datos['fecha_fin'] ?? $this->formatearFechaInput($this->obtenerDatoOferta('fecha_fin'))), ENT_QUOTES, 'UTF-8');
 
-        $descuentoPorcentaje = htmlspecialchars((string) ($datos['descuento_porcentaje'] ?? $this->obtenerDatoOferta('descuento_porcentaje') ?? '0'), ENT_QUOTES, 'UTF-8');
+        $descuentoPorcentaje = htmlspecialchars(
+            (string) ($datos['descuento_porcentaje'] ?? $this->obtenerDatoOferta('descuento_porcentaje') ?? '0'),
+            ENT_QUOTES,
+            'UTF-8'
+        );
 
         $productosSeleccionados = $this->obtenerProductosSeleccionados($datos);
         $numFilas = max(count($productosSeleccionados), 1);
 
-        $precioPackInicial = $this->calcularPrecioPack($productosSeleccionados);
+        $precioPackInicial = $this->ofertasService->calcularPrecioPackConIva($productosSeleccionados);
 
         $precioFinalInicial = $datos['precio_final']
             ?? $this->obtenerDatoOferta('precio_final')
-            ?? round($precioPackInicial - ($precioPackInicial * ((float) $descuentoPorcentaje / 100)), 2);
+            ?? $this->ofertasService->calcularPrecioFinalDesdeDescuento(
+                $precioPackInicial,
+                (float) $descuentoPorcentaje
+            );
 
         $precioFinalOferta = htmlspecialchars(
             number_format((float) $precioFinalInicial, 2, '.', ''),
@@ -69,7 +79,7 @@ class FormularioOferta extends Formulario
                 $idProducto = $this->obtenerDatoProducto($producto, 'id');
                 $nombreProducto = $this->obtenerDatoProducto($producto, 'nombre');
                 $precioBase = (float) ($this->obtenerDatoProducto($producto, 'precio') ?? 0);
-                $iva = (int) ($this->obtenerDatoProducto($producto, 'iva') ?? 21);
+                $iva = (float) ($this->obtenerDatoProducto($producto, 'iva') ?? 21);
                 $precioConIva = $precioBase * (1 + ($iva / 100));
 
                 $selected = ((string) $productoSeleccionado === (string) $idProducto) ? 'selected' : '';
@@ -171,7 +181,6 @@ HTML;
         $descripcion = trim((string) ($datos['descripcion'] ?? ''));
         $fechaInicio = trim((string) ($datos['fecha_inicio'] ?? ''));
         $fechaFin = trim((string) ($datos['fecha_fin'] ?? ''));
-        $descuentoRaw = $datos['descuento_porcentaje'] ?? null;
 
         $precioFinalRaw = trim((string) ($datos['precio_final'] ?? ''));
         $precioFinalRaw = str_replace(['€', ' '], '', $precioFinalRaw);
@@ -266,24 +275,10 @@ HTML;
             $this->errores[] = 'Debes añadir al menos un producto al pack de la oferta.';
         }
 
-        $precioPack = $this->calcularPrecioPack($productosNormalizados);
-
-        if ($precioPack <= 0) {
-            $this->errores[] = 'No se ha podido calcular el precio del pack.';
-        }
-
-        $descuentoPorcentaje = filter_var($descuentoRaw, FILTER_VALIDATE_FLOAT);
-
-        if ($descuentoPorcentaje === false || $descuentoPorcentaje < 0 || $descuentoPorcentaje > 100) {
-            $this->errores[] = 'El porcentaje de descuento debe estar entre 0 y 100.';
-        }
-
         $precioFinal = filter_var($precioFinalRaw, FILTER_VALIDATE_FLOAT);
 
         if ($precioFinal === false || $precioFinal <= 0) {
             $this->errores[] = 'El precio final de la oferta no es válido.';
-        } elseif ($precioFinal > $precioPack) {
-            $this->errores[] = 'El precio final de la oferta no puede ser mayor que el precio del pack.';
         }
 
         if (!empty($this->errores)) {
@@ -296,14 +291,33 @@ HTML;
         $oferta->setDescripcion($descripcion);
         $oferta->setFechaInicio($this->normalizarFechaBD($fechaInicio));
         $oferta->setFechaFin($this->normalizarFechaBD($fechaFin));
-        $oferta->setDescuentoPorcentaje((float) $descuentoPorcentaje);
         $oferta->setProductos($productosNormalizados);
 
+        /*
+         * La lógica de negocio queda en OfertasServiceApp:
+         * - calcula precio_pack
+         * - valida precio_final
+         * - recalcula descuento_porcentaje desde el precio final manual
+         */
+        $resultado = $this->ofertasService->prepararOfertaParaGuardar(
+            $oferta,
+            $productosNormalizados,
+            (float) $precioFinal
+        );
+
+        if (empty($resultado['exito'])) {
+            foreach (($resultado['errores'] ?? []) as $error) {
+                $this->errores[] = (string) $error;
+            }
+
+            return null;
+        }
+
         $this->datosValidados = [
-            'oferta' => $oferta,
-            'precio_pack' => $precioPack,
-            'precio_final' => round((float) $precioFinal, 2),
-            'descuento_porcentaje' => (float) $descuentoPorcentaje,
+            'oferta' => $resultado['oferta'],
+            'precio_pack' => (float) $resultado['precio_pack'],
+            'precio_final' => (float) $resultado['precio_final'],
+            'descuento_porcentaje' => (float) $resultado['descuento_porcentaje'],
         ];
 
         return null;
@@ -399,32 +413,5 @@ HTML;
 
         return $timestamp !== false ? date('Y-m-d H:i:s', $timestamp) : $fecha;
     }
-
-    private function calcularPrecioPack(array $productosNormalizados): float
-    {
-        $mapaPrecios = [];
-
-        foreach ($this->productosDisponibles as $producto) {
-            $id = $this->obtenerDatoProducto($producto, 'id');
-            $precioBase = (float) ($this->obtenerDatoProducto($producto, 'precio') ?? 0);
-            $iva = (int) ($this->obtenerDatoProducto($producto, 'iva') ?? 21);
-
-            if ($id !== null) {
-                $mapaPrecios[(int) $id] = $precioBase * (1 + ($iva / 100));
-            }
-        }
-
-        $total = 0.0;
-
-        foreach ($productosNormalizados as $producto) {
-            $id = (int) $producto['producto_id'];
-            $cantidad = (int) $producto['cantidad'];
-
-            if (isset($mapaPrecios[$id])) {
-                $total += $mapaPrecios[$id] * $cantidad;
-            }
-        }
-
-        return round($total, 2);
-    }
 }
+?>
