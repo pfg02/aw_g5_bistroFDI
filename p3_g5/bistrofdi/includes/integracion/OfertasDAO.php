@@ -272,6 +272,7 @@ class OfertaDAO
         $oferta->setFechaInicio((string) $row['fecha_inicio']);
         $oferta->setFechaFin((string) $row['fecha_fin']);
         $oferta->setDescuentoPorcentaje((float) $row['descuento_porcentaje']);
+		$oferta->setProductos([]);
 
         return $oferta;
     }
