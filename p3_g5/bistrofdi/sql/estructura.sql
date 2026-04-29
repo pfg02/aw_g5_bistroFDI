@@ -146,7 +146,6 @@ CREATE TABLE pedidos (
     ) NOT NULL DEFAULT 'Nuevo',
 
     -- Sirve para impedir cancelar si el camarero ya lo sirvió.
-    -- No rompe tu datos.sql porque tiene DEFAULT 0.
     servido_sala TINYINT(1) NOT NULL DEFAULT 0,
 
     fecha DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,

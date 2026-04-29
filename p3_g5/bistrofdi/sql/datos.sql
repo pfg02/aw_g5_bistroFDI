@@ -102,3 +102,56 @@ INNER JOIN pedidos ped ON pp.pedido_id = ped.id
 SET pp.preparado = 0
 WHERE p.requiere_cocina = 0
   AND ped.estado NOT IN ('Entregado', 'Terminado', 'Cancelado');
+
+-- --------------------------------------------------------
+-- POBLAR OFERTAS
+-- --------------------------------------------------------
+
+INSERT INTO ofertas (nombre, descripcion, descuento_porcentaje, fecha_inicio, fecha_fin, activa) VALUES
+    ('Menú Burger Completo', '1 Hamburguesa FDI + 1 Patatas Bravas + 1 Refresco de Cola', 15.00, '2026-01-01', '2026-12-31', 1),
+    ('Merienda Golosa', '1 Café con Leche + 1 Tarta de Queso', 20.00, '2026-01-01', '2026-12-31', 1),
+    ('Pack Colegas', 'Para compartir: 1 Nachos con Queso + 2 Cervezas Artesanales', 12.50, '2026-02-01', '2026-08-31', 1),
+    ('Menú Sano de Verano', '1 Salmón a la Plancha + 1 Agua Mineral (¡OFERTA CADUCADA!)', 25.00, '2025-06-01', '2025-09-30', 0);
+
+-- --------------------------------------------------------
+-- POBLAR OFERTAS_PRODUCTOS
+-- --------------------------------------------------------
+
+-- 1. Menú Burger Completo (Oferta ID 1)
+INSERT INTO ofertas_productos (oferta_id, producto_id, cantidad) VALUES
+    (1, 4, 1), -- Hamburguesa FDI
+    (1, 3, 1), -- Patatas Bravas
+    (1, 9, 1); -- Refresco de Cola
+
+-- 2. Merienda Golosa (Oferta ID 2)
+INSERT INTO ofertas_productos (oferta_id, producto_id, cantidad) VALUES
+    (2, 13, 1), -- Café con Leche
+    (2, 7, 1);  -- Tarta de Queso
+
+-- 3. Pack Colegas (Oferta ID 3) - Requiere 2 cantidades de cerveza
+INSERT INTO ofertas_productos (oferta_id, producto_id, cantidad) VALUES
+    (3, 1, 1),  -- Nachos con Queso
+    (3, 10, 2); -- Cerveza Artesanal (x2)
+
+-- 4. Menú Sano de Verano (Oferta ID 4 - Caducada)
+INSERT INTO ofertas_productos (oferta_id, producto_id, cantidad) VALUES
+    (4, 6, 1),  -- Salmón a la Plancha
+    (4, 11, 1); -- Agua Mineral
+
+-- --------------------------------------------------------
+-- PEDIDO CON OFERTA APLICADA (PEDIDO 9)
+-- --------------------------------------------------------
+
+-- 1. Insertamos el pedido con los totales financieros reales
+INSERT INTO pedidos (cliente_id, cocinero_id, numero_pedido, tipo, estado, fecha, total, descuento_total, total_sin_descuento) VALUES
+    (4, NULL, 9, 'Local', 'Nuevo', '2026-03-02 16:00:00', 18.27, 3.23, 21.50);
+
+-- 2. Insertamos las líneas de los productos que compró
+INSERT INTO pedido_productos (pedido_id, producto_id, cantidad, preparado) VALUES
+    (9, 4, 1, 0), -- Burger
+    (9, 3, 1, 0), -- Bravas
+    (9, 9, 1, 0); -- Cola
+
+-- 3. Insertamos el registro de la oferta aplicada en la tabla puente
+INSERT INTO pedidos_ofertas (pedido_id, oferta_id, veces_aplicada, descuento_aplicado) VALUES
+    (9, 1, 1, 3.23);
