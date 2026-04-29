@@ -38,8 +38,20 @@ if (!isset($_SESSION['carrito']) || !is_array($_SESSION['carrito'])) {
 if (isset($_SESSION['carrito'][(int) $idProducto])) {
     unset($_SESSION['carrito'][(int) $idProducto]);
     $_SESSION['mensaje_exito'] = 'Artículo eliminado del carrito.';
-	unset($_SESSION['ofertas_aplicadas']);
-    $_SESSION['mensaje_info'] = "Producto eliminado. Las ofertas se han recalculado.";
+	if (!empty($_SESSION['ofertas_aplicadas'])) {
+        $ofertasService = new OfertasServiceApp();
+        
+        $nuevasOfertas = $ofertasService->revalidarOfertasTrasEliminacion(
+            $_SESSION['carrito'], 
+            $_SESSION['ofertas_aplicadas']
+        );
+
+        if (count($nuevasOfertas) < count($_SESSION['ofertas_aplicadas'])) {
+            $_SESSION['mensaje_info'] = "Algunas ofertas se han eliminado porque ya no cumples los requisitos.";
+        }
+        
+        $_SESSION['ofertas_aplicadas'] = $nuevasOfertas;
+    }
 } else {
     $_SESSION['mensaje_error'] = 'El producto no estaba en el carrito.';
 }

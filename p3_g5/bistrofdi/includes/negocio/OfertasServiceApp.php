@@ -146,4 +146,40 @@ class OfertasServiceApp
 
         return null;
     }
+
+	public function revalidarOfertasTrasEliminacion(array $carritoActual, array $ofertasEnSesion): array {
+    $ofertasValidas = [];
+    $carritoCopia = $carritoActual;
+
+    foreach ($ofertasEnSesion as $idOferta => $datosSesion) {
+        $ofertaDTO = $this->obtenerPorId((int)$idOferta);
+        
+        if (!$ofertaDTO) continue;
+
+        $mapaRequerimientos = [];
+        foreach ($ofertaDTO->getProductos() as $p) {
+            $mapaRequerimientos[(int)$p['producto_id']] = (int)$p['cantidad'];
+        }
+
+        $vecesPosibles = $this->calcularVecesAplicable($carritoCopia, $mapaRequerimientos);
+
+        if ($vecesPosibles > 0) {
+            $vecesAFijar = min($vecesPosibles, $datosSesion['veces_aplicada']);
+            
+            $precioOriginalPack = $this->calcularPrecioPackConIva($ofertaDTO->getProductos());
+            $nuevoDescuento = ($precioOriginalPack * ($ofertaDTO->getDescuentoPorcentaje() / 100)) * $vecesAFijar;
+
+            $ofertasValidas[$idOferta] = [
+                'nombre' => $ofertaDTO->getNombre(),
+                'veces_aplicada' => $vecesAFijar,
+                'descuento' => round($nuevoDescuento, 2),
+                'productos_requeridos' => $ofertaDTO->getProductos()
+            ];
+
+            $this->consumirProductos($carritoCopia, $mapaRequerimientos, $vecesAFijar);
+        }
+    }
+
+    return $ofertasValidas;
+}
 }

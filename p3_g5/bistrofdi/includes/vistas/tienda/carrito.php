@@ -266,9 +266,10 @@ ob_start();
                                         <i class="icon-tag"></i> 
                                         <strong><?= htmlspecialchars($datosOf['nombre']) ?></strong> 
                                         <small>(x<?= $datosOf['veces_aplicada'] ?>)</small>
+										<span class="txt-descuento">-<?= number_format((float)$datosOf['descuento'], 2) ?> €</span>
                                     </span>
-                                    <div class="oferta-acciones">
-                                        <span class="txt-descuento">-<?= number_format((float)$datosOf['descuento'], 2) ?> €</span>
+                                    <div class="oferta-txt">
+                                        
                                         <form action="../../acciones/ofertas/procesar_oferta.php" method="POST" class="form-inline">
                                             <input type="hidden" name="accion" value="quitar">
                                             <input type="hidden" name="id_oferta" value="<?= $idOf ?>">
