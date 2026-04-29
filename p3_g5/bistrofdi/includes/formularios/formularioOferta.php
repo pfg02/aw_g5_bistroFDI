@@ -28,52 +28,18 @@ class FormularioOferta extends Formulario
         return $this->datosValidados;
     }
 
-    protected function generaCamposFormulario(array $datos): string
+   protected function generaCamposFormulario(array $datos): string
     {
-        $id = htmlspecialchars(
-            (string) ($datos['id'] ?? $this->obtenerDatoOferta('id') ?? ''),
-            ENT_QUOTES,
-            'UTF-8'
-        );
-
-        $nombre = htmlspecialchars(
-            (string) ($datos['nombre'] ?? $this->obtenerDatoOferta('nombre') ?? ''),
-            ENT_QUOTES,
-            'UTF-8'
-        );
-
-        $descripcion = htmlspecialchars(
-            (string) ($datos['descripcion'] ?? $this->obtenerDatoOferta('descripcion') ?? ''),
-            ENT_QUOTES,
-            'UTF-8'
-        );
-
-        $fechaInicio = htmlspecialchars(
-            (string) ($datos['fecha_inicio'] ?? $this->formatearFechaInput($this->obtenerDatoOferta('fecha_inicio'))),
-            ENT_QUOTES,
-            'UTF-8'
-        );
-
-        $fechaFin = htmlspecialchars(
-            (string) ($datos['fecha_fin'] ?? $this->formatearFechaInput($this->obtenerDatoOferta('fecha_fin'))),
-            ENT_QUOTES,
-            'UTF-8'
-        );
-
-        $precioFinal = htmlspecialchars(
-            (string) ($datos['precio_final'] ?? ''),
-            ENT_QUOTES,
-            'UTF-8'
-        );
-
-        $descuentoPorcentaje = htmlspecialchars(
-            (string) ($datos['descuento_porcentaje'] ?? $this->obtenerDatoOferta('descuento_porcentaje') ?? ''),
-            ENT_QUOTES,
-            'UTF-8'
-        );
+        $id = htmlspecialchars((string) ($datos['id'] ?? $this->obtenerDatoOferta('id') ?? ''), ENT_QUOTES, 'UTF-8');
+        $nombre = htmlspecialchars((string) ($datos['nombre'] ?? $this->obtenerDatoOferta('nombre') ?? ''), ENT_QUOTES, 'UTF-8');
+        $descripcion = htmlspecialchars((string) ($datos['descripcion'] ?? $this->obtenerDatoOferta('descripcion') ?? ''), ENT_QUOTES, 'UTF-8');
+        $fechaInicio = htmlspecialchars((string) ($datos['fecha_inicio'] ?? $this->formatearFechaInput($this->obtenerDatoOferta('fecha_inicio'))), ENT_QUOTES, 'UTF-8');
+        $fechaFin = htmlspecialchars((string) ($datos['fecha_fin'] ?? $this->formatearFechaInput($this->obtenerDatoOferta('fecha_fin'))), ENT_QUOTES, 'UTF-8');
+        
+        $descuentoPorcentaje = htmlspecialchars((string) ($datos['descuento_porcentaje'] ?? $this->obtenerDatoOferta('descuento_porcentaje') ?? '0'), ENT_QUOTES, 'UTF-8');
 
         $productosSeleccionados = $this->obtenerProductosSeleccionados($datos);
-        $numFilas = max(count($productosSeleccionados), 3);
+        $numFilas = max(count($productosSeleccionados), 1);
 
         $erroresHtml = self::generaListaErrores($this->errores);
         $urlListado = BASE_URL . '/includes/vistas/admin/gestion_ofertas.php';
@@ -147,7 +113,10 @@ $erroresHtml
 
 <fieldset class="bloque-pack-oferta">
     <legend>Productos del pack</legend>
-    $filasProductosHtml
+    <div id="contenedor-productos">
+        $filasProductosHtml
+    </div>
+    <button type="button" id="btn-anadir-producto" class="btn-admin">+ Añadir otro producto</button>
 </fieldset>
 
 <div class="grupo-control">
