@@ -28,29 +28,43 @@ class FormularioOferta extends Formulario
         return $this->datosValidados;
     }
 
-   protected function generaCamposFormulario(array $datos): string
+    protected function generaCamposFormulario(array $datos): string
     {
         $id = htmlspecialchars((string) ($datos['id'] ?? $this->obtenerDatoOferta('id') ?? ''), ENT_QUOTES, 'UTF-8');
         $nombre = htmlspecialchars((string) ($datos['nombre'] ?? $this->obtenerDatoOferta('nombre') ?? ''), ENT_QUOTES, 'UTF-8');
         $descripcion = htmlspecialchars((string) ($datos['descripcion'] ?? $this->obtenerDatoOferta('descripcion') ?? ''), ENT_QUOTES, 'UTF-8');
         $fechaInicio = htmlspecialchars((string) ($datos['fecha_inicio'] ?? $this->formatearFechaInput($this->obtenerDatoOferta('fecha_inicio'))), ENT_QUOTES, 'UTF-8');
         $fechaFin = htmlspecialchars((string) ($datos['fecha_fin'] ?? $this->formatearFechaInput($this->obtenerDatoOferta('fecha_fin'))), ENT_QUOTES, 'UTF-8');
-        
+
         $descuentoPorcentaje = htmlspecialchars((string) ($datos['descuento_porcentaje'] ?? $this->obtenerDatoOferta('descuento_porcentaje') ?? '0'), ENT_QUOTES, 'UTF-8');
 
         $productosSeleccionados = $this->obtenerProductosSeleccionados($datos);
         $numFilas = max(count($productosSeleccionados), 1);
 
+        $precioPackInicial = $this->calcularPrecioPack($productosSeleccionados);
+
+        $precioFinalInicial = $datos['precio_final']
+            ?? $this->obtenerDatoOferta('precio_final')
+            ?? round($precioPackInicial - ($precioPackInicial * ((float) $descuentoPorcentaje / 100)), 2);
+
+        $precioFinalOferta = htmlspecialchars(
+            number_format((float) $precioFinalInicial, 2, '.', ''),
+            ENT_QUOTES,
+            'UTF-8'
+        );
+
         $erroresHtml = self::generaListaErrores($this->errores);
         $urlListado = BASE_URL . '/includes/vistas/admin/gestion_ofertas.php';
-		$rutaJs = BASE_URL . '/js/admin_ofertas.js';
+        $rutaJs = BASE_URL . '/js/admin_ofertas.js';
 
         $filasProductosHtml = '';
+
         for ($i = 0; $i < $numFilas; $i++) {
             $productoSeleccionado = $productosSeleccionados[$i]['producto_id'] ?? '';
             $cantidadSeleccionada = $productosSeleccionados[$i]['cantidad'] ?? 1;
 
             $opciones = '<option value="">Selecciona un producto</option>';
+
             foreach ($this->productosDisponibles as $producto) {
                 $idProducto = $this->obtenerDatoProducto($producto, 'id');
                 $nombreProducto = $this->obtenerDatoProducto($producto, 'nombre');
@@ -69,6 +83,8 @@ class FormularioOferta extends Formulario
                 );
             }
 
+            $cantidadSeleccionadaEscapada = htmlspecialchars((string) $cantidadSeleccionada, ENT_QUOTES, 'UTF-8');
+
             $filasProductosHtml .= <<<HTML
 <div class="fila-pack-oferta">
     <div class="grupo-control">
@@ -80,7 +96,7 @@ class FormularioOferta extends Formulario
 
     <div class="grupo-control">
         <label for="cantidad_$i">Cantidad</label>
-        <input type="number" name="cantidad[]" id="cantidad_$i" min="1" step="1" value="{$cantidadSeleccionada}" class="js-cantidad-oferta" required>
+        <input type="number" name="cantidad[]" id="cantidad_$i" min="1" step="1" value="$cantidadSeleccionadaEscapada" class="js-cantidad-oferta" required>
     </div>
 </div>
 HTML;
@@ -90,7 +106,6 @@ HTML;
 $erroresHtml
 
 <input type="hidden" name="id" value="$id">
-<input type="hidden" name="descuento_porcentaje" id="descuento_porcentaje" value="$descuentoPorcentaje">
 
 <div class="grupo-control">
     <label for="nombre">Nombre</label>
@@ -114,9 +129,11 @@ $erroresHtml
 
 <fieldset class="bloque-pack-oferta">
     <legend>Productos del pack</legend>
+
     <div id="contenedor-productos">
         $filasProductosHtml
     </div>
+
     <button type="button" id="btn-anadir-producto" class="btn-admin">+ Añadir otro producto</button>
 </fieldset>
 
@@ -125,17 +142,16 @@ $erroresHtml
     <input type="text" id="precio_pack_mostrado" value="0.00 €" readonly>
 </div>
 
+<div class="grupo-control" style="flex: 1;">
+    <label for="descuento_porcentaje_dinamico">Descuento a aplicar (%)</label>
+    <input type="number" name="descuento_porcentaje" id="descuento_porcentaje_dinamico" min="0" max="100" step="0.01" value="$descuentoPorcentaje" required>
+</div>
 
 <div class="grupo-control" style="flex: 1;">
-        <label for="descuento_porcentaje">Descuento a aplicar (%)</label>
-        <input type="number" name="descuento_porcentaje" id="descuento_porcentaje_dinamico" min="0" max="100" step="0.01" value="$descuentoPorcentaje" required>
-    </div>
-
-	<div class="grupo-control" style="flex: 1;">
-        <label>Precio Final Oferta</label>
-        <input type="text" id="precio_final_mostrado" value="0.00 €" readonly>
-        <input type="hidden" name="precio_final" id="precio_final_hidden">
-    </div>
+    <label for="precio_final_mostrado">Precio Final Oferta</label>
+    <input type="text" name="precio_final" id="precio_final_mostrado" value="$precioFinalOferta €" required>
+    <input type="hidden" id="precio_final_hidden" value="$precioFinalOferta">
+</div>
 
 <div class="acciones-form">
     <button type="submit" class="btn-primario">Guardar oferta</button>
@@ -155,15 +171,22 @@ HTML;
         $descripcion = trim((string) ($datos['descripcion'] ?? ''));
         $fechaInicio = trim((string) ($datos['fecha_inicio'] ?? ''));
         $fechaFin = trim((string) ($datos['fecha_fin'] ?? ''));
-		$descuentoRaw = $datos['descuento_porcentaje'] ?? null;
+        $descuentoRaw = $datos['descuento_porcentaje'] ?? null;
+
+        $precioFinalRaw = trim((string) ($datos['precio_final'] ?? ''));
+        $precioFinalRaw = str_replace(['€', ' '], '', $precioFinalRaw);
+        $precioFinalRaw = str_replace(',', '.', $precioFinalRaw);
+
         $productosIds = $datos['producto_id'] ?? [];
         $cantidades = $datos['cantidad'] ?? [];
 
         $id = null;
+
         if ($idRaw !== null && $idRaw !== '') {
             $idValidado = filter_var($idRaw, FILTER_VALIDATE_INT, [
                 'options' => ['min_range' => 1]
             ]);
+
             if ($idValidado === false) {
                 $this->errores[] = 'El identificador de la oferta no es válido.';
             } else {
@@ -231,6 +254,7 @@ HTML;
                 }
 
                 $idsUsados[] = (int) $productoId;
+
                 $productosNormalizados[] = [
                     'producto_id' => (int) $productoId,
                     'cantidad' => (int) $cantidad,
@@ -248,21 +272,23 @@ HTML;
             $this->errores[] = 'No se ha podido calcular el precio del pack.';
         }
 
-		$descuentoPorcentaje = filter_var($descuentoRaw, FILTER_VALIDATE_FLOAT);
+        $descuentoPorcentaje = filter_var($descuentoRaw, FILTER_VALIDATE_FLOAT);
+
         if ($descuentoPorcentaje === false || $descuentoPorcentaje < 0 || $descuentoPorcentaje > 100) {
             $this->errores[] = 'El porcentaje de descuento debe estar entre 0 y 100.';
         }
 
+        $precioFinal = filter_var($precioFinalRaw, FILTER_VALIDATE_FLOAT);
+
+        if ($precioFinal === false || $precioFinal <= 0) {
+            $this->errores[] = 'El precio final de la oferta no es válido.';
+        } elseif ($precioFinal > $precioPack) {
+            $this->errores[] = 'El precio final de la oferta no puede ser mayor que el precio del pack.';
+        }
+
         if (!empty($this->errores)) {
             return null;
         }
-
-
-        if (!empty($this->errores)) {
-            return null;
-        }
-
-		$precioFinalCalculado = round($precioPack - ($precioPack * ($descuentoPorcentaje / 100)), 2);
 
         $oferta = new OfertaDTO();
         $oferta->setId($id);
@@ -270,14 +296,14 @@ HTML;
         $oferta->setDescripcion($descripcion);
         $oferta->setFechaInicio($this->normalizarFechaBD($fechaInicio));
         $oferta->setFechaFin($this->normalizarFechaBD($fechaFin));
-        $oferta->setDescuentoPorcentaje($descuentoPorcentaje);
+        $oferta->setDescuentoPorcentaje((float) $descuentoPorcentaje);
         $oferta->setProductos($productosNormalizados);
 
         $this->datosValidados = [
             'oferta' => $oferta,
             'precio_pack' => $precioPack,
-            'precio_final' => (float) $precioFinalCalculado,
-            'descuento_porcentaje' => $descuentoPorcentaje,
+            'precio_final' => round((float) $precioFinal, 2),
+            'descuento_porcentaje' => (float) $descuentoPorcentaje,
         ];
 
         return null;
@@ -296,10 +322,12 @@ HTML;
             'fecha_inicio' => 'getFechaInicio',
             'fecha_fin' => 'getFechaFin',
             'descuento_porcentaje' => 'getDescuentoPorcentaje',
+            'precio_final' => 'getPrecioFinal',
             'productos' => 'getProductos',
         ];
 
         $getter = $mapa[$campo] ?? null;
+
         if ($getter !== null && method_exists($this->oferta, $getter)) {
             return $this->oferta->$getter();
         }
@@ -328,18 +356,25 @@ HTML;
 
     private function obtenerProductosSeleccionados(array $datos): array
     {
-        if (isset($datos['producto_id'], $datos['cantidad']) && is_array($datos['producto_id']) && is_array($datos['cantidad'])) {
+        if (
+            isset($datos['producto_id'], $datos['cantidad'])
+            && is_array($datos['producto_id'])
+            && is_array($datos['cantidad'])
+        ) {
             $resultado = [];
+
             foreach ($datos['producto_id'] as $i => $productoId) {
                 $resultado[] = [
                     'producto_id' => $productoId,
                     'cantidad' => $datos['cantidad'][$i] ?? 1,
                 ];
             }
+
             return $resultado;
         }
 
         $productosOferta = $this->obtenerDatoOferta('productos');
+
         return is_array($productosOferta) ? $productosOferta : [];
     }
 
@@ -350,6 +385,7 @@ HTML;
         }
 
         $timestamp = strtotime($fecha);
+
         if ($timestamp === false) {
             return '';
         }
@@ -360,6 +396,7 @@ HTML;
     private function normalizarFechaBD(string $fecha): string
     {
         $timestamp = strtotime($fecha);
+
         return $timestamp !== false ? date('Y-m-d H:i:s', $timestamp) : $fecha;
     }
 
@@ -378,6 +415,7 @@ HTML;
         }
 
         $total = 0.0;
+
         foreach ($productosNormalizados as $producto) {
             $id = (int) $producto['producto_id'];
             $cantidad = (int) $producto['cantidad'];
