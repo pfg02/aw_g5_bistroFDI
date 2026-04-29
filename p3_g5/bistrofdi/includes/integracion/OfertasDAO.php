@@ -193,16 +193,16 @@ class OfertaDAO
     }
 
     /**
-     * Borra una oferta.
+     * Borra una oferta de forma lógica (la desactiva).
      */
     public function borrarOferta(int $id): bool
     {
-        $sql = "DELETE FROM ofertas WHERE id = ?";
+        $sql = "UPDATE ofertas SET activa = 0 WHERE id = ?";
+        
         $stmt = $this->db->prepare($sql);
         $stmt->bind_param('i', $id);
 
         $exito = $stmt->execute();
-
         $stmt->close();
 
         return $exito;
@@ -217,7 +217,9 @@ class OfertaDAO
 
         $sql = "SELECT id, nombre, descripcion, fecha_inicio, fecha_fin, descuento_porcentaje 
                 FROM ofertas 
-                WHERE fecha_inicio <= ? AND fecha_fin >= ?
+                WHERE activa = 1 
+                  AND fecha_inicio <= ? 
+                  AND fecha_fin >= ?
                 ORDER BY fecha_inicio DESC";
 
         $stmt = $this->db->prepare($sql);

@@ -153,5 +153,5 @@ INSERT INTO pedido_productos (pedido_id, producto_id, cantidad, preparado) VALUE
     (9, 9, 1, 0); -- Cola
 
 -- 3. Insertamos el registro de la oferta aplicada en la tabla puente
-INSERT INTO pedidos_ofertas (pedido_id, oferta_id, veces_aplicada, descuento_aplicado) VALUES
-    (9, 1, 1, 3.23);
+INSERT INTO pedidos_ofertas (pedido_id, oferta_id, descuento_aplicado) VALUES
+    (9, 1, 3.23);
