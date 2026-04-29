@@ -106,5 +106,15 @@ class PedidoController
     {
         return $this->service->cancelarPedido($idPedido);
     }
+
+    public function obtenerEstadoTrasPago($idPedido)
+    {
+        return $this->service->obtenerEstadoTrasPago($idPedido);
+    }
+
+    public function pedidoSoloTieneBebidas($idPedido)
+    {
+        return $this->service->pedidoSoloTieneBebidas($idPedido);
+    }
 }
 ?>

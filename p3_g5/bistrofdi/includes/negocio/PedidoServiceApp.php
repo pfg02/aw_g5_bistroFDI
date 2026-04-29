@@ -17,7 +17,8 @@ class PedidoServiceApp
         $this->pedidoDAO = new PedidoDAO($db);
         $this->productoDAO = new ProductoDAO($db);
     }
-/**
+
+    /**
      * Crea un pedido calculando correctamente el precio con IVA y aplicando los descuentos del DTO.
      */
     public function crearPedido($pedidoDTO): int
@@ -25,7 +26,6 @@ class PedidoServiceApp
         $productos = $pedidoDTO->getProductos();
         $totalSinDescuento = 0.0;
 
-        // Calculamos el coste total real (con IVA) de los productos
         foreach ($productos as $idProducto => $cantidad) {
             $producto = $this->productoDAO->obtenerPorId((int) $idProducto);
 
@@ -38,48 +38,50 @@ class PedidoServiceApp
             }
         }
 
-        // Extraemos el descuento
         $descuentoAplicado = (float) $pedidoDTO->getDescuentoTotal();
-
-        // Calculamos el precio final (nunca menor a 0)
         $totalFinal = max(0.0, $totalSinDescuento - $descuentoAplicado);
 
-        // Asignamos la información contable al DTO antes de enviarlo al DAO
         $pedidoDTO->setTotalSinDescuento($totalSinDescuento);
         $pedidoDTO->setDescuentoTotal($descuentoAplicado);
         $pedidoDTO->setTotal($totalFinal);
-        
+
+        /*
+         * Al crear el pedido, todavía no está pagado.
+         * Por eso empieza en Recibido.
+         */
         $pedidoDTO->setEstado('Recibido');
         $pedidoDTO->setFecha(date('Y-m-d H:i:s'));
 
         return $this->pedidoDAO->guardarPedido($pedidoDTO);
     }
 
-	/**
+    /**
      * MOTOR DE OFERTAS: Comprueba si una oferta es aplicable al carrito y calcula el descuento.
      */
-	public function calcularDescuentoOferta(array $carrito, array $ofertasYaAplicadas, OfertaDTO $nuevaOferta): array
+    public function calcularDescuentoOferta(array $carrito, array $ofertasYaAplicadas, OfertaDTO $nuevaOferta): array
     {
-        // Construimos un pool con el carrito para no aplicar ofertas a los mismos productos
-        $pool = $carrito; 
+        $pool = $carrito;
 
-        // Restamos los productos "consumidos" por ofertas anteriores
         foreach ($ofertasYaAplicadas as $ofertaAplicada) {
-            $vecesAplicada = (int)$ofertaAplicada['veces_aplicada'];
+            $vecesAplicada = (int) $ofertaAplicada['veces_aplicada'];
+
             foreach ($ofertaAplicada['productos_requeridos'] as $req) {
-                $idProd = (int)$req['producto_id'];
-                $cantConsumida = (int)$req['cantidad'] * $vecesAplicada;
-                
+                $idProd = (int) $req['producto_id'];
+                $cantConsumida = (int) $req['cantidad'] * $vecesAplicada;
+
                 if (isset($pool[$idProd])) {
                     $pool[$idProd] -= $cantConsumida;
                 }
             }
         }
 
-        // Evaluamos la nueva oferta
         $productosRequeridos = $nuevaOferta->getProductos();
+
         if (empty($productosRequeridos)) {
-            return ['exito' => false, 'mensaje' => 'La oferta no tiene productos configurados.'];
+            return [
+                'exito' => false,
+                'mensaje' => 'La oferta no tiene productos configurados.'
+            ];
         }
 
         $vecesAplicable = PHP_INT_MAX;
@@ -89,28 +91,25 @@ class PedidoServiceApp
             $idReq = (int) $req['producto_id'];
             $cantReq = (int) $req['cantidad'];
 
-            // Si el pool restante no tiene suficiente cantidad, la oferta no es aplicable (0 veces)
             if (!isset($pool[$idReq]) || $pool[$idReq] < $cantReq) {
                 $vecesAplicable = 0;
                 break;
             }
 
-            // Calculamos automáticamente cuántas veces cabe (Múltiples veces de forma automática)
             $vecesPorProducto = (int) floor($pool[$idReq] / $cantReq);
             $vecesAplicable = min($vecesAplicable, $vecesPorProducto);
 
-            // Sumamos el valor para calcular el descuento
             $productoObj = $this->productoDAO->obtenerPorId($idReq);
+
             if ($productoObj) {
                 $precioBase = $this->obtenerPrecioBaseProducto($productoObj);
                 $iva = $this->obtenerIvaProducto($productoObj);
                 $precioConIva = $precioBase * (1 + ($iva / 100));
-                
+
                 $precioOriginalPack += ($precioConIva * $cantReq);
             }
         }
 
-        // Feedback para el usuario
         if ($vecesAplicable > 0) {
             $porcentaje = (float) $nuevaOferta->getDescuentoPorcentaje();
             $descuentoTotal = ($precioOriginalPack * ($porcentaje / 100)) * $vecesAplicable;
@@ -120,7 +119,7 @@ class PedidoServiceApp
                 'veces_aplicada' => $vecesAplicable,
                 'descuento' => round($descuentoTotal, 2),
                 'mensaje' => "¡Oferta aplicada con éxito! (x{$vecesAplicable})",
-                'productos_requeridos' => $productosRequeridos 
+                'productos_requeridos' => $productosRequeridos
             ];
         }
 
@@ -207,27 +206,27 @@ class PedidoServiceApp
         return $this->pedidoDAO->marcarPedidoServidoSala((int) $idPedido);
     }
 
+    /*
+     * Regla de cancelación:
+     * - Nuevo: se puede cancelar.
+     * - Recibido: se puede cancelar.
+     * - En preparación, Cocinando, Listo cocina, Terminado, Entregado: no se puede cancelar.
+     */
     public function pedidoPuedeCancelarse($pedido): bool
     {
         if (!$pedido) {
             return false;
         }
 
-        $estado = method_exists($pedido, 'getEstado')
-            ? (string) $pedido->getEstado()
-            : '';
+        $estado = '';
 
-        $servidoSala = 0;
-
-        if (method_exists($pedido, 'getServidoSala')) {
-            $servidoSala = (int) $pedido->getServidoSala();
+        if (is_array($pedido)) {
+            $estado = trim((string) ($pedido['estado'] ?? ''));
+        } elseif (is_object($pedido) && method_exists($pedido, 'getEstado')) {
+            $estado = trim((string) $pedido->getEstado());
         }
 
-        if ($servidoSala === 1) {
-            return false;
-        }
-
-        return in_array($estado, ['Nuevo', 'Recibido', 'En preparación'], true);
+        return in_array($estado, ['Nuevo', 'Recibido'], true);
     }
 
     public function cancelarPedido($idPedido): bool
@@ -239,6 +238,86 @@ class PedidoServiceApp
         }
 
         return $this->pedidoDAO->actualizarEstado((int) $idPedido, 'Cancelado');
+    }
+
+    /*
+     * Regla después del pago:
+     * - Si solo hay bebidas: pasa a Listo cocina.
+     * - Si hay comida o mezcla comida/bebida: pasa a En preparación.
+     */
+    public function obtenerEstadoTrasPago($idPedido): string
+    {
+        return $this->pedidoSoloTieneBebidas((int) $idPedido)
+            ? 'Listo cocina'
+            : 'En preparación';
+    }
+
+    public function pedidoSoloTieneBebidas($idPedido): bool
+    {
+        $productos = $this->obtenerProductosDePedido((int) $idPedido);
+
+        if (empty($productos)) {
+            return false;
+        }
+
+        foreach ($productos as $producto) {
+            $categoria = $this->obtenerCategoriaProductoPedido($producto);
+            $categoriaNormalizada = $this->normalizarTextoCategoria($categoria);
+
+            if ($categoriaNormalizada !== 'bebida' && $categoriaNormalizada !== 'bebidas') {
+                return false;
+            }
+        }
+
+        return true;
+    }
+
+    private function obtenerCategoriaProductoPedido($producto): string
+    {
+        if (is_array($producto)) {
+            return trim((string) (
+                $producto['categoria']
+                ?? $producto['nombre_categoria']
+                ?? $producto['categoria_nombre']
+                ?? $producto['tipo_categoria']
+                ?? $producto['nombreCategoria']
+                ?? ''
+            ));
+        }
+
+        if (is_object($producto)) {
+            if (method_exists($producto, 'getCategoria')) {
+                return trim((string) $producto->getCategoria());
+            }
+
+            if (method_exists($producto, 'getNombreCategoria')) {
+                return trim((string) $producto->getNombreCategoria());
+            }
+
+            if (method_exists($producto, 'getCategoriaNombre')) {
+                return trim((string) $producto->getCategoriaNombre());
+            }
+
+            if (isset($producto->categoria)) {
+                return trim((string) $producto->categoria);
+            }
+
+            if (isset($producto->nombre_categoria)) {
+                return trim((string) $producto->nombre_categoria);
+            }
+        }
+
+        return '';
+    }
+
+    private function normalizarTextoCategoria(string $texto): string
+    {
+        $texto = strtolower(trim($texto));
+
+        $buscar = ['á', 'é', 'í', 'ó', 'ú', 'ü', 'ñ'];
+        $reemplazar = ['a', 'e', 'i', 'o', 'u', 'u', 'n'];
+
+        return str_replace($buscar, $reemplazar, $texto);
     }
 
     private function obtenerPrecioBaseProducto($producto): float

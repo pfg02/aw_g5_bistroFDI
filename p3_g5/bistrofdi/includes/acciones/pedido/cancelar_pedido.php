@@ -2,7 +2,7 @@
 declare(strict_types=1);
 
 /**
- * Cancela un pedido permitido o vacía el carrito actual.
+ * Script de acción: simula el procesamiento del pago de un pedido.
  */
 
 require_once __DIR__ . '/../../core/config.php';
@@ -12,12 +12,14 @@ require_once __DIR__ . '/../../negocio/PedidoController.php';
 exigirLogin();
 exigirRol('cliente');
 
-$redirectCarrito = BASE_URL . '/includes/vistas/tienda/carrito.php';
-$redirectCatalogo = BASE_URL . '/includes/vistas/tienda/catalogo.php';
+unset($_SESSION['mensaje_error']);
+unset($_SESSION['mensaje_exito']);
+
 $redirectMisPedidos = BASE_URL . '/includes/vistas/pedido/mis_pedidos.php';
+$redirectIndex = BASE_URL . '/index.php';
 
 if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
-    header('Location: ' . $redirectCarrito);
+    header('Location: ' . $redirectIndex);
     exit();
 }
 
@@ -25,134 +27,126 @@ $idUsuario = filter_var($_SESSION['id_usuario'] ?? null, FILTER_VALIDATE_INT, [
     'options' => ['min_range' => 1]
 ]);
 
+$idPedido = filter_input(INPUT_POST, 'id_pedido', FILTER_VALIDATE_INT, [
+    'options' => ['min_range' => 1]
+]);
+
+$metodo = trim((string) (filter_input(INPUT_POST, 'metodo_pago', FILTER_UNSAFE_RAW) ?? ''));
+$metodosPermitidos = ['tarjeta', 'camarero'];
+
 if ($idUsuario === false || $idUsuario === null) {
     $_SESSION['mensaje_error'] = 'Sesión no válida.';
     header('Location: ' . BASE_URL . '/includes/vistas/auth/login.php');
     exit();
 }
 
-$idPedido = filter_input(INPUT_POST, 'id_pedido', FILTER_VALIDATE_INT, [
-    'options' => ['min_range' => 1]
-]);
-
-$accion = trim((string) (filter_input(INPUT_POST, 'accion', FILTER_UNSAFE_RAW) ?? ''));
+if ($idPedido === false || $idPedido === null || !in_array($metodo, $metodosPermitidos, true)) {
+    $_SESSION['mensaje_error'] = 'Faltan datos válidos para procesar el pago.';
+    header('Location: ' . $redirectMisPedidos);
+    exit();
+}
 
 $controller = PedidoController::getInstance();
+$pedido = $controller->verPedido((int) $idPedido);
 
-/*
- * Caso 1: cancelar un pedido ya creado.
- */
-if ($idPedido !== false && $idPedido !== null) {
-    $pedido = $controller->verPedido((int) $idPedido);
+if ($pedido === null || $pedido === false) {
+    $_SESSION['mensaje_error'] = 'Pedido no encontrado.';
+    header('Location: ' . $redirectMisPedidos);
+    exit();
+}
 
-    if ($pedido === null || $pedido === false) {
-        $_SESSION['mensaje_error'] = 'Pedido no encontrado.';
-        header('Location: ' . $redirectMisPedidos);
+$clienteIdPedido = obtenerClienteIdPedido($pedido);
+$estadoPedido = obtenerEstadoPedido($pedido);
+
+if ($clienteIdPedido === null || $clienteIdPedido !== (int) $idUsuario || $estadoPedido !== 'Recibido') {
+    $_SESSION['mensaje_error'] = 'Acción no permitida o el pedido ya fue procesado.';
+    header('Location: ' . $redirectMisPedidos);
+    exit();
+}
+
+if ($metodo === 'tarjeta') {
+    $tarjeta = preg_replace('/\D+/', '', (string) (filter_input(INPUT_POST, 'tarjeta', FILTER_UNSAFE_RAW) ?? ''));
+    $caducidad = trim((string) (filter_input(INPUT_POST, 'caducidad', FILTER_UNSAFE_RAW) ?? ''));
+    $cvv = preg_replace('/\D+/', '', (string) (filter_input(INPUT_POST, 'cvv', FILTER_UNSAFE_RAW) ?? ''));
+
+    if (!preg_match('/^[0-9]{13,19}$/', $tarjeta)) {
+        $_SESSION['mensaje_error'] = 'El número de tarjeta no tiene un formato válido.';
+        header('Location: ' . BASE_URL . '/includes/vistas/pedido/pago.php?id=' . urlencode((string) $idPedido));
         exit();
     }
 
-    $clienteIdPedido = obtenerClienteIdPedido($pedido);
-    $estadoPedido = obtenerEstadoPedido($pedido);
-    $cocineroIdPedido = obtenerCocineroIdPedido($pedido);
-    $servidoSala = obtenerServidoSalaPedido($pedido);
-
-    if ($clienteIdPedido === null || $clienteIdPedido !== (int) $idUsuario) {
-        $_SESSION['mensaje_error'] = 'Acceso denegado o pedido no encontrado.';
-        header('Location: ' . $redirectMisPedidos);
+    if (!preg_match('/^(0[1-9]|1[0-2])\/[0-9]{2}$/', $caducidad)) {
+        $_SESSION['mensaje_error'] = 'La fecha de caducidad no tiene un formato válido.';
+        header('Location: ' . BASE_URL . '/includes/vistas/pedido/pago.php?id=' . urlencode((string) $idPedido));
         exit();
     }
 
-    /*
-     * Si sala ya ha servido/preparado alguna bebida o café,
-     * el cliente ya no puede cancelar el pedido.
-     */
-    if ($servidoSala === 1) {
-        $_SESSION['mensaje_error'] = 'No puedes cancelar este pedido porque ya ha sido servido por sala.';
-        header('Location: ' . $redirectMisPedidos);
+    if (!caducidadSuperiorAlMesActual($caducidad)) {
+        $_SESSION['mensaje_error'] = 'La fecha de caducidad debe ser posterior al mes actual.';
+        header('Location: ' . BASE_URL . '/includes/vistas/pedido/pago.php?id=' . urlencode((string) $idPedido));
         exit();
     }
 
-    /*
-     * Se puede cancelar si:
-     * - Está Recibido.
-     * - Está En preparación y todavía no tiene cocinero asignado.
-     *
-     * Esto permite cancelar pedidos solo de bebidas/cafés mientras sala
-     * todavía no haya marcado ninguna bebida como servida/preparada.
-     */
-    $sePuedeCancelar = $estadoPedido === 'Recibido'
-        || (
-            $estadoPedido === 'En preparación'
-            && ($cocineroIdPedido === null || $cocineroIdPedido <= 0)
-        );
-
-    if (!$sePuedeCancelar) {
-        $_SESSION['mensaje_error'] = 'No puedes cancelar este pedido porque ya está siendo preparado o ya ha avanzado de estado.';
-        header('Location: ' . $redirectMisPedidos);
+    if (!preg_match('/^[0-9]{3,4}$/', $cvv)) {
+        $_SESSION['mensaje_error'] = 'El CVV no tiene un formato válido.';
+        header('Location: ' . BASE_URL . '/includes/vistas/pedido/pago.php?id=' . urlencode((string) $idPedido));
         exit();
     }
 
     /*
-     * Mejor marcar como Cancelado que borrar el pedido.
-     * Así queda historial y no se pierden datos.
+     * Regla después del pago:
+     * - Si el pedido solo tiene bebidas, pasa directamente a "Listo cocina".
+     * - Si tiene comida o mezcla comida/bebida, pasa a "En preparación".
      */
-    $cancelado = $controller->actualizarEstadoPedido((int) $idPedido, 'Cancelado');
+    $estadoTrasPago = $controller->obtenerEstadoTrasPago((int) $idPedido);
 
-    if ($cancelado) {
-        $_SESSION['mensaje_exito'] = 'El pedido ha sido cancelado correctamente.';
+    if ($controller->actualizarEstadoPedido((int) $idPedido, $estadoTrasPago)) {
+        $_SESSION['mensaje_exito'] = "¡Pago aprobado! Tu pedido ha pasado a '$estadoTrasPago'.";
     } else {
-        $_SESSION['mensaje_error'] = 'Hubo un error en la base de datos al cancelar el pedido.';
+        $_SESSION['mensaje_error'] = 'No se pudo actualizar el estado del pedido.';
     }
 
     header('Location: ' . $redirectMisPedidos);
     exit();
 }
 
-/*
- * Caso 2: vaciar carrito actual.
- */
-if ($accion === 'vaciar_carrito') {
-    unset($_SESSION['carrito'], $_SESSION['tipoPedido']);
-	$_SESSION['ofertas_aplicadas'] = [];
-
-    $_SESSION['mensaje_exito'] = 'El carrito ha sido vaciado correctamente. Puedes empezar un nuevo pedido cuando quieras.';
-    header('Location: ' . $redirectCatalogo);
+if ($metodo === 'camarero') {
+    /*
+     * Si paga al camarero, todavía no está pagado.
+     * Por eso se queda en "Recibido" y todavía puede cancelarse.
+     */
+    $_SESSION['mensaje_exito'] = '¡Pedido registrado! Avisa al camarero para pagar.';
+    header('Location: ' . $redirectMisPedidos);
     exit();
 }
 
-$_SESSION['mensaje_error'] = 'Acción no permitida.';
-header('Location: ' . $redirectCarrito);
+$_SESSION['mensaje_error'] = 'Ha ocurrido un error con el método de pago seleccionado.';
+header('Location: ' . $redirectMisPedidos);
 exit();
 
-/**
- * Obtiene el cliente_id de un pedido, tanto si viene como array como si viene como DTO.
- */
 function obtenerClienteIdPedido($pedido): ?int
 {
     if (is_array($pedido)) {
         $valor = $pedido['cliente_id'] ?? null;
-        $valor = filter_var($valor, FILTER_VALIDATE_INT, [
+        $id = filter_var($valor, FILTER_VALIDATE_INT, [
             'options' => ['min_range' => 1]
         ]);
 
-        return $valor === false ? null : (int) $valor;
+        return $id === false ? null : (int) $id;
     }
 
     if (is_object($pedido) && method_exists($pedido, 'getClienteId')) {
         $valor = $pedido->getClienteId();
-        $valor = filter_var($valor, FILTER_VALIDATE_INT, [
+        $id = filter_var($valor, FILTER_VALIDATE_INT, [
             'options' => ['min_range' => 1]
         ]);
 
-        return $valor === false ? null : (int) $valor;
+        return $id === false ? null : (int) $id;
     }
 
     return null;
 }
 
-/**
- * Obtiene el estado de un pedido, tanto si viene como array como si viene como DTO.
- */
 function obtenerEstadoPedido($pedido): ?string
 {
     if (is_array($pedido)) {
@@ -168,55 +162,18 @@ function obtenerEstadoPedido($pedido): ?string
     return null;
 }
 
-/**
- * Obtiene el cocinero_id de un pedido, tanto si viene como array como si viene como DTO.
- */
-function obtenerCocineroIdPedido($pedido): ?int
+function caducidadSuperiorAlMesActual(string $caducidad): bool
 {
-    if (is_array($pedido)) {
-        $valor = $pedido['cocinero_id'] ?? null;
-
-        if ($valor === null || $valor === '') {
-            return null;
-        }
-
-        $valor = filter_var($valor, FILTER_VALIDATE_INT, [
-            'options' => ['min_range' => 1]
-        ]);
-
-        return $valor === false ? null : (int) $valor;
+    if (!preg_match('/^(0[1-9]|1[0-2])\/([0-9]{2})$/', $caducidad, $matches)) {
+        return false;
     }
 
-    if (is_object($pedido) && method_exists($pedido, 'getCocineroId')) {
-        $valor = $pedido->getCocineroId();
+    $mesTarjeta = (int) $matches[1];
+    $anioTarjeta = 2000 + (int) $matches[2];
 
-        if ($valor === null || $valor === '') {
-            return null;
-        }
+    $mesActual = (int) date('m');
+    $anioActual = (int) date('Y');
 
-        $valor = filter_var($valor, FILTER_VALIDATE_INT, [
-            'options' => ['min_range' => 1]
-        ]);
-
-        return $valor === false ? null : (int) $valor;
-    }
-
-    return null;
+    return $anioTarjeta > $anioActual
+        || ($anioTarjeta === $anioActual && $mesTarjeta > $mesActual);
 }
-
-/**
- * Obtiene servido_sala de un pedido, tanto si viene como array como si viene como DTO.
- */
-function obtenerServidoSalaPedido($pedido): int
-{
-    if (is_array($pedido)) {
-        return isset($pedido['servido_sala']) ? (int) $pedido['servido_sala'] : 0;
-    }
-
-    if (is_object($pedido) && method_exists($pedido, 'getServidoSala')) {
-        return (int) $pedido->getServidoSala();
-    }
-
-    return 0;
-}
-?>

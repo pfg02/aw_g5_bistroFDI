@@ -93,8 +93,15 @@ if ($metodo === 'tarjeta') {
         exit();
     }
 
-    if ($controller->actualizarEstadoPedido((int) $idPedido, 'En preparación')) {
-        $_SESSION['mensaje_exito'] = "¡Pago aprobado! Tu pedido ha pasado a 'En preparación'.";
+    /*
+     * Regla después del pago:
+     * - Si el pedido solo tiene bebidas, pasa directamente a "Listo cocina".
+     * - Si tiene comida o mezcla comida/bebida, pasa a "En preparación".
+     */
+    $estadoTrasPago = $controller->obtenerEstadoTrasPago((int) $idPedido);
+
+    if ($controller->actualizarEstadoPedido((int) $idPedido, $estadoTrasPago)) {
+        $_SESSION['mensaje_exito'] = "¡Pago aprobado! Tu pedido ha pasado a '$estadoTrasPago'.";
     } else {
         $_SESSION['mensaje_error'] = 'No se pudo actualizar el estado del pedido.';
     }
@@ -104,6 +111,10 @@ if ($metodo === 'tarjeta') {
 }
 
 if ($metodo === 'camarero') {
+    /*
+     * Si paga al camarero, todavía no está pagado.
+     * Por eso se queda en "Recibido" y todavía puede cancelarse.
+     */
     $_SESSION['mensaje_exito'] = '¡Pedido registrado! Avisa al camarero para pagar.';
     header('Location: ' . $redirectMisPedidos);
     exit();
@@ -117,12 +128,20 @@ function obtenerClienteIdPedido($pedido): ?int
 {
     if (is_array($pedido)) {
         $valor = $pedido['cliente_id'] ?? null;
-        return filter_var($valor, FILTER_VALIDATE_INT, ['options' => ['min_range' => 1]]) ?: null;
+        $id = filter_var($valor, FILTER_VALIDATE_INT, [
+            'options' => ['min_range' => 1]
+        ]);
+
+        return $id === false ? null : (int) $id;
     }
 
     if (is_object($pedido) && method_exists($pedido, 'getClienteId')) {
         $valor = $pedido->getClienteId();
-        return is_int($valor) ? $valor : null;
+        $id = filter_var($valor, FILTER_VALIDATE_INT, [
+            'options' => ['min_range' => 1]
+        ]);
+
+        return $id === false ? null : (int) $id;
     }
 
     return null;
@@ -158,4 +177,3 @@ function caducidadSuperiorAlMesActual(string $caducidad): bool
     return $anioTarjeta > $anioActual
         || ($anioTarjeta === $anioActual && $mesTarjeta > $mesActual);
 }
-?>

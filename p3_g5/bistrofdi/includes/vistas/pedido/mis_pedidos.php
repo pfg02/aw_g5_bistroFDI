@@ -106,7 +106,6 @@ ob_start();
                                 $tipoPedido = obtenerDatoPedido($pedido, 'tipo', 'getTipo');
                                 $estadoPedido = obtenerDatoPedido($pedido, 'estado', 'getEstado');
                                 $totalPedido = obtenerDatoPedido($pedido, 'total', 'getTotal');
-                                $cocineroId = obtenerDatoPedido($pedido, 'cocinero_id', 'getCocineroId');
 
                                 $numeroMostrar = $numeroPedido !== null ? (string) $numeroPedido : (string) $pedidoId;
 
@@ -119,20 +118,14 @@ ob_start();
                                 }
 
                                 /*
-                                 * Se puede cancelar si:
-                                 * - Está Recibido.
-                                 * - Está En preparación y todavía no lo ha cogido ningún cocinero.
-                                 *
-                                 * Esto permite cancelar pedidos solo de bebidas/cafés que pasan directamente a sala.
+                                 * Regla oficial:
+                                 * Solo se puede cancelar si está en Nuevo o Recibido.
+                                 * Si ya está pagado o avanzado, no se muestra el botón.
                                  */
+                                $estadoPedidoNormalizado = trim((string) $estadoPedido);
+
                                 $sePuedeCancelar = !$esGerente
-                                    && (
-                                        $estadoPedido === 'Recibido'
-                                        || (
-                                            $estadoPedido === 'En preparación'
-                                            && ($cocineroId === null || (int) $cocineroId <= 0)
-                                        )
-                                    );
+                                    && in_array($estadoPedidoNormalizado, ['Nuevo', 'Recibido'], true);
                             ?>
 
                             <tr>
