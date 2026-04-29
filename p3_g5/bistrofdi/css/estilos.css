@@ -3397,3 +3397,86 @@ body.fondo-madera {
     text-align: center;
     width: 100%;
 }
+
+.seccion-ofertas-container {
+    margin-top: 2rem;
+    width: 100%;
+}
+
+.f0-form-oferta {
+    display: flex;
+    gap: 10px;
+    margin-bottom: 1.5rem;
+}
+
+.select-oferta {
+    flex-grow: 1;
+    padding: 10px;
+    border-radius: 4px;
+    border: 1px solid #ccc;
+}
+
+.lista-ofertas-aplicadas {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+}
+
+.item-oferta-ok {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    background-color: #e8f5e9; /* Verde muy clarito */
+    border-left: 4px solid #2e7d32;
+    padding: 12px 15px;
+    margin-bottom: 10px;
+    border-radius: 4px;
+}
+
+.oferta-acciones {
+    display: flex;
+    align-items: center;
+    gap: 15px;
+}
+
+.txt-descuento {
+    font-weight: bold;
+    color: #2e7d32;
+    font-size: 1.1rem;
+    white-space: nowrap;
+}
+
+@media (max-width: 600px) {
+    .f0-form-oferta {
+        flex-direction: column; 
+    }
+
+    .item-oferta-ok {
+        flex-direction: column; 
+        align-items: flex-start;
+        gap: 10px;
+    }
+
+    .oferta-acciones {
+        width: 100%;
+        justify-content: space-between; 
+        border-top: 1px solid #c8e6c9;
+        padding-top: 8px;
+    }
+}
+
+/* --- BOTÓN FUNCIONALIDAD 4 --- */
+.f4-btn-secondary {
+    background-color: #e1d8c1;
+    color: #3a332d;
+    border: none;
+    padding: 10px 15px;
+    border-radius: 4px;
+    cursor: pointer;
+    font-weight: bold;
+    transition: background-color 0.3s ease;
+}
+
+.f4-btn-secondary:hover {
+    background-color: #d1c6ab;
+}

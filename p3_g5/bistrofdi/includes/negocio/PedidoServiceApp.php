@@ -17,12 +17,15 @@ class PedidoServiceApp
         $this->pedidoDAO = new PedidoDAO($db);
         $this->productoDAO = new ProductoDAO($db);
     }
-
+/**
+     * Crea un pedido calculando correctamente el precio con IVA y aplicando los descuentos del DTO.
+     */
     public function crearPedido($pedidoDTO): int
     {
         $productos = $pedidoDTO->getProductos();
-        $total = 0.0;
+        $totalSinDescuento = 0.0;
 
+        // Calculamos el coste total real (con IVA) de los productos
         foreach ($productos as $idProducto => $cantidad) {
             $producto = $this->productoDAO->obtenerPorId((int) $idProducto);
 
@@ -31,17 +34,100 @@ class PedidoServiceApp
                 $porcentajeIva = $this->obtenerIvaProducto($producto);
 
                 $precioConIva = $precioBase * (1 + ($porcentajeIva / 100));
-                $total += $precioConIva * (int) $cantidad;
+                $totalSinDescuento += $precioConIva * (int) $cantidad;
             }
         }
 
-        $pedidoDTO->setTotal($total);
-        $pedidoDTO->setTotalSinDescuento($total);
-        $pedidoDTO->setDescuentoTotal(0.0);
+        // Extraemos el descuento
+        $descuentoAplicado = (float) $pedidoDTO->getDescuentoTotal();
+
+        // Calculamos el precio final (nunca menor a 0)
+        $totalFinal = max(0.0, $totalSinDescuento - $descuentoAplicado);
+
+        // Asignamos la información contable al DTO antes de enviarlo al DAO
+        $pedidoDTO->setTotalSinDescuento($totalSinDescuento);
+        $pedidoDTO->setDescuentoTotal($descuentoAplicado);
+        $pedidoDTO->setTotal($totalFinal);
+        
         $pedidoDTO->setEstado('Recibido');
         $pedidoDTO->setFecha(date('Y-m-d H:i:s'));
 
         return $this->pedidoDAO->guardarPedido($pedidoDTO);
+    }
+
+	/**
+     * MOTOR DE OFERTAS: Comprueba si una oferta es aplicable al carrito y calcula el descuento.
+     */
+	public function calcularDescuentoOferta(array $carrito, array $ofertasYaAplicadas, OfertaDTO $nuevaOferta): array
+    {
+        // Construimos un pool con el carrito para no aplicar ofertas a los mismos productos
+        $pool = $carrito; 
+
+        // Restamos los productos "consumidos" por ofertas anteriores
+        foreach ($ofertasYaAplicadas as $ofertaAplicada) {
+            $vecesAplicada = (int)$ofertaAplicada['veces_aplicada'];
+            foreach ($ofertaAplicada['productos_requeridos'] as $req) {
+                $idProd = (int)$req['producto_id'];
+                $cantConsumida = (int)$req['cantidad'] * $vecesAplicada;
+                
+                if (isset($pool[$idProd])) {
+                    $pool[$idProd] -= $cantConsumida;
+                }
+            }
+        }
+
+        // Evaluamos la nueva oferta
+        $productosRequeridos = $nuevaOferta->getProductos();
+        if (empty($productosRequeridos)) {
+            return ['exito' => false, 'mensaje' => 'La oferta no tiene productos configurados.'];
+        }
+
+        $vecesAplicable = PHP_INT_MAX;
+        $precioOriginalPack = 0.00;
+
+        foreach ($productosRequeridos as $req) {
+            $idReq = (int) $req['producto_id'];
+            $cantReq = (int) $req['cantidad'];
+
+            // Si el pool restante no tiene suficiente cantidad, la oferta no es aplicable (0 veces)
+            if (!isset($pool[$idReq]) || $pool[$idReq] < $cantReq) {
+                $vecesAplicable = 0;
+                break;
+            }
+
+            // Calculamos automáticamente cuántas veces cabe (Múltiples veces de forma automática)
+            $vecesPorProducto = (int) floor($pool[$idReq] / $cantReq);
+            $vecesAplicable = min($vecesAplicable, $vecesPorProducto);
+
+            // Sumamos el valor para calcular el descuento
+            $productoObj = $this->productoDAO->obtenerPorId($idReq);
+            if ($productoObj) {
+                $precioBase = $this->obtenerPrecioBaseProducto($productoObj);
+                $iva = $this->obtenerIvaProducto($productoObj);
+                $precioConIva = $precioBase * (1 + ($iva / 100));
+                
+                $precioOriginalPack += ($precioConIva * $cantReq);
+            }
+        }
+
+        // Feedback para el usuario
+        if ($vecesAplicable > 0) {
+            $porcentaje = (float) $nuevaOferta->getDescuentoPorcentaje();
+            $descuentoTotal = ($precioOriginalPack * ($porcentaje / 100)) * $vecesAplicable;
+
+            return [
+                'exito' => true,
+                'veces_aplicada' => $vecesAplicable,
+                'descuento' => round($descuentoTotal, 2),
+                'mensaje' => "¡Oferta aplicada con éxito! (x{$vecesAplicable})",
+                'productos_requeridos' => $productosRequeridos 
+            ];
+        }
+
+        return [
+            'exito' => false,
+            'mensaje' => 'No te quedan productos suficientes en el pedido sin descuento para aplicar esta oferta.'
+        ];
     }
 
     public function obtenerPedido($idPedido)

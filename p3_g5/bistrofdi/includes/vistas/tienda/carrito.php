@@ -8,6 +8,7 @@ declare(strict_types=1);
 require_once __DIR__ . '/../../core/config.php';
 require_once __DIR__ . '/../../core/sesion.php';
 require_once __DIR__ . '/../../integracion/ProductoDAO.php';
+require_once __DIR__ . '/../../integracion/OfertasDAO.php';
 
 exigirLogin();
 exigirRol('cliente');
@@ -23,6 +24,10 @@ if (!is_string($tipoPedido) || !in_array($tipoPedido, $tiposPermitidos, true)) {
 
 if (!isset($_SESSION['carrito']) || !is_array($_SESSION['carrito'])) {
     $_SESSION['carrito'] = [];
+}
+
+if (!isset($_SESSION['ofertas_aplicadas']) || !is_array($_SESSION['ofertas_aplicadas'])) {
+    $_SESSION['ofertas_aplicadas'] = [];
 }
 
 /*
@@ -47,7 +52,8 @@ if (
         $_SESSION['mensaje_error'] = 'El producto no existe en el carrito.';
     } else {
         $_SESSION['carrito'][(int) $productoId] = (int) $cantidad;
-        $_SESSION['mensaje_exito'] = 'Cantidad modificada correctamente.';
+        $_SESSION['ofertas_aplicadas'] = [];
+        $_SESSION['mensaje_info'] = 'Cantidad modificada. Si tenías ofertas aplicadas, debes volver a seleccionarlas para recalcular.';
     }
 
     header('Location: carrito.php');
@@ -60,10 +66,12 @@ if (!is_array($carrito)) {
     $carrito = [];
 }
 
-$productoDAO = new ProductoDAO(Application::getInstance()->conexionBd());
+$db = Application::getInstance()->conexionBd();
+$productoDAO = new ProductoDAO($db);
+$ofertaDAO = new OfertaDAO($db);
 
 $productos = [];
-$total = 0.0;
+$subtotalPedido = 0.0;
 
 if (!empty($carrito)) {
     foreach ($carrito as $idProducto => $cantidad) {
@@ -90,6 +98,8 @@ if (!empty($carrito)) {
         }
     }
 }
+
+$ofertasDisponibles = $ofertaDAO->obtenerOfertasActivas();
 
 $tituloPagina = 'Bistró FDI - Mi Carrito';
 $bodyClass = 'f0-body';
@@ -168,7 +178,7 @@ ob_start();
 
                                 $precioConIva = $precioBase + ($precioBase * ($porcentajeIva / 100));
                                 $subtotal = $precioConIva * (int) $cantidadInt;
-                                $total += $subtotal;
+                                $subtotalPedido += $subtotal;
                             ?>
 
                             <tr>
@@ -222,9 +232,64 @@ ob_start();
                     </tbody>
                 </table>
 
+				<div class="seccion-ofertas-container">
+                    <div class="f0-card">
+                        <h3>Promociones Disponibles</h3>
+
+						<div>
+    						<button type="button" class="btn-accion" onclick="abrirModalOfertas()">
+        						Ver Ofertas
+							</button>
+						</div>
+                        
+                        <?php if (!empty($ofertasDisponibles)): ?>
+                            <form action="../../acciones/ofertas/procesar_oferta.php" method="POST" class="f0-form-oferta">
+                                <input type="hidden" name="accion" value="aplicar">
+                                <select name="id_oferta" required class="input-cantidad-carrito select-oferta">
+                                    <option value="">-- Seleccionar Oferta --</option>
+                                    <?php foreach($ofertasDisponibles as $of): ?>
+                                        <option value="<?= $of->getId() ?>">
+                                            <?= htmlspecialchars($of->getNombre()) ?> (-<?= number_format((float)$of->getDescuentoPorcentaje(), 1) ?>%)
+                                        </option>
+                                    <?php endforeach; ?>
+                                </select>
+                                <button type="submit" class="btn-admin">Aplicar</button>
+                            </form>
+							<div class="divisor"></div>
+                        <?php else: ?>
+                            <p class="txt-secundario">No hay ofertas activas actualmente.</p>
+                        <?php endif; ?>
+
+                        <?php if (!empty($_SESSION['ofertas_aplicadas'])): ?>
+                            <?php foreach($_SESSION['ofertas_aplicadas'] as $idOf => $datosOf): ?>
+                                    <span class="oferta-txt">
+                                        <i class="icon-tag"></i> 
+                                        <strong><?= htmlspecialchars($datosOf['nombre']) ?></strong> 
+                                        <small>(x<?= $datosOf['veces_aplicada'] ?>)</small>
+                                    </span>
+                                    <div class="oferta-acciones">
+                                        <span class="txt-descuento">-<?= number_format((float)$datosOf['descuento'], 2) ?> €</span>
+                                        <form action="../../acciones/ofertas/procesar_oferta.php" method="POST" class="form-inline">
+                                            <input type="hidden" name="accion" value="quitar">
+                                            <input type="hidden" name="id_oferta" value="<?= $idOf ?>">
+                                            <button type="submit" class="btn-admin">Eliminar</button>
+                                        </form>
+                                    </div>
+                            <?php endforeach; ?>
+                        <?php endif; ?>
+                    </div>
+                </div>
+				<?php
+                    $descuentoTotal = 0.0;
+                    foreach ($_SESSION['ofertas_aplicadas'] as $of) { 
+                        $descuentoTotal += (float) $of['descuento']; 
+                    }
+                    $totalFinal = max(0.0, $subtotalPedido - $descuentoTotal);
+                ?>
+
                 <div class="resumen-carrito">
                     <h3>Total a Pagar:</h3>
-                    <div class="total-destacado"><?= number_format($total, 2) ?> €</div>
+                    <div class="total-destacado"><?= number_format($totalFinal, 2) ?> €</div>
                 </div>
 
                 <div>
@@ -271,6 +336,38 @@ ob_start();
 
     </section>
 </div>
+
+<div id="modalOfertas" class="modal-fondo">
+    <div class="modal-contenido">
+        <span class="modal-cerrar" onclick="cerrarModalOfertas()">&times;</span>
+        
+        <h2>Detalles de las Promociones</h2>
+        
+        <div id="lista-detalles-ofertas">
+            <?php if (!empty($ofertasDisponibles)): ?>
+                <?php foreach($ofertasDisponibles as $of): ?>
+                    <div class="detalle-oferta-item">
+                        <h4><?= htmlspecialchars($of->getNombre(), ENT_QUOTES, 'UTF-8') ?></h4>
+                        <p><?= htmlspecialchars($of->getDescripcion(), ENT_QUOTES, 'UTF-8') ?></p>
+                        
+                        <ul>
+                            <?php 
+                            // Ojo: Usamos tu $ofertaDAO que ya está instanciado arriba en carrito.php
+                            $prods = $ofertaDAO->obtenerProductosDeOferta($of->getId());
+                            foreach($prods as $p): ?>
+                                <li><?= (int)$p['cantidad'] ?>x <?= htmlspecialchars($p['nombre'], ENT_QUOTES, 'UTF-8') ?></li>
+                            <?php endforeach; ?>
+                        </ul>
+                    </div>
+                <?php endforeach; ?>
+            <?php else: ?>
+                <p>No hay promociones activas en este momento.</p>
+            <?php endif; ?>
+        </div>
+    </div>
+</div>
+
+<script src="../../../js/modal.js"></script>
 
 <?php
 $contenidoPrincipal = ob_get_clean();

@@ -8,6 +8,7 @@ declare(strict_types=1);
 require_once __DIR__ . '/../../core/config.php';
 require_once __DIR__ . '/../../core/sesion.php';
 require_once __DIR__ . '/../../integracion/ProductoDAO.php';
+require_once __DIR__ . '/../../integracion/OfertasDAO.php';
 
 exigirLogin();
 exigirRol('cliente');
@@ -39,6 +40,9 @@ if (!in_array($tipoPedido, $tiposPermitidos, true)) {
 
 $productoDAO = new ProductoDAO(Application::getInstance()->conexionBd());
 $productosDTO = $productoDAO->listarOfertados();
+
+$ofertaDAO = new OfertaDAO(Application::getInstance()->conexionBd());
+$ofertasDisponibles = $ofertaDAO->obtenerOfertasActivas();
 
 $menuAgrupado = [];
 
@@ -103,6 +107,9 @@ ob_start();
             <a href="../pedido/pedido_inicio.php" class="btn-admin btn-cancelar">
                 Cambiar tipo de pedido
             </a>
+			<button type="button" class="btn-admin" onclick="abrirModalOfertas()">
+        		Ver Ofertas
+			</button>
         </div>
 
         <div class="mensaje-sesion">
@@ -245,6 +252,7 @@ ob_start();
             <p><strong>IVA:</strong> <span id="modalIva">-</span>%</p>
         </div>
 
+
         <div class="modal-footer">
             <span class="precio-modal">
                 Precio final: <span id="modalPrecio">0.00</span> €
@@ -253,7 +261,37 @@ ob_start();
     </div>
 </div>
 
-<script src="../../../js/catalogo.js"></script>
+<div id="modalOfertas" class="modal-fondo">
+    <div class="modal-contenido">
+        <span class="modal-cerrar" onclick="cerrarModalOfertas()">&times;</span>
+        
+        <h2>Detalles de las Promociones</h2>
+        
+        <div id="lista-detalles-ofertas">
+            <?php if (!empty($ofertasDisponibles)): ?>
+                <?php foreach($ofertasDisponibles as $of): ?>
+                    <div class="detalle-oferta-item">
+                        <h4><?= htmlspecialchars($of->getNombre(), ENT_QUOTES, 'UTF-8') ?></h4>
+                        <p><?= htmlspecialchars($of->getDescripcion(), ENT_QUOTES, 'UTF-8') ?></p>
+                        
+                        <ul>
+                            <?php 
+                            // Ojo: Usamos tu $ofertaDAO que ya está instanciado arriba en carrito.php
+                            $prods = $ofertaDAO->obtenerProductosDeOferta($of->getId());
+                            foreach($prods as $p): ?>
+                                <li><?= (int)$p['cantidad'] ?>x <?= htmlspecialchars($p['nombre'], ENT_QUOTES, 'UTF-8') ?></li>
+                            <?php endforeach; ?>
+                        </ul>
+                    </div>
+                <?php endforeach; ?>
+            <?php else: ?>
+                <p>No hay promociones activas en este momento.</p>
+            <?php endif; ?>
+        </div>
+    </div>
+</div>
+
+<script src="../../../js/modal.js"></script>
 
 <?php
 $contenidoPrincipal = ob_get_clean();

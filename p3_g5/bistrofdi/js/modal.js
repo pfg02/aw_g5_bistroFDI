@@ -138,3 +138,29 @@ document.addEventListener('DOMContentLoaded', function () {
         }
     }
 });
+
+function abrirModalOfertas() {
+	
+	const modal = document.getElementById("modalOfertas");
+	if (modal) {
+		modal.style.display = "flex"; 
+		document.body.style.overflow = "hidden";
+	} else {
+		alert("Pero hay un error: no encuentro el modalOfertas en el HTML.");
+	}
+}
+
+function cerrarModalOfertas() {
+	const modal = document.getElementById("modalOfertas");
+	if (modal) {
+		modal.style.display = "none";
+		document.body.style.overflow = "auto";
+	}
+}
+
+window.addEventListener('click', function(event) {
+	const modal = document.getElementById("modalOfertas");
+	if (event.target === modal) {
+		cerrarModalOfertas();
+	}
+});

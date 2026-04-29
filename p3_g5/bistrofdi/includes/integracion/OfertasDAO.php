@@ -275,4 +275,41 @@ class OfertaDAO
 
         return $oferta;
     }
+
+	public function esOfertaActiva(OfertaDTO $oferta): bool
+    {
+        $idOferta = $oferta->getId();
+        if (!$idOferta || $idOferta <= 0) {
+            return false;
+        }
+
+        $hoy = date('Y-m-d');
+        $fechaInicio = $oferta->getFechaInicio();
+        $fechaFin = $oferta->getFechaFin();
+
+        if ($fechaInicio && $fechaFin) {
+            if ($hoy < $fechaInicio || $hoy > $fechaFin) {
+                return false;
+            }
+        }
+
+        // Comprobamos que el gerente no la haya puesto en activa = 0
+        $sql = "SELECT activa FROM ofertas WHERE id = ?";
+        
+        $stmt = $this->db->prepare($sql);
+        $stmt->bind_param('i', $idOferta);
+        $stmt->execute();
+        
+        $result = $stmt->get_result();
+        $activa = false;
+
+        if ($row = $result->fetch_assoc()) {
+            $activa = (int) $row['activa'] === 1;
+        }
+
+        $result->free();
+        $stmt->close();
+
+        return $activa;
+    }
 }
