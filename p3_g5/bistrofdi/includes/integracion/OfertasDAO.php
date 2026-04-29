@@ -312,4 +312,54 @@ class OfertaDAO
 
         return $activa;
     }
+
+	/**
+	 * Registra en la tabla puente qué oferta se usó en qué pedido.
+	 */
+	public function vincularPedidoOferta(int $idPedido, int $idOferta, int $veces, float $descuento): bool
+	{
+		$sql = "INSERT INTO pedidos_ofertas (pedido_id, oferta_id, veces_aplicada, descuento_aplicado) 
+				VALUES (?, ?, ?, ?)";
+		
+		$stmt = $this->db->prepare($sql);
+		$stmt->bind_param('iiid', $idPedido, $idOferta, $veces, $descuento);
+		
+		$exito = $stmt->execute();
+		$stmt->close();
+		
+		return $exito;
+	}
+
+	/**
+     * Obtiene todas las ofertas que se aplicaron a un pedido específico,
+     * incluyendo el dinero descontado y cuántas veces se aplicó cada pack.
+     */
+    public function obtenerOfertasDePedido(int $idPedido): array
+    {
+        $sql = "SELECT po.oferta_id, o.nombre, po.veces_aplicada, po.descuento_aplicado
+                FROM pedidos_ofertas po
+                INNER JOIN ofertas o ON po.oferta_id = o.id
+                WHERE po.pedido_id = ?";
+                
+        $stmt = $this->db->prepare($sql);
+        $stmt->bind_param('i', $idPedido);
+        $stmt->execute();
+        
+        $result = $stmt->get_result();
+        $ofertasAplicadas = [];
+        
+        while ($row = $result->fetch_assoc()) {
+            $ofertasAplicadas[] = [
+                'id' => (int) $row['oferta_id'],
+                'nombre' => (string) $row['nombre'],
+                'veces_aplicada' => (int) $row['veces_aplicada'],
+                'descuento' => (float) $row['descuento_aplicado']
+            ];
+        }
+        
+        $result->free();
+        $stmt->close();
+        
+        return $ofertasAplicadas;
+    }
 }

@@ -213,6 +213,7 @@ CREATE TABLE pedidos_ofertas (
     id INT AUTO_INCREMENT PRIMARY KEY,
     pedido_id INT NOT NULL,
     oferta_id INT NOT NULL,
+	veces_aplicada INT NOT NULL DEFAULT 1,
     descuento_aplicado DECIMAL(10,2) NOT NULL DEFAULT 0.00,
 
     CONSTRAINT fk_pedidos_ofertas_pedido

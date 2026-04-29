@@ -59,6 +59,13 @@ $idPedidoMostrar = obtenerDatoPedido($pedido, 'id', 'getId');
 $tipoPedido = obtenerDatoPedido($pedido, 'tipo', 'getTipo');
 $totalPedido = obtenerDatoPedido($pedido, 'total', 'getTotal');
 
+$totalSinDescuento = obtenerDatoPedido($pedido, 'total_sin_descuento', 'getTotalSinDescuento');
+$descuentoTotal = obtenerDatoPedido($pedido, 'descuento_total', 'getDescuentoTotal');
+
+// Por si son nulos en pedidos antiguos, les damos un valor por defecto
+$totalSinDescuento = $totalSinDescuento !== null ? (float) $totalSinDescuento : (float) $totalPedido;
+$descuentoTotal = $descuentoTotal !== null ? (float) $descuentoTotal : 0.0;
+
 $numeroMostrar = $numeroPedido !== null ? (string) $numeroPedido : (string) $idPedidoMostrar;
 
 ob_start();
@@ -77,6 +84,18 @@ ob_start();
                 <p class="texto-resumen"><strong>Ticket:</strong> #<?= htmlspecialchars($numeroMostrar) ?></p>
                 <p class="texto-resumen"><strong>Modalidad:</strong> <?= htmlspecialchars((string) $tipoPedido) ?></p>
                 <div class="divisor-pago"></div>
+
+				<?php if ($descuentoTotal > 0): ?>
+                    <div>
+                        <p class="texto-resumen" >
+                            Subtotal Pedido: <span style="float: right;"><?= number_format($totalSinDescuento, 2) ?> €</span>
+                        </p>
+                        <p class="texto-resumen">
+                            Ahorro por Ofertas: <span style="float: right;">-<?= number_format($descuentoTotal, 2) ?> €</span>
+                        </p>
+                    </div>
+                    <div class="divisor-pago"></div>
+                <?php endif; ?>
                 <p class="total-pago-container">
                     Total a pagar: <strong class="total-pago-destacado"><?= number_format((float) $totalPedido, 2) ?> €</strong>
                 </p>
