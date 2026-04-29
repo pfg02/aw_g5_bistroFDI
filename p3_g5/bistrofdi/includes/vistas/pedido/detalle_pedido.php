@@ -8,6 +8,7 @@ declare(strict_types=1);
 require_once __DIR__ . '/../../core/config.php';
 require_once __DIR__ . '/../../core/sesion.php';
 require_once __DIR__ . '/../../negocio/PedidoController.php';
+require_once __DIR__ . '/../../integracion/OfertasDAO.php';
 
 exigirLogin();
 exigirRol('cliente', 'gerente', 'camarero', 'cocinero');
@@ -56,6 +57,8 @@ if (!$esPersonal && $clienteIdPedido !== (int) $idUsuario) {
 }
 
 $lineasPedido = $controller->obtenerProductosDePedido((int) $idPedido);
+$ofertaDAO = new OfertaDAO($db);
+$ofertasAplicadas = $ofertaDAO->obtenerOfertasDePedido((int) $idPedido);
 
 $tituloPagina = 'Bistró FDI - Pedido';
 $bodyClass = 'f0-body';
@@ -66,6 +69,8 @@ $fechaPedido = obtenerDatoPedido($pedido, 'fecha', 'getFecha');
 $tipoPedido = obtenerDatoPedido($pedido, 'tipo', 'getTipo');
 $estadoPedido = obtenerDatoPedido($pedido, 'estado', 'getEstado');
 $totalPedido = obtenerDatoPedido($pedido, 'total', 'getTotal');
+$totalSinDescuento = obtenerDatoPedido($pedido, 'total_sin_descuento', 'getTotalSinDescuento') ?? $totalPedido;
+$descuentoTotal = obtenerDatoPedido($pedido, 'descuento_total', 'getDescuentoTotal') ?? 0.0;
 
 $numeroMostrar = $numeroPedido !== null ? (string) $numeroPedido : (string) $idPedidoMostrar;
 $fechaFormateada = '';
@@ -127,6 +132,23 @@ ob_start();
                     <?php endforeach; ?>
                 </tbody>
             </table>
+
+			<div class="modal-footer">
+                <h3>Precio:</h3>
+                <div class="precio-modal">
+                    <?= number_format((float) $totalSinDescuento, 2) ?> €
+                </div>
+            </div>
+
+			<?php if (!empty($ofertasAplicadas)): ?>
+                <div class="f4-desglose-ofertas">
+                    <h3>Ofertas aplicadas:</h3>
+                        <?php foreach ($ofertasAplicadas as $of): ?>
+                                <span><i class="icon-tag"></i> <?= htmlspecialchars($of['nombre']) ?> (x<?= $of['veces_aplicada'] ?>)</span>
+                                <span>-<?= number_format($of['descuento'], 2) ?> €</span>
+                        <?php endforeach; ?>
+                </div>
+            <?php endif; ?>
 
             <div class="modal-footer">
                 <h3>Total:</h3>
