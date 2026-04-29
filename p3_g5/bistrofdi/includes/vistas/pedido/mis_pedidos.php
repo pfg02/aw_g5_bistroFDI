@@ -44,6 +44,12 @@ if ($esGerente) {
     $subtituloListado = 'Historial de tus compras';
 }
 
+/*
+ * Solo mostramos la columna del cocinero cuando el gerente está viendo
+ * los pedidos de un cliente concreto mediante ?id_cliente=...
+ */
+$esVistaGerenteCliente = $esGerente && $idClienteParam !== false && $idClienteParam !== null;
+
 $historialPedidos = $controller->verPedidosCliente($idCliente);
 
 $tituloPagina = 'Mis Pedidos - Bistró FDI';
@@ -92,6 +98,11 @@ ob_start();
                             <th>Fecha</th>
                             <th>Tipo</th>
                             <th>Estado</th>
+
+                            <?php if ($esVistaGerenteCliente): ?>
+                                <th>Cocinero</th>
+                            <?php endif; ?>
+
                             <th>Total</th>
                             <th>Acciones</th>
                         </tr>
@@ -107,6 +118,8 @@ ob_start();
                                 $estadoPedido = obtenerDatoPedido($pedido, 'estado', 'getEstado');
                                 $totalPedido = obtenerDatoPedido($pedido, 'total', 'getTotal');
 
+                                $estadoPedidoNormalizado = trim((string) $estadoPedido);
+
                                 $numeroMostrar = $numeroPedido !== null ? (string) $numeroPedido : (string) $pedidoId;
 
                                 $fechaFormateada = '';
@@ -118,12 +131,32 @@ ob_start();
                                 }
 
                                 /*
+                                 * Datos del cocinero.
+                                 * Estos campos tienen que venir desde PedidoDAO::obtenerPedidosPorCliente().
+                                 */
+                                $nombreCocinero = trim(
+                                    (string) (obtenerDatoPedido($pedido, 'nombre_cocinero', 'getNombreCocinero') ?? '') . ' ' .
+                                    (string) (obtenerDatoPedido($pedido, 'apellidos_cocinero', 'getApellidosCocinero') ?? '')
+                                );
+
+                                $avatarCocineroDato = obtenerDatoPedido($pedido, 'avatar_cocinero', 'getAvatarCocinero');
+
+                                $avatarCocinero = !empty($avatarCocineroDato)
+                                    ? BASE_URL . '/' . ltrim((string) $avatarCocineroDato, '/')
+                                    : BASE_URL . '/img/avatares/default.png';
+
+                                /*
+                                 * Solo se muestra el cocinero al gerente y solo en pedidos
+                                 * que están siendo preparados.
+                                 */
+                                $mostrarCocinero = $esVistaGerenteCliente
+                                    && in_array($estadoPedidoNormalizado, ['En preparación', 'Cocinando'], true);
+
+                                /*
                                  * Regla oficial:
                                  * Solo se puede cancelar si está en Nuevo o Recibido.
                                  * Si ya está pagado o avanzado, no se muestra el botón.
                                  */
-                                $estadoPedidoNormalizado = trim((string) $estadoPedido);
-
                                 $sePuedeCancelar = !$esGerente
                                     && in_array($estadoPedidoNormalizado, ['Nuevo', 'Recibido'], true);
                             ?>
@@ -146,6 +179,31 @@ ob_start();
                                         <?= htmlspecialchars((string) $estadoPedido, ENT_QUOTES, 'UTF-8') ?>
                                     </span>
                                 </td>
+
+                                <?php if ($esVistaGerenteCliente): ?>
+                                    <td data-label="Cocinero">
+                                        <?php if ($mostrarCocinero): ?>
+                                            <?php if ($nombreCocinero !== ''): ?>
+                                                <div class="wrapper-cocinero">
+                                                    <img
+                                                        src="<?= htmlspecialchars($avatarCocinero, ENT_QUOTES, 'UTF-8') ?>"
+                                                        alt="Avatar del cocinero"
+                                                        class="avatar-cocinero"
+                                                    >
+                                                    <div>
+                                                        <strong><?= htmlspecialchars($nombreCocinero, ENT_QUOTES, 'UTF-8') ?></strong>
+                                                        <br>
+                                                        <small>Preparando este pedido</small>
+                                                    </div>
+                                                </div>
+                                            <?php else: ?>
+                                                <span class="txt-sin-asignar">Sin asignar todavía</span>
+                                            <?php endif; ?>
+                                        <?php else: ?>
+                                            <span class="txt-sin-asignar">-</span>
+                                        <?php endif; ?>
+                                    </td>
+                                <?php endif; ?>
 
                                 <td data-label="Total">
                                     <strong><?= number_format((float) $totalPedido, 2) ?> €</strong>
