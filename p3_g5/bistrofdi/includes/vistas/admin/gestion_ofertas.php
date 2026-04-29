@@ -11,7 +11,7 @@ exigirRol('gerente');
 global $db;
 $ofertaDAO = new OfertaDAO($db);
 
-$ofertas = $ofertaDAO->listarOfertas();
+$ofertas = $ofertaDAO->obtenerOfertasActivas();
 
 $ahora = time();
 $ofertasActuales = [];

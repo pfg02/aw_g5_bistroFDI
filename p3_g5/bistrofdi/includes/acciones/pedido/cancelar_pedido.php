@@ -113,6 +113,7 @@ if ($idPedido !== false && $idPedido !== null) {
  */
 if ($accion === 'vaciar_carrito') {
     unset($_SESSION['carrito'], $_SESSION['tipoPedido']);
+	$_SESSION['ofertas_aplicadas'] = [];
 
     $_SESSION['mensaje_exito'] = 'El carrito ha sido vaciado correctamente. Puedes empezar un nuevo pedido cuando quieras.';
     header('Location: ' . $redirectCatalogo);

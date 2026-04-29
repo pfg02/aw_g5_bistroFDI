@@ -38,6 +38,8 @@ if (!isset($_SESSION['carrito']) || !is_array($_SESSION['carrito'])) {
 if (isset($_SESSION['carrito'][(int) $idProducto])) {
     unset($_SESSION['carrito'][(int) $idProducto]);
     $_SESSION['mensaje_exito'] = 'Artículo eliminado del carrito.';
+	unset($_SESSION['ofertas_aplicadas']);
+    $_SESSION['mensaje_info'] = "Producto eliminado. Las ofertas se han recalculado.";
 } else {
     $_SESSION['mensaje_error'] = 'El producto no estaba en el carrito.';
 }
