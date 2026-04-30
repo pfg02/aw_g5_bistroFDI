@@ -1,7 +1,7 @@
 <?php
 require_once __DIR__ . '/../../core/sesion.php';
 require_once __DIR__ . '/../../negocio/UsuarioController.php';
-require_once __DIR__ . '/../../formularios/FormularioLogin.php';
+require_once __DIR__ . '/../../formularios/formularioLogin.php';
 
 if (usuarioLogueado()) {
     header('Location: ../../../index.php');

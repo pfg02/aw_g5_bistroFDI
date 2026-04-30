@@ -1,7 +1,7 @@
 <?php
 require_once __DIR__ . '/../../core/sesion.php';
 require_once __DIR__ . '/../../negocio/UsuarioController.php';
-require_once __DIR__ . '/../../formularios/FormularioPerfil.php';
+require_once __DIR__ . '/../../formularios/formularioPerfil.php';
 
 exigirLogin();
 

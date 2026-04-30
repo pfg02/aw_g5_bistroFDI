@@ -8,7 +8,7 @@ declare(strict_types=1);
 require_once __DIR__ . '/../../core/config.php';
 require_once __DIR__ . '/../../core/sesion.php';
 require_once __DIR__ . '/../../negocio/PedidoController.php';
-require_once __DIR__ . '/../../formularios/FormularioPago.php';
+require_once __DIR__ . '/../../formularios/formularioPago.php';
 
 exigirLogin();
 exigirRol('cliente');

@@ -5,7 +5,7 @@ require_once __DIR__ . '/../../core/sesion.php';
 require_once __DIR__ . '/../../negocio/ProductoService.php';
 require_once __DIR__ . '/../../negocio/CategoriaService.php';
 require_once __DIR__ . '/../../core/formulario.php';
-require_once __DIR__ . '/../../formularios/FormularioEditarProducto.php';
+require_once __DIR__ . '/../../formularios/formularioEditarProducto.php';
 
 if (!isset($_SESSION['rol']) || $_SESSION['rol'] !== 'gerente') {
     header("Location: ../auth/login.php");
