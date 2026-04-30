@@ -38,21 +38,21 @@ if ($esGerente && ($idClienteParam === false || $idClienteParam === null)) {
 
 if ($esGerente) {
     $idCliente = (int) $idClienteParam;
-    $subtituloListado = 'Historial de pedidos del usuario seleccionado';
+    $subtituloListado = 'Historial de pedidos del cliente seleccionado';
 } else {
     $idCliente = (int) $idUsuarioSesion;
     $subtituloListado = 'Historial de tus compras';
 }
 
 /*
- * Solo mostramos herramientas de gerente cuando está viendo
+ * Solo mostramos vista especial de gerente cuando está viendo
  * los pedidos de un cliente concreto mediante ?id_cliente=...
  */
 $esVistaGerenteCliente = $esGerente && $idClienteParam !== false && $idClienteParam !== null;
 
 $historialPedidos = $controller->verPedidosCliente($idCliente);
 
-$tituloPagina = 'Mis Pedidos - Bistró FDI';
+$tituloPagina = $esGerente ? 'Pedidos del Cliente - Bistró FDI' : 'Mis Pedidos - Bistró FDI';
 $bodyClass = 'f0-body';
 
 ob_start();
@@ -61,13 +61,13 @@ ob_start();
 <div class="main-bienvenida">
     <section class="tarjeta-presentacion tarjeta-ancha">
 
-        <h1><?= $esGerente ? 'Pedidos del <span>Usuario</span>' : 'Mis <span>Pedidos</span>' ?></h1>
+        <h1><?= $esGerente ? 'Pedidos del <span>Cliente</span>' : 'Mis <span>Pedidos</span>' ?></h1>
         <p class="lema"><?= htmlspecialchars($subtituloListado, ENT_QUOTES, 'UTF-8') ?></p>
 
         <div class="divisor"></div>
 
         <?php if (isset($_SESSION['mensaje_exito'])): ?>
-            <div class="error-msg">
+            <div class="alerta alerta-exito">
                 <?= htmlspecialchars($_SESSION['mensaje_exito'], ENT_QUOTES, 'UTF-8') ?>
                 <?php unset($_SESSION['mensaje_exito']); ?>
             </div>
@@ -82,21 +82,13 @@ ob_start();
 
         <?php if ($esVistaGerenteCliente): ?>
             <div class="contenedor-botones-index">
-                <a href="<?= BASE_URL ?>/includes/vistas/camarero/panel_camarero.php" class="btn-admin">
-                    Ver panel de sala
-                </a>
-
-                <a href="<?= BASE_URL ?>/includes/vistas/cocina/panel_cocina.php" class="btn-admin">
-                    Ver panel de cocina
-                </a>
-
                 <a href="<?= BASE_URL ?>/includes/vistas/admin/gestionarUsuarios.php" class="btn-secundario">
                     Volver a usuarios
                 </a>
             </div>
 
             <p class="lema">
-                Desde aquí puedes revisar pedidos de clientes concretos y acceder a los paneles de sala o cocina para consultar atascos y progreso de preparación.
+                Vista de consulta del historial de pedidos del cliente seleccionado. Desde aquí el gerente puede revisar los pedidos y ver sus detalles, pero no realizar acciones de sala ni de cocina.
             </p>
 
             <div class="divisor"></div>
@@ -174,9 +166,8 @@ ob_start();
                                     && in_array($estadoPedidoNormalizado, ['En preparación', 'Cocinando'], true);
 
                                 /*
-                                 * Regla oficial:
-                                 * Solo se puede cancelar si está en Nuevo o Recibido.
-                                 * Si ya está pagado o avanzado, no se muestra el botón.
+                                 * Solo el cliente puede cancelar sus pedidos.
+                                 * El gerente consulta, pero no opera sobre pedidos desde esta vista.
                                  */
                                 $sePuedeCancelar = !$esGerente
                                     && in_array($estadoPedidoNormalizado, ['Nuevo', 'Recibido'], true);
