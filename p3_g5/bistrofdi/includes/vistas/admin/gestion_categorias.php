@@ -24,7 +24,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['accion'])) {
             $mensaje = "Categoría eliminada con éxito.";
             $clase_mensaje = "msg-exito";
         } else {
-            $mensaje = "Error: No se puede eliminar una categoría que contiene productos vinculados.";
+            $mensaje = "Error: No se puede eliminar una categoría que contiene productos asociados.";
             $clase_mensaje = "msg-error";
         }
     }
