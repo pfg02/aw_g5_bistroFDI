@@ -68,6 +68,8 @@ $bodyClass = 'f0-body';
 ob_start();
 ?>
 
+<div id="top"></div>
+
 <div class="main-bienvenida">
     <section class="tarjeta-presentacion tarjeta-ancha">
         <h1>Nuestro <span>Catálogo</span></h1>
@@ -107,9 +109,10 @@ ob_start();
             <a href="../pedido/pedido_inicio.php" class="btn-admin btn-cancelar">
                 Cambiar tipo de pedido
             </a>
-			<button type="button" class="btn-admin" onclick="abrirModalOfertas()">
-        		Ver Ofertas
-			</button>
+
+            <button type="button" class="btn-admin" onclick="abrirModalOfertas()">
+                Ver Ofertas
+            </button>
         </div>
 
         <div class="mensaje-sesion">
@@ -233,6 +236,10 @@ ob_start();
                 </div>
             <?php endif; ?>
         </div>
+
+        <a href="#top" class="btn-subir-arriba" aria-label="Subir arriba">
+            ↑
+        </a>
     </section>
 </div>
 
@@ -252,7 +259,6 @@ ob_start();
             <p><strong>IVA:</strong> <span id="modalIva">-</span>%</p>
         </div>
 
-
         <div class="modal-footer">
             <span class="precio-modal">
                 Precio final: <span id="modalPrecio">0.00</span> €
@@ -264,23 +270,27 @@ ob_start();
 <div id="modalOfertas" class="modal-fondo">
     <div class="modal-contenido">
         <span class="modal-cerrar" onclick="cerrarModalOfertas()">&times;</span>
-        
+
         <h2>Detalles de las Promociones</h2>
-        
+
         <div id="lista-detalles-ofertas">
             <?php if (!empty($ofertasDisponibles)): ?>
-                <?php foreach($ofertasDisponibles as $of): ?>
+                <?php foreach ($ofertasDisponibles as $of): ?>
                     <div class="detalle-oferta-item">
                         <h4><?= htmlspecialchars($of->getNombre(), ENT_QUOTES, 'UTF-8') ?></h4>
-						<p>Descuento: <?= number_format((float) $of->getDescuentoPorcentaje(), 2) ?> %</p>
+                        <p>Descuento: <?= number_format((float) $of->getDescuentoPorcentaje(), 2) ?> %</p>
                         <p><?= htmlspecialchars($of->getDescripcion(), ENT_QUOTES, 'UTF-8') ?></p>
-                        
+
                         <ul>
-                            <?php 
-                            // Ojo: Usamos tu $ofertaDAO que ya está instanciado arriba en carrito.php
-                            $prods = $ofertaDAO->obtenerProductosDeOferta($of->getId());
-                            foreach($prods as $p): ?>
-                                <li><?= (int)$p['cantidad'] ?>x <?= htmlspecialchars($p['nombre'], ENT_QUOTES, 'UTF-8') ?></li>
+                            <?php
+                                $prods = $ofertaDAO->obtenerProductosDeOferta($of->getId());
+
+                                foreach ($prods as $p):
+                            ?>
+                                <li>
+                                    <?= (int) $p['cantidad'] ?>x
+                                    <?= htmlspecialchars($p['nombre'], ENT_QUOTES, 'UTF-8') ?>
+                                </li>
                             <?php endforeach; ?>
                         </ul>
                     </div>

@@ -3480,3 +3480,65 @@ body.fondo-madera {
 .f4-btn-secondary:hover {
     background-color: #d1c6ab;
 }
+
+/* FLECHA SUBIR */
+
+html {
+    scroll-behavior: smooth;
+}
+
+#top {
+    scroll-margin-top: 90px;
+}
+
+.tarjeta-presentacion {
+    position: relative;
+    padding-bottom: 95px;
+}
+
+.btn-subir-arriba {
+    position: absolute;
+    right: 12px;
+    bottom: 18px;
+    width: 64px;
+    height: 64px;
+    background: linear-gradient(135deg, #d97706, #b45309);
+    color: #ffffff;
+    text-decoration: none;
+    border-radius: 18px;
+    border: 3px solid #fff3e0;
+    font-size: 38px;
+    font-weight: 900;
+    line-height: 1;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    box-shadow: 0 8px 18px rgba(0, 0, 0, 0.28);
+    z-index: 20;
+    transition: transform 0.2s ease, box-shadow 0.2s ease, filter 0.2s ease;
+}
+
+.btn-subir-arriba:hover {
+    transform: translateY(-4px) scale(1.05);
+    box-shadow: 0 12px 24px rgba(0, 0, 0, 0.35);
+    filter: brightness(1.05);
+}
+
+.btn-subir-arriba:active {
+    transform: translateY(-1px) scale(0.98);
+}
+
+@media (max-width: 768px) {
+    .tarjeta-presentacion {
+        padding-bottom: 85px;
+    }
+
+    .btn-subir-arriba {
+        right: 10px;
+        bottom: 14px;
+        width: 56px;
+        height: 56px;
+        font-size: 32px;
+        border-radius: 16px;
+    }
+}
