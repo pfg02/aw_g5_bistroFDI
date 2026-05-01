@@ -23,6 +23,37 @@ class OfertasController
         return self::$instancia;
     }
 
+
+    public function listarOfertas(): array
+    {
+        return $this->ofertaService->listarOfertas();
+    }
+
+    public function crearOferta($ofertaDTO): bool
+    {
+        return $this->ofertaService->crearOferta($ofertaDTO);
+    }
+
+    public function actualizarOferta($ofertaDTO): bool
+    {
+        return $this->ofertaService->actualizarOferta($ofertaDTO);
+    }
+
+    public function esOfertaActiva($ofertaDTO): bool
+    {
+        return $this->ofertaService->esOfertaActiva($ofertaDTO);
+    }
+
+    public function vincularPedidoOferta(int $idPedido, int $idOferta, int $veces, float $descuento): bool
+    {
+        return $this->ofertaService->vincularPedidoOferta($idPedido, $idOferta, $veces, $descuento);
+    }
+
+    public function obtenerOfertasDePedido(int $idPedido): array
+    {
+        return $this->ofertaService->obtenerOfertasDePedido($idPedido);
+    }
+
     public function obtenerOfertasActivas(): array
     {
         return $this->ofertaService->obtenerOfertasActivas();
@@ -31,28 +62,6 @@ class OfertasController
     public function obtenerOfertaPorId(int $id)
     {
         return $this->ofertaService->obtenerPorId($id);
-    }
-
-    /*
-     * Calcula el descuento total de las ofertas seleccionadas para un carrito.
-     *
-     * $carrito = [productoId => cantidad]
-     * $idsOfertas = [1, 2, 3]
-     */
-    public function procesarDescuentosCarrito(array $carrito, array $idsOfertas): float
-    {
-        return $this->ofertaService->calcularDescuento($carrito, $idsOfertas);
-    }
-
-    /*
-     * Revalida las ofertas cuando el usuario elimina productos del carrito.
-     */
-    public function revalidarOfertasTrasEliminacion(array $carritoActual, array $ofertasEnSesion): array
-    {
-        return $this->ofertaService->revalidarOfertasTrasEliminacion(
-            $carritoActual,
-            $ofertasEnSesion
-        );
     }
 
     /*
@@ -93,15 +102,18 @@ class OfertasController
 
     public function borrarOferta(int $id): bool
     {
-        /*
-         * Este método necesita que exista borrarOferta() en OfertasServiceApp.
-         * Si todavía no lo tienes creado ahí, devuelve false para evitar error fatal.
-         */
-        if (!method_exists($this->ofertaService, 'borrarOferta')) {
-            return false;
-        }
-
         return $this->ofertaService->borrarOferta($id);
+    }
+
+    /*
+     * Revalida las ofertas cuando el usuario elimina productos del carrito.
+     */
+    public function revalidarOfertasTrasEliminacion(array $carritoActual, array $ofertasEnSesion): array
+    {
+        return $this->ofertaService->revalidarOfertasTrasEliminacion(
+            $carritoActual,
+            $ofertasEnSesion
+        );
     }
 }
 ?>

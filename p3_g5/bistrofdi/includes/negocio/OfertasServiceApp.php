@@ -18,6 +18,51 @@ class OfertasServiceApp
         $this->productoDAO = new ProductoDAO($db);
     }
 
+    public function listarOfertas(): array
+    {
+        return $this->ofertasDAO->listarOfertas();
+    }
+
+    public function crearOferta($ofertaDTO): bool
+    {
+        return $this->ofertasDAO->crearOferta($ofertaDTO);
+    }
+
+    public function actualizarOferta($ofertaDTO): bool
+    {
+        return $this->ofertasDAO->actualizarOferta($ofertaDTO);
+    }
+
+    public function borrarOferta(int $id): bool
+    {
+        return $this->ofertasDAO->borrarOferta($id);
+    }
+
+    public function eliminarOferta(int $id): bool
+    {
+        return $this->ofertasDAO->borrarOferta($id);
+    }
+
+    public function eliminar(int $id): bool
+    {
+        return $this->ofertasDAO->borrarOferta($id);
+    }
+
+    public function esOfertaActiva($ofertaDTO): bool
+    {
+        return $this->ofertasDAO->esOfertaActiva($ofertaDTO);
+    }
+
+    public function vincularPedidoOferta(int $idPedido, int $idOferta, int $veces, float $descuento): bool
+    {
+        return $this->ofertasDAO->vincularPedidoOferta($idPedido, $idOferta, $veces, $descuento);
+    }
+
+    public function obtenerOfertasDePedido(int $idPedido): array
+    {
+        return $this->ofertasDAO->obtenerOfertasDePedido($idPedido);
+    }
+
     public function obtenerOfertasActivas(): array
     {
         return $this->ofertasDAO->obtenerOfertasActivas();
@@ -41,70 +86,7 @@ class OfertasServiceApp
     }
 
     /*
-     * Calcula el descuento total aplicado a un carrito.
-     *
-     * $carrito = [productoId => cantidad]
-     * $ofertasSeleccionadas = [idOferta1, idOferta2, ...]
-     */
-    public function calcularDescuento(array $carrito, array $ofertasSeleccionadas): float
-    {
-        $descuentoTotal = 0.0;
-        $carritoDisponible = $carrito;
-
-        foreach ($ofertasSeleccionadas as $idOferta) {
-            $idOferta = (int) $idOferta;
-
-            $productosOferta = $this->ofertasDAO->obtenerProductosDeOferta($idOferta);
-
-            if (empty($productosOferta)) {
-                continue;
-            }
-
-            $mapaOferta = [];
-
-            foreach ($productosOferta as $productoOferta) {
-                $productoId = (int) ($productoOferta['producto_id'] ?? 0);
-                $cantidad = (int) ($productoOferta['cantidad'] ?? 0);
-
-                if ($productoId > 0 && $cantidad > 0) {
-                    $mapaOferta[$productoId] = $cantidad;
-                }
-            }
-
-            if (empty($mapaOferta)) {
-                continue;
-            }
-
-            $veces = $this->calcularVecesAplicable($carritoDisponible, $mapaOferta);
-
-            if ($veces <= 0) {
-                continue;
-            }
-
-            $precioPack = $this->calcularPrecioPackConIva($productosOferta);
-            $ofertaDTO = $this->obtenerPorId($idOferta);
-
-            if ($ofertaDTO === null || !method_exists($ofertaDTO, 'getDescuentoPorcentaje')) {
-                continue;
-            }
-
-            $descuentoPorcentaje = (float) $ofertaDTO->getDescuentoPorcentaje();
-            $descuentoUnitario = $precioPack * ($descuentoPorcentaje / 100);
-
-            $descuentoTotal += $descuentoUnitario * $veces;
-
-            $this->consumirProductos($carritoDisponible, $mapaOferta, $veces);
-        }
-
-        return round($descuentoTotal, 2);
-    }
-
-    /*
      * Método central para preparar una oferta antes de guardarla.
-     * Aquí queda la lógica de negocio:
-     * - calcular precio del pack
-     * - validar precio final
-     * - calcular descuento real a partir del precio final escrito
      */
     public function prepararOfertaParaGuardar($ofertaDTO, array $productosNormalizados, float $precioFinalManual): array
     {
@@ -202,15 +184,6 @@ class OfertasServiceApp
         return round($descuento, 2);
     }
 
-    /*
-     * Calcula el precio del pack con IVA.
-     *
-     * Acepta productos con:
-     * - producto_id + cantidad
-     * - precio_base/precio + iva + cantidad
-     *
-     * Si no viene precio en el array, lo busca en ProductoDAO.
-     */
     public function calcularPrecioPackConIva(array $productosOferta): float
     {
         $total = 0.0;

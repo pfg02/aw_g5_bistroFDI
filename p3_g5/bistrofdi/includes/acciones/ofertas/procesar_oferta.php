@@ -3,7 +3,7 @@ declare(strict_types=1);
 
 require_once __DIR__ . '/../../core/config.php';
 require_once __DIR__ . '/../../core/sesion.php';
-require_once __DIR__ . '/../../integracion/OfertasDAO.php';
+require_once __DIR__ . '/../../negocio/OfertasController.php'; // 1. Cambiamos DAO por Controller
 require_once __DIR__ . '/../../negocio/PedidoServiceApp.php';
 
 exigirLogin();
@@ -24,7 +24,7 @@ if (!isset($_SESSION['ofertas_aplicadas'])) {
     $_SESSION['ofertas_aplicadas'] = [];
 }
 
-// Acción: Quitar una oferta ya aplicada
+// Quitar una oferta ya aplicada
 if ($accion === 'quitar') {
     if ($idOferta && isset($_SESSION['ofertas_aplicadas'][$idOferta])) {
         unset($_SESSION['ofertas_aplicadas'][$idOferta]);
@@ -34,7 +34,7 @@ if ($accion === 'quitar') {
     exit();
 }
 
-// Acción: Aplicar una nueva oferta
+// Aplicar una nueva oferta
 if ($accion === 'aplicar') {
     if (!$idOferta) {
         $_SESSION['mensaje_error'] = 'Por favor, selecciona una oferta válida.';
@@ -56,20 +56,19 @@ if ($accion === 'aplicar') {
     }
 
     $db = Application::getInstance()->conexionBd();
-    $ofertaDAO = new OfertaDAO($db);
+    
+    $ofertasController = OfertasController::getInstance($db);
     $pedidoService = new PedidoServiceApp($db);
 
-    $oferta = $ofertaDAO->obtenerPorId($idOferta);
+    $oferta = $ofertasController->obtenerOfertaPorId($idOferta);
 
-    if (!$oferta || !$ofertaDAO->esOfertaActiva($oferta)) {
+    if (!$oferta || !$ofertasController->esOfertaActiva($oferta)) {
         $_SESSION['mensaje_error'] = 'La oferta seleccionada no existe o ha caducado.';
         header('Location: ../../vistas/tienda/carrito.php');
         exit();
     }
 
-    // Cargar los productos que requiere el pack en el DTO
-    $productosRequeridos = $ofertaDAO->obtenerProductosDeOferta($idOferta);
-    $oferta->setProductos($productosRequeridos);
+    $productosRequeridos = $oferta->getProductos();
 
     $resultado = $pedidoService->calcularDescuentoOferta($_SESSION['carrito'], $_SESSION['ofertas_aplicadas'], $oferta);
 
@@ -78,7 +77,7 @@ if ($accion === 'aplicar') {
             'nombre' => $oferta->getNombre(),
             'veces_aplicada' => $resultado['veces_aplicada'],
             'descuento' => $resultado['descuento'],
-            'productos_requeridos' => $resultado['productos_requeridos'] // Para el cálculo secuencial futuro
+            'productos_requeridos' => $resultado['productos_requeridos']
         ];
         $_SESSION['mensaje_exito'] = $resultado['mensaje'];
     } else {
