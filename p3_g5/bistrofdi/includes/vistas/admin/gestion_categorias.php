@@ -1,4 +1,6 @@
 <?php
+declare(strict_types=1);
+
 // 1. Configuración y Dependencias
 require_once __DIR__ . '/../../core/config.php';
 require_once __DIR__ . '/../../core/sesion.php';
@@ -24,7 +26,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['accion'])) {
             $mensaje = "Categoría eliminada con éxito.";
             $clase_mensaje = "msg-exito";
         } else {
-            $mensaje = "Error: No se puede eliminar una categoría que contiene productos asociados.";
+            $mensaje = "No se puede eliminar esta categoría porque tiene productos asociados.";
             $clase_mensaje = "msg-error";
         }
     }
@@ -47,8 +49,8 @@ ob_start();
     </header>
 
     <?php if ($mensaje): ?>
-        <div class="alerta-sistema <?= $clase_mensaje ?>">
-            <?= htmlspecialchars($mensaje) ?>
+        <div class="alerta-sistema <?= htmlspecialchars($clase_mensaje, ENT_QUOTES, 'UTF-8') ?>">
+            <?= htmlspecialchars($mensaje, ENT_QUOTES, 'UTF-8') ?>
         </div>
     <?php endif; ?>
 
@@ -65,29 +67,70 @@ ob_start();
                 </thead>
                 <tbody>
                     <?php if (empty($categorias)): ?>
-                        <tr><td colspan="4">No se han encontrado categorías.</td></tr>
+                        <tr>
+                            <td colspan="4">No se han encontrado categorías.</td>
+                        </tr>
                     <?php else: ?>
                         <?php foreach ($categorias as $cat): ?>
-                        <tr>
-                            <td data-label="Imagen">
-                                <img src="../../../img/categorias/<?= htmlspecialchars($cat->imagen) ?>" 
-                                     class="img-tabla-cat" alt="icono">
-                            </td>
-                            <td data-label="Nombre" class="cat-nombre"><?= htmlspecialchars($cat->nombre) ?></td>
-                            <td data-label="Descripción" class="cat-desc"><?= htmlspecialchars($cat->descripcion) ?></td>
-                            <td data-label="Acciones" class="cat-acciones">
-                                <a href="editar_categoria.php?id=<?= $cat->id ?>" class="btn-editar">Editar</a>
-                                
-                                <form action="gestion_categorias.php" method="POST" class="form-del-inline">
-                                    <input type="hidden" name="id" value="<?= $cat->id ?>">
-                                    <input type="hidden" name="accion" value="eliminar">
-                                    <button type="submit" class="btn-eliminar" 
-                                            onclick="return confirm('¿Deseas eliminar permanentemente esta categoría?')">
-                                        Eliminar
-                                    </button>
-                                </form>
-                            </td>
-                        </tr>
+                            <?php
+                                $rutaImagenesWeb = '../../../img/categorias/';
+                                $rutaImagenesFisica = __DIR__ . '/../../../img/categorias/';
+                                $imagenPorDefecto = $rutaImagenesWeb . 'default.png';
+
+                                $imagenCategoria = trim((string) ($cat->imagen ?? ''));
+                                $fotoCategoria = $imagenPorDefecto;
+
+                                if ($imagenCategoria !== '') {
+                                    $nombreArchivo = basename($imagenCategoria);
+                                    $rutaFisica = $rutaImagenesFisica . $nombreArchivo;
+
+                                    if (is_file($rutaFisica)) {
+                                        $fotoCategoria = $rutaImagenesWeb . $nombreArchivo;
+                                    }
+                                }
+
+                                $nombreCategoria = (string) ($cat->nombre ?? '');
+                                $descripcionCategoria = (string) ($cat->descripcion ?? '');
+                            ?>
+
+                            <tr>
+                                <td data-label="Imagen">
+                                    <img
+                                        src="<?= htmlspecialchars($fotoCategoria, ENT_QUOTES, 'UTF-8') ?>"
+                                        class="img-tabla-cat"
+                                        alt="<?= htmlspecialchars($nombreCategoria, ENT_QUOTES, 'UTF-8') ?>"
+                                        loading="lazy"
+                                        onerror="this.onerror=null; this.src='../../../img/categorias/default.png';"
+                                    >
+                                </td>
+
+                                <td data-label="Nombre" class="cat-nombre">
+                                    <?= htmlspecialchars($nombreCategoria, ENT_QUOTES, 'UTF-8') ?>
+                                </td>
+
+                                <td data-label="Descripción" class="cat-desc">
+                                    <?= htmlspecialchars($descripcionCategoria, ENT_QUOTES, 'UTF-8') ?>
+                                </td>
+
+                                <td data-label="Acciones" class="cat-acciones">
+                                    <a href="editar_categoria.php?id=<?= (int) $cat->id ?>" class="btn-editar">
+                                        Editar
+                                    </a>
+
+                                    <form action="gestion_categorias.php" method="POST" class="form-del-inline">
+                                        <input type="hidden" name="id" value="<?= (int) $cat->id ?>">
+                                        <input type="hidden" name="accion" value="eliminar">
+
+                                        <button
+                                            type="submit"
+                                            class="btn-eliminar"
+                                            onclick="return confirm('¿Deseas eliminar permanentemente esta categoría?')"
+                                        >
+                                            Eliminar
+                                        </button>
+                                    </form>
+                                </td>
+                            </tr>
                         <?php endforeach; ?>
                     <?php endif; ?>
                 </tbody>

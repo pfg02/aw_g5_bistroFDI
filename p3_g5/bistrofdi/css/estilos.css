@@ -3542,3 +3542,36 @@ html {
         border-radius: 16px;
     }
 }
+
+/* IMAGEN DEFAULT PRODUCTO Y CATEGORÍAS */
+
+.imagen-producto {
+    width: 100%;
+    height: 150px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    overflow: hidden;
+    background-color: #f7f3ed;
+    border-radius: 14px;
+}
+
+.img-catalogo {
+    width: 100%;
+    height: 100%;
+    object-fit: contain;
+    display: block;
+}
+
+.img-categoria,
+.img-tabla-cat {
+    width: 130px;
+    height: 130px;
+    object-fit: contain;
+    display: block;
+    margin: 0 auto;
+    background-color: #f7f3ed;
+    border-radius: 8px;
+    border: 1px solid #ddd;
+    padding: 8px;
+}

@@ -142,21 +142,35 @@ ob_start();
                                         /*
                                          * En la BD puedes guardar varias imágenes en el campo imagen separadas por coma:
                                          * hamburguesa1.jpg,hamburguesa2.jpg,hamburguesa3.jpg
+                                         *
+                                         * Si no hay imagen o el archivo no existe, se usa default.png.
                                          */
-                                        $imagenes = !empty($p->imagen) ? explode(',', (string) $p->imagen) : [];
+                                        $rutaImagenesWeb = '../../../img/productos/';
+                                        $rutaImagenesFisica = __DIR__ . '/../../../img/productos/';
+                                        $imagenPorDefecto = $rutaImagenesWeb . 'default.png';
 
+                                        $imagenProducto = trim((string) ($p->imagen ?? ''));
                                         $imagenesModal = [];
 
-                                        foreach ($imagenes as $img) {
-                                            $img = trim((string) $img);
+                                        if ($imagenProducto !== '') {
+                                            $imagenes = explode(',', $imagenProducto);
 
-                                            if ($img !== '') {
-                                                $imagenesModal[] = '../../../img/productos/' . $img;
+                                            foreach ($imagenes as $img) {
+                                                $img = trim((string) $img);
+
+                                                if ($img !== '') {
+                                                    $nombreArchivo = basename($img);
+                                                    $rutaFisica = $rutaImagenesFisica . $nombreArchivo;
+
+                                                    if (is_file($rutaFisica)) {
+                                                        $imagenesModal[] = $rutaImagenesWeb . $nombreArchivo;
+                                                    }
+                                                }
                                             }
                                         }
 
                                         if (empty($imagenesModal)) {
-                                            $imagenesModal[] = '../../../img/productos/default.png';
+                                            $imagenesModal[] = $imagenPorDefecto;
                                         }
 
                                         $fotoPrincipal = $imagenesModal[0];
@@ -180,7 +194,8 @@ ob_start();
                                                 src="<?= htmlspecialchars($fotoPrincipal, ENT_QUOTES, 'UTF-8') ?>"
                                                 alt="<?= htmlspecialchars($nombre, ENT_QUOTES, 'UTF-8') ?>"
                                                 class="img-catalogo"
-                                                onerror="this.src='../../../img/productos/default.png'"
+                                                loading="lazy"
+                                                onerror="this.onerror=null; this.src='../../../img/productos/default.png';"
                                             >
                                         </div>
 
