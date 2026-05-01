@@ -3,26 +3,22 @@ declare(strict_types=1);
 
 require_once __DIR__ . '/../../core/config.php';
 require_once __DIR__ . '/../../core/sesion.php';
-require_once __DIR__ . '/../../integracion/OfertasDAO.php';
+require_once __DIR__ . '/../../negocio/OfertasController.php';
 
 exigirLogin();
 exigirRol('gerente');
 
 $db = Application::getInstance()->conexionBd();
-$ofertaDAO = new OfertaDAO($db);
+$ofertasController = OfertasController::getInstance($db);
 
-/*
- * En gestión/admin queremos ver todas las ofertas no borradas.
- * No usamos obtenerOfertasActivas(), porque esa función filtra por fechas.
- */
-$ofertas = obtenerTodasLasOfertasAdmin($db);
+$ofertas = $ofertasController->listarOfertas();
 
 $ahora = time();
 $ofertasActuales = [];
 $ofertasCaducadas = [];
 
 foreach ($ofertas as $oferta) {
-    $fechaFin = (string) obtenerDatoOferta($oferta, 'fecha_fin', 'getFechaFin');
+    $fechaFin = $oferta->getFechaFin();
     $timestampFin = strtotime($fechaFin);
 
     if ($timestampFin !== false && $timestampFin < $ahora) {
@@ -95,13 +91,13 @@ ob_start();
                     <tbody>
                         <?php foreach ($ofertasActuales as $oferta): ?>
                             <?php
-                                $id = obtenerDatoOferta($oferta, 'id', 'getId');
-                                $nombre = (string) (obtenerDatoOferta($oferta, 'nombre', 'getNombre') ?? '');
-                                $fechaInicio = (string) (obtenerDatoOferta($oferta, 'fecha_inicio', 'getFechaInicio') ?? '');
-                                $fechaFin = (string) (obtenerDatoOferta($oferta, 'fecha_fin', 'getFechaFin') ?? '');
-                                $descuento = (float) (obtenerDatoOferta($oferta, 'descuento_porcentaje', 'getDescuentoPorcentaje') ?? 0);
+                               	$id = $oferta->getId();
+                                $nombre = $oferta->getNombre();
+                                $fechaInicio = $oferta->getFechaInicio();
+                                $fechaFin = $oferta->getFechaFin();
+                                $descuento = $oferta->getDescuentoPorcentaje();
 
-                                $productosOferta = $ofertaDAO->obtenerProductosDeOferta((int) $id);
+                                $productosOferta = $oferta->getProductos();
                             ?>
 
                             <tr>
@@ -110,8 +106,8 @@ ob_start();
                                 </td>
 
                                 <td data-label="Fechas">
-                                    <?= htmlspecialchars(formatearFecha($fechaInicio), ENT_QUOTES, 'UTF-8') ?><br>
-                                    <span>hasta <?= htmlspecialchars(formatearFecha($fechaFin), ENT_QUOTES, 'UTF-8') ?></span>
+                                   	<?= htmlspecialchars(date('d/m/Y H:i', strtotime($fechaInicio)), ENT_QUOTES, 'UTF-8') ?><br>
+    								<span>hasta <?= htmlspecialchars(date('d/m/Y H:i', strtotime($fechaFin)), ENT_QUOTES, 'UTF-8') ?></span>
                                 </td>
 
                                 <td data-label="Descuento">
@@ -168,13 +164,13 @@ ob_start();
                     <tbody>
                         <?php foreach ($ofertasCaducadas as $oferta): ?>
                             <?php
-                                $id = obtenerDatoOferta($oferta, 'id', 'getId');
-                                $nombre = (string) (obtenerDatoOferta($oferta, 'nombre', 'getNombre') ?? '');
-                                $fechaInicio = (string) (obtenerDatoOferta($oferta, 'fecha_inicio', 'getFechaInicio') ?? '');
-                                $fechaFin = (string) (obtenerDatoOferta($oferta, 'fecha_fin', 'getFechaFin') ?? '');
-                                $descuento = (float) (obtenerDatoOferta($oferta, 'descuento_porcentaje', 'getDescuentoPorcentaje') ?? 0);
+                                $id = $oferta->getId();
+                                $nombre = $oferta->getNombre();
+                                $fechaInicio = $oferta->getFechaInicio();
+                                $fechaFin = $oferta->getFechaFin();
+                                $descuento = $oferta->getDescuentoPorcentaje();
 
-                                $productosOferta = $ofertaDAO->obtenerProductosDeOferta((int) $id);
+                                $productosOferta = $oferta->getProductos();
                             ?>
 
                             <tr>
@@ -183,8 +179,8 @@ ob_start();
                                 </td>
 
                                 <td data-label="Fechas">
-                                    <?= htmlspecialchars(formatearFecha($fechaInicio), ENT_QUOTES, 'UTF-8') ?><br>
-                                    <span>hasta <?= htmlspecialchars(formatearFecha($fechaFin), ENT_QUOTES, 'UTF-8') ?></span>
+									<?= htmlspecialchars(date('d/m/Y H:i', strtotime($fechaInicio)), ENT_QUOTES, 'UTF-8') ?><br>
+    								<span>hasta <?= htmlspecialchars(date('d/m/Y H:i', strtotime($fechaFin)), ENT_QUOTES, 'UTF-8') ?></span>
                                 </td>
 
                                 <td data-label="Descuento">
@@ -226,54 +222,3 @@ ob_start();
 <?php
 $contenidoPrincipal = ob_get_clean();
 require_once __DIR__ . '/../partials/plantilla.php';
-
-function obtenerTodasLasOfertasAdmin(mysqli $db): array
-{
-    $sql = "
-        SELECT *
-        FROM ofertas
-        WHERE activa = 1
-        ORDER BY fecha_inicio DESC, id DESC
-    ";
-
-    $rs = $db->query($sql);
-
-    if (!$rs) {
-        return [];
-    }
-
-    $ofertas = [];
-
-    while ($fila = $rs->fetch_assoc()) {
-        $ofertas[] = $fila;
-    }
-
-    $rs->free();
-
-    return $ofertas;
-}
-
-function obtenerDatoOferta($oferta, string $claveArray, string $getter)
-{
-    if (is_array($oferta)) {
-        return $oferta[$claveArray] ?? null;
-    }
-
-    if (is_object($oferta) && method_exists($oferta, $getter)) {
-        return $oferta->$getter();
-    }
-
-    return null;
-}
-
-function formatearFecha(string $fecha): string
-{
-    $timestamp = strtotime($fecha);
-
-    if ($timestamp === false) {
-        return $fecha;
-    }
-
-    return date('d/m/Y H:i', $timestamp);
-}
-?>
