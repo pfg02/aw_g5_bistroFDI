@@ -125,7 +125,7 @@ class PedidoServiceApp
 
         return [
             'exito' => false,
-            'mensaje' => 'Esta oferta no se puede aplicar con los productos que tienes en el carrito.'
+            'mensaje' => 'Descuento no aplicable a los productos actuales del carrito'
         ];
     }
 
