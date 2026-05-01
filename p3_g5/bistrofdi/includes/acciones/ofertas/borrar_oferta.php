@@ -8,7 +8,7 @@ declare(strict_types=1);
 
 require_once __DIR__ . '/../../core/config.php';
 require_once __DIR__ . '/../../core/sesion.php';
-require_once __DIR__ . '/../../integracion/OfertasDAO.php';
+require_once __DIR__ . '/../../negocio/OfertasController.php'; 
 
 exigirLogin();
 exigirRol('gerente');
@@ -19,7 +19,8 @@ unset($_SESSION['mensaje_error']);
 unset($_SESSION['mensaje_exito']);
 
 if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
-    header('Location: ' . $redirect . '?msg=error');
+    $_SESSION['mensaje_error'] = 'Petición no válida.';
+    header('Location: ' . $redirect);
     exit();
 }
 
@@ -28,19 +29,20 @@ $idOferta = filter_input(INPUT_POST, 'id', FILTER_VALIDATE_INT, [
 ]);
 
 if ($idOferta === false || $idOferta === null) {
-    header('Location: ' . $redirect . '?msg=error');
+    $_SESSION['mensaje_error'] = 'El ID de la oferta no es válido.';
+    header('Location: ' . $redirect);
     exit();
 }
 
 $db = Application::getInstance()->conexionBd();
-$ofertaDAO = new OfertaDAO($db);
-
-$borrada = $ofertaDAO->borrarOferta((int) $idOferta);
+$ofertasController = OfertasController::getInstance($db);
+$borrada = $ofertasController->borrarOferta((int) $idOferta);
 
 if ($borrada) {
-    header('Location: ' . $redirect . '?msg=borrada');
-    exit();
+    $_SESSION['mensaje_exito'] = 'La oferta se ha eliminado correctamente.';
+} else {
+    $_SESSION['mensaje_error'] = 'No se pudo eliminar la oferta o ya estaba borrada.';
 }
 
-header('Location: ' . $redirect . '?msg=error');
+header('Location: ' . $redirect);
 exit();

@@ -8,7 +8,7 @@ declare(strict_types=1);
 require_once __DIR__ . '/../../core/config.php';
 require_once __DIR__ . '/../../core/sesion.php';
 require_once __DIR__ . '/../../integracion/ProductoDAO.php';
-require_once __DIR__ . '/../../integracion/OfertasDAO.php';
+require_once __DIR__ . '/../../negocio/OfertasController.php';
 
 exigirLogin();
 exigirRol('cliente');
@@ -40,9 +40,8 @@ if (!in_array($tipoPedido, $tiposPermitidos, true)) {
 
 $productoDAO = new ProductoDAO(Application::getInstance()->conexionBd());
 $productosDTO = $productoDAO->listarOfertados();
-
-$ofertaDAO = new OfertaDAO(Application::getInstance()->conexionBd());
-$ofertasDisponibles = $ofertaDAO->obtenerOfertasActivas();
+$ofertasController = OfertasController::getInstance($db);
+$ofertasDisponibles = $ofertasController->obtenerOfertasActivas();
 
 $menuAgrupado = [];
 
@@ -298,7 +297,7 @@ ob_start();
 
                         <ul>
                             <?php
-                                $prods = $ofertaDAO->obtenerProductosDeOferta($of->getId());
+                                $prods = $of->getProductos();
 
                                 foreach ($prods as $p):
                             ?>

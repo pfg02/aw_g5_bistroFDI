@@ -3,7 +3,7 @@ declare(strict_types=1);
 
 require_once __DIR__ . '/../../core/config.php';
 require_once __DIR__ . '/../../core/sesion.php';
-require_once __DIR__ . '/../../integracion/OfertasDAO.php';
+require_once __DIR__ . '/../../negocio/OfertasController.php';
 require_once __DIR__ . '/../../integracion/ProductoDAO.php';
 require_once __DIR__ . '/../../formularios/formularioOferta.php';
 require_once __DIR__ . '/../../negocio/OfertasDTO.php';
@@ -21,13 +21,11 @@ if ($idOferta === false || $idOferta === null) {
 }
 
 $db = Application::getInstance()->conexionBd();
-
-$ofertaDAO = new OfertaDAO($db);
+$ofertasController = OfertasController::getInstance($db);
 $productoDAO = new ProductoDAO($db);
 
 $productosDisponibles = $productoDAO->listarTodos();
-
-$oferta = cargarOferta($ofertaDAO, (int) $idOferta);
+$oferta = $ofertasController->obtenerOfertaPorId((int) $idOferta);
 
 if ($oferta === null) {
     $_SESSION['mensaje_error'] = 'La oferta indicada no existe.';
@@ -45,10 +43,9 @@ $htmlFormulario = $formulario->gestiona();
 $datosValidados = $formulario->getDatosValidados();
 
 if ($_SERVER['REQUEST_METHOD'] === 'POST' && !empty($datosValidados['oferta'])) {
-    $ok = $ofertaDAO->actualizarOferta($datosValidados['oferta']);
-
-    if ($ok) {
-        header('Location: ' . BASE_URL . '/includes/vistas/admin/gestion_ofertas.php?msg=editada');
+   	if ($ofertasController->actualizarOferta($datosValidados['oferta'])) {
+        $_SESSION['mensaje_exito'] = 'La oferta se ha actualizado correctamente.';
+        header('Location: ' . BASE_URL . '/includes/vistas/admin/gestion_ofertas.php');
         exit();
     }
 
@@ -83,31 +80,3 @@ ob_start();
 <?php
 $contenidoPrincipal = ob_get_clean();
 require_once __DIR__ . '/../partials/plantilla.php';
-
-function cargarOferta(OfertaDAO $ofertaDAO, int $idOferta): ?OfertaDTO
-{
-    $oferta = $ofertaDAO->obtenerPorId($idOferta);
-
-    if (!$oferta instanceof OfertaDTO) {
-        return null;
-    }
-
-    $productos = $ofertaDAO->obtenerProductosDeOferta($idOferta);
-    $oferta->setProductos(normalizarProductosOferta($productos));
-
-    return $oferta;
-}
-
-function normalizarProductosOferta(array $productos): array
-{
-    $resultado = [];
-
-    foreach ($productos as $producto) {
-        $resultado[] = [
-            'producto_id' => (int) ($producto['producto_id'] ?? 0),
-            'cantidad' => (int) ($producto['cantidad'] ?? 1),
-        ];
-    }
-
-    return $resultado;
-}

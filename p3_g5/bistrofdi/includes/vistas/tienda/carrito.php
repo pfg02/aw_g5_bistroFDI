@@ -8,7 +8,7 @@ declare(strict_types=1);
 require_once __DIR__ . '/../../core/config.php';
 require_once __DIR__ . '/../../core/sesion.php';
 require_once __DIR__ . '/../../integracion/ProductoDAO.php';
-require_once __DIR__ . '/../../integracion/OfertasDAO.php';
+require_once __DIR__ . '/../../negocio/OfertasController.php';
 
 exigirLogin();
 exigirRol('cliente');
@@ -68,7 +68,7 @@ if (!is_array($carrito)) {
 
 $db = Application::getInstance()->conexionBd();
 $productoDAO = new ProductoDAO($db);
-$ofertaDAO = new OfertaDAO($db);
+$ofertasController = OfertasController::getInstance($db);
 
 $productos = [];
 $subtotalPedido = 0.0;
@@ -99,7 +99,7 @@ if (!empty($carrito)) {
     }
 }
 
-$ofertasDisponibles = $ofertaDAO->obtenerOfertasActivas();
+$ofertasDisponibles = $ofertasController->obtenerOfertasActivas();
 
 $tituloPagina = 'Bistró FDI - Mi Carrito';
 $bodyClass = 'f0-body';
@@ -354,8 +354,7 @@ ob_start();
                         
                         <ul>
                             <?php 
-                            // Ojo: Usamos tu $ofertaDAO que ya está instanciado arriba en carrito.php
-                            $prods = $ofertaDAO->obtenerProductosDeOferta($of->getId());
+                            $prods = $of->getProductos();
                             foreach($prods as $p): ?>
                                 <li><?= (int)$p['cantidad'] ?>x <?= htmlspecialchars($p['nombre'], ENT_QUOTES, 'UTF-8') ?></li>
                             <?php endforeach; ?>

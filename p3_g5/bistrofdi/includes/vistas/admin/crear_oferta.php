@@ -3,16 +3,15 @@ declare(strict_types=1);
 
 require_once __DIR__ . '/../../core/config.php';
 require_once __DIR__ . '/../../core/sesion.php';
-require_once __DIR__ . '/../../integracion/OfertasDAO.php';
-require_once __DIR__ . '/../../integracion/ProductoDAO.php';
+require_once __DIR__ . '/../../negocio/OfertasController.php'; 
+require_once __DIR__ . '/../../integracion/ProductoDAO.php'; 
 require_once __DIR__ . '/../../formularios/formularioOferta.php';
 
 exigirLogin();
 exigirRol('gerente');
 
 $db = Application::getInstance()->conexionBd();
-
-$ofertaDAO = new OfertaDAO($db);
+$ofertasController = OfertasController::getInstance($db);
 $productoDAO = new ProductoDAO($db);
 $productosDisponibles = $productoDAO->listarTodos();
 
@@ -26,18 +25,14 @@ $htmlFormulario = $formulario->gestiona();
 $datosValidados = $formulario->getDatosValidados();
 
 if ($_SERVER['REQUEST_METHOD'] === 'POST' && !empty($datosValidados['oferta'])) {
-    $ok = false;
-
-    if (method_exists($ofertaDAO, 'crearOferta')) {
-        $ok = $ofertaDAO->crearOferta($datosValidados['oferta']);
-    }
-
-    if ($ok) {
-        header('Location: ' . BASE_URL . '/includes/vistas/admin/gestion_ofertas.php?msg=creada');
+    
+    if ($ofertasController->crearOferta($datosValidados['oferta'])) {
+        $_SESSION['mensaje_exito'] = 'La oferta se ha creado correctamente.';
+        header('Location: ' . BASE_URL . '/includes/vistas/admin/gestion_ofertas.php');
         exit();
     }
 
-    $_SESSION['mensaje_error'] = 'No se pudo crear la oferta.';
+    $_SESSION['mensaje_error'] = 'No se pudo crear la oferta. Revisa los datos introducidos.';
 }
 
 $tituloPagina = 'Crear Oferta - Bistró FDI';
