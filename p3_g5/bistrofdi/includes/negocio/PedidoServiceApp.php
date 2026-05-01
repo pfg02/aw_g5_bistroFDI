@@ -125,7 +125,7 @@ class PedidoServiceApp
 
         return [
             'exito' => false,
-            'mensaje' => 'No te quedan productos suficientes en el pedido sin descuento para aplicar esta oferta.'
+            'mensaje' => 'Esta oferta no se puede aplicar con los productos que tienes en el carrito.'
         ];
     }
 
