@@ -29,17 +29,17 @@ class OfertasController
         return $this->ofertaService->listarOfertas();
     }
 
-    public function crearOferta($ofertaDTO): bool
+    public function crearOferta(OfertaDTO $ofertaDTO): bool
     {
         return $this->ofertaService->crearOferta($ofertaDTO);
     }
 
-    public function actualizarOferta($ofertaDTO): bool
+    public function actualizarOferta(OfertaDTO $ofertaDTO): bool
     {
         return $this->ofertaService->actualizarOferta($ofertaDTO);
     }
 
-    public function esOfertaActiva($ofertaDTO): bool
+    public function esOfertaActiva(OfertaDTO $ofertaDTO): bool
     {
         return $this->ofertaService->esOfertaActiva($ofertaDTO);
     }

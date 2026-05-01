@@ -4,6 +4,7 @@ declare(strict_types=1);
 require_once __DIR__ . '/../core/config.php';
 require_once __DIR__ . '/../integracion/OfertasDAO.php';
 require_once __DIR__ . '/../integracion/ProductoDAO.php';
+require_once __DIR__ . '/../negocio/OfertasDTO.php';
 
 class OfertasServiceApp
 {
@@ -23,12 +24,12 @@ class OfertasServiceApp
         return $this->ofertasDAO->listarOfertas();
     }
 
-    public function crearOferta($ofertaDTO): bool
+    public function crearOferta(OfertaDTO $ofertaDTO): bool
     {
         return $this->ofertasDAO->crearOferta($ofertaDTO);
     }
 
-    public function actualizarOferta($ofertaDTO): bool
+    public function actualizarOferta(OfertaDTO $ofertaDTO): bool
     {
         return $this->ofertasDAO->actualizarOferta($ofertaDTO);
     }
@@ -48,7 +49,7 @@ class OfertasServiceApp
         return $this->ofertasDAO->borrarOferta($id);
     }
 
-    public function esOfertaActiva($ofertaDTO): bool
+    public function esOfertaActiva(OfertaDTO $ofertaDTO): bool
     {
         return $this->ofertasDAO->esOfertaActiva($ofertaDTO);
     }
@@ -88,7 +89,7 @@ class OfertasServiceApp
     /*
      * Método central para preparar una oferta antes de guardarla.
      */
-    public function prepararOfertaParaGuardar($ofertaDTO, array $productosNormalizados, float $precioFinalManual): array
+    public function prepararOfertaParaGuardar(OfertaDTO $ofertaDTO, array $productosNormalizados, float $precioFinalManual): array
     {
         $errores = [];
 
@@ -325,7 +326,7 @@ class OfertasServiceApp
         }
     }
 
-    private function obtenerIdProductoOferta($productoOferta): ?int
+    private function obtenerIdProductoOferta(array|object $productoOferta): ?int
     {
         if (is_array($productoOferta)) {
             $id = $productoOferta['producto_id']
@@ -363,7 +364,7 @@ class OfertasServiceApp
         return null;
     }
 
-    private function obtenerCantidadProductoOferta($productoOferta): int
+    private function obtenerCantidadProductoOferta(array|object $productoOferta): int
     {
         if (is_array($productoOferta)) {
             return (int) ($productoOferta['cantidad'] ?? 1);
@@ -376,7 +377,7 @@ class OfertasServiceApp
         return 1;
     }
 
-    private function obtenerPrecioBaseDesdeProductoOferta($productoOferta): ?float
+    private function obtenerPrecioBaseDesdeProductoOferta(array|object $productoOferta): ?float
     {
         if (is_array($productoOferta)) {
             if (isset($productoOferta['precio_base'])) {
@@ -401,7 +402,7 @@ class OfertasServiceApp
         return null;
     }
 
-    private function obtenerIvaDesdeProductoOferta($productoOferta): float
+    private function obtenerIvaDesdeProductoOferta(array|object $productoOferta): float
     {
         if (is_array($productoOferta) && isset($productoOferta['iva'])) {
             return (float) $productoOferta['iva'];
@@ -414,7 +415,7 @@ class OfertasServiceApp
         return 0.0;
     }
 
-    private function obtenerPrecioBaseProducto($producto): float
+    private function obtenerPrecioBaseProducto(array|object $producto): float
     {
         if (is_array($producto)) {
             if (isset($producto['precio_base'])) {
@@ -447,7 +448,7 @@ class OfertasServiceApp
         return 0.0;
     }
 
-    private function obtenerIvaProducto($producto): float
+    private function obtenerIvaProducto(array|object $producto): float
     {
         if (is_array($producto) && isset($producto['iva'])) {
             return (float) $producto['iva'];
