@@ -3,13 +3,19 @@ require_once __DIR__ . '/../../core/config.php';
 require_once __DIR__ . '/../../core/sesion.php';
 require_once __DIR__ . '/../../negocio/ProductoService.php';
 
+// Acceso restringido a administración.
+// Las operaciones de gestión del catálogo solo deben estar disponibles para gerencia.
 if (!isset($_SESSION['rol']) || $_SESSION['rol'] !== 'gerente') {
     header("Location: ../auth/login.php");
     exit();
 }
 
+// Carga del listado principal.
+// La vista solicita los datos al servicio; las consultas SQL quedan en el DAO.
 $service = new ProductoService($db);
 $productos = $service->listarTodos();
+
+// Mensaje recibido por GET después de guardar, retirar o reactivar un producto.
 $msg = $_GET['msg'] ?? '';
 
 $tituloPagina = 'Gestión de Catálogo - Bistró FDI';
@@ -58,6 +64,8 @@ ob_start();
                         <tr class="<?= isset($p->ofertado) && $p->ofertado == 0 ? 'fila-inactiva' : '' ?>">
                             <td class="col-imagenes" data-label="Imagen">
                                 <?php
+                                    // Las imágenes pueden venir separadas por coma.
+                                    // Si no existe imagen, se muestra una imagen por defecto.
                                     $fotos = !empty($p->imagen) ? explode(',', $p->imagen) : [];
                                     if (empty($fotos)):
                                 ?>
@@ -86,6 +94,8 @@ ob_start();
 
                             <td class="col-precio txt-right" data-label="Precio (PVP)">
                                 <?php
+                                    // Cálculo de precio final para mostrar en administración.
+                                    // Si cambia la regla de cálculo, revisar también DTO, carrito y catálogo.
                                     $precio_base = $p->precio ?? $p->precio_base ?? 0;
                                     $iva_aplicado = $p->iva ?? 21;
                                     $precio_final = $precio_base * (1 + ($iva_aplicado / 100));
@@ -105,6 +115,10 @@ ob_start();
                                 <a href="editar_producto.php?id=<?= $p->id ?>" class="btn-editar">Editar</a>
 
                                 <?php if (!isset($p->ofertado) || $p->ofertado == 1): ?>
+                                    <?php
+                                    // Formulario de acción concreta.
+                                    // Usa POST porque modifica el estado del producto.
+                                    ?>
                                     <form action="../../negocio/ProductoController.php" method="POST" class="form-del-inline">
                                         <input type="hidden" name="accion" value="eliminar">
                                         <input type="hidden" name="id" value="<?= $p->id ?>">
@@ -130,4 +144,15 @@ ob_start();
 <?php
 $contenidoPrincipal = ob_get_clean();
 require_once __DIR__ . '/../partials/plantilla.php';
+?>
+
+<?php
+// Patrón para ampliar esta vista:
+// 1. Cargar los datos desde ProductoService.
+// 2. Si se necesitan datos relacionados, añadirlos desde DAO/Service antes de pintar.
+// 3. Añadir la columna nueva en el <thead>.
+// 4. Añadir la celda correspondiente dentro del foreach.
+// 5. Escapar siempre los valores antes de mostrarlos.
+// 6. Para cambios de estado o acciones, usar formularios POST.
+// 7. Procesar la acción en ProductoController y redirigir con mensaje.
 ?>

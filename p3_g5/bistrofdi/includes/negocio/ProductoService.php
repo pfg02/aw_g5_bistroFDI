@@ -11,14 +11,19 @@ class ProductoService
 
     public function __construct(?mysqli $db = null)
     {
-    $this->dao = new ProductoDAO($db ?? Application::getInstance()->conexionBd());
+        // El servicio crea el DAO con la conexión principal.
+        // También permite recibir una conexión externa si otra operación la necesita.
+        $this->dao = new ProductoDAO($db ?? Application::getInstance()->conexionBd());
     }
 
+    // Listado general de productos para administración.
     public function listarTodos(): array
     {
         return $this->dao->listarTodos();
     }
 
+    // Obtiene un producto por id.
+    // Si el id no es válido o no existe, devuelve un DTO vacío para evitar errores en formularios.
     public function obtenerProducto(int $id): ProductoDTO
     {
         if ($id <= 0) {
@@ -28,11 +33,19 @@ class ProductoService
         return $this->dao->obtenerPorId($id) ?? new ProductoDTO();
     }
 
+    // Devuelve los errores generados en la última operación.
+    // Útil para mostrarlos en formularios después de validar.
     public function getUltimosErrores(): array
     {
         return $this->ultimosErrores;
     }
 
+    // Valida y guarda un producto.
+    // Flujo habitual:
+    // 1. Obtener datos del DTO.
+    // 2. Validar reglas de negocio.
+    // 3. Si hay errores, devolver false.
+    // 4. Si todo es correcto, delegar guardado en el DAO.
     public function guardarProducto(ProductoDTO $dto): bool
     {
         $this->ultimosErrores = [];
@@ -80,6 +93,10 @@ class ProductoService
             $this->ultimosErrores[] = 'La descripción no puede superar 2000 caracteres.';
         }
 
+        // Si se añaden nuevos campos al producto, validar aquí antes de guardar.
+        // Si se añaden datos asociados mediante otra tabla, normalmente se guardan
+        // después de guardar correctamente el producto principal.
+
         if (!empty($this->ultimosErrores)) {
             return false;
         }
@@ -87,6 +104,8 @@ class ProductoService
         return $this->dao->guardar($dto);
     }
 
+    // Cambia únicamente el estado visible/no visible del producto.
+    // Es una operación concreta y separada del guardado completo.
     public function cambiarEstado(int $id, int $estado): bool
     {
         if ($id <= 0 || !in_array($estado, [0, 1], true)) {
@@ -96,6 +115,8 @@ class ProductoService
         return $this->dao->actualizarEstado($id, $estado);
     }
 
+    // Procesa la subida de imágenes.
+    // Valida errores de subida, tamaño, tipo MIME y guarda nombres seguros.
     public function procesarImagenes(array $files): ?string
     {
         $this->ultimosErrores = [];
@@ -174,6 +195,8 @@ class ProductoService
         return !empty($nombres) ? implode(',', $nombres) : null;
     }
 
+    // Obtiene datos del DTO usando getter si existe.
+    // Mantiene compatibilidad con propiedades públicas o métodos getX().
     private function obtenerDatoProducto(ProductoDTO $dto, string $campo)
     {
         $getter = 'get' . str_replace(' ', '', ucwords(str_replace('_', ' ', $campo)));
@@ -188,4 +211,13 @@ class ProductoService
 
         return null;
     }
+
+    // Patrón para ampliar operaciones de producto:
+    // 1. Añadir el dato al DTO y formulario.
+    // 2. Validar el dato en este servicio.
+    // 3. Guardar el campo principal desde el DAO.
+    // 4. Si hay relación múltiple, guardar primero el producto principal.
+    // 5. Borrar asociaciones antiguas.
+    // 6. Insertar las asociaciones seleccionadas.
+    // 7. Devolver errores claros para la vista.
 }

@@ -8,9 +8,18 @@ class UsuarioService
 
     public function __construct(?mysqli $db = null)
     {
-    $this->usuarioDAO = new UsuarioDAO($db ?? Application::getInstance()->conexionBd());
+        // El servicio crea el DAO usando la conexión principal de la aplicación.
+        // También permite recibir una conexión externa si se necesita reutilizar en pruebas o acciones concretas.
+        $this->usuarioDAO = new UsuarioDAO($db ?? Application::getInstance()->conexionBd());
     }
 
+    // Registro de usuario.
+    // Flujo habitual:
+    // 1. Limpiar datos recibidos.
+    // 2. Validar campos obligatorios.
+    // 3. Comprobar formatos y duplicados.
+    // 4. Crear DTO.
+    // 5. Delegar inserción en el DAO.
     public function registrarUsuario(
         string $nombreUsuario,
         string $email,
@@ -44,6 +53,8 @@ class UsuarioService
             return [false, 'Ese email ya está registrado.'];
         }
 
+        // Si se añaden nuevos datos al registro, deben incorporarse al DTO,
+        // al formulario, a la validación y al método insertar() del DAO.
         $usuario = new UsuarioDTO(
             null,
             $nombreUsuario,
@@ -62,6 +73,8 @@ class UsuarioService
         return [true, 'Usuario registrado correctamente.'];
     }
 
+    // Autenticación de usuario.
+    // El servicio comprueba credenciales y devuelve el usuario al controlador si son correctas.
     public function autenticarUsuario(string $nombreUsuario, string $password): array
     {
         $nombreUsuario = trim($nombreUsuario);
@@ -79,6 +92,8 @@ class UsuarioService
         return [true, '', $usuario];
     }
 
+    // Actualización de perfil.
+    // Mantiene separada la validación de datos personales y la persistencia en base de datos.
     public function actualizarPerfil(int $idUsuario, string $email, string $nombre, string $apellidos): array
     {
         $email = trim($email);
@@ -98,6 +113,7 @@ class UsuarioService
             return [false, 'Usuario no encontrado.'];
         }
 
+        // Al editar, se excluye el propio usuario para permitir conservar su email actual.
         if ($this->usuarioDAO->existeEmail($email, $idUsuario)) {
             return [false, 'Ese email ya está en uso por otro usuario.'];
         }
@@ -113,6 +129,8 @@ class UsuarioService
         return [true, 'Perfil actualizado correctamente.'];
     }
 
+    // Cambio de rol desde administración.
+    // Aquí se validan valores permitidos y restricciones antes de actualizar.
     public function cambiarRol(int $idUsuario, string $nuevoRol, int $idUsuarioSesion): array
     {
         $rolesValidos = ['cliente', 'camarero', 'cocinero', 'gerente'];
@@ -131,6 +149,7 @@ class UsuarioService
             return [false, 'Usuario no encontrado.'];
         }
 
+        // Restricción para evitar que el usuario administrador se quite permisos a sí mismo.
         if ($idUsuario === $idUsuarioSesion && $nuevoRol !== 'gerente') {
             return [false, 'No puedes quitarte a ti mismo el rol de gerente.'];
         }
@@ -142,6 +161,8 @@ class UsuarioService
         return [true, 'Rol actualizado correctamente.'];
     }
 
+    // Borrado de usuario.
+    // Se comprueba que el identificador sea válido y que no sea el propio usuario en sesión.
     public function borrarUsuario(int $idUsuario, int $idUsuarioSesion): array
     {
         if ($idUsuario <= 0) {
@@ -157,6 +178,7 @@ class UsuarioService
             return [false, 'Usuario no encontrado.'];
         }
 
+        // Si existen tablas relacionadas, revisar antes si procede borrar, bloquear o actualizar relaciones.
         if (!$this->usuarioDAO->borrar($idUsuario)) {
             return [false, 'No se ha podido borrar el usuario.'];
         }
@@ -164,6 +186,8 @@ class UsuarioService
         return [true, 'Usuario borrado correctamente.'];
     }
 
+    // Actualización de avatar.
+    // La ruta debe validarse para evitar guardar rutas externas o no esperadas.
     public function actualizarAvatar(int $idUsuario, string $rutaAvatar): array
     {
         $rutaAvatar = trim($rutaAvatar);
@@ -188,6 +212,8 @@ class UsuarioService
         return [true, 'Avatar actualizado correctamente.'];
     }
 
+    // Solicitud de recuperación de contraseña.
+    // Se mantiene un mensaje genérico para no revelar si el correo existe.
     public function solicitarRecuperacionPassword(string $email): array
     {
         $email = trim($email);
@@ -210,18 +236,30 @@ class UsuarioService
         return [true, 'Correo de recuperación de contraseña enviado: Revise su bandeja de entrada'];
     }
 
+    // Obtiene un usuario concreto para vistas de detalle o edición.
     public function buscarUsuarioPorId(int $id): ?UsuarioDTO
     {
         return $this->usuarioDAO->buscarPorId($id);
     }
 
+    // Listado general de usuarios.
+    // Para listados con datos relacionados, crear un método específico en DAO y exponerlo desde aquí.
     public function listarUsuarios(): array
     {
         return $this->usuarioDAO->listarTodos();
     }
 
+    // Validación de rutas internas para avatar.
+    // Limita los archivos a una carpeta concreta y extensiones permitidas.
     private function esRutaAvatarValida(string $rutaAvatar): bool
     {
         return preg_match('/^img\/avatares\/[a-zA-Z0-9._-]+\.(png|jpg|jpeg|webp|gif)$/i', $rutaAvatar) === 1;
     }
+
+    // Patrón para ampliaciones con datos asociados a usuarios:
+    // 1. Crear método en DAO para consultar opciones disponibles.
+    // 2. Crear método en DAO para guardar la opción asociada.
+    // 3. Crear método en DAO con JOIN si se necesita mostrar información relacionada.
+    // 4. Exponer esos métodos desde el servicio.
+    // 5. Mantener validaciones de negocio en esta clase.
 }

@@ -23,6 +23,8 @@ class FormularioEditarProducto extends Formulario
         $this->categorias = $categorias;
         $this->id = $id;
 
+        // Mensajes de error recibidos por GET después de una redirección.
+        // Permite informar al usuario sin procesar lógica de guardado en la vista.
         $error = trim((string) (filter_input(INPUT_GET, 'error', FILTER_UNSAFE_RAW) ?? ''));
 
         if ($error === 'stock') {
@@ -32,6 +34,8 @@ class FormularioEditarProducto extends Formulario
         }
     }
 
+    // Genera los campos del formulario.
+    // Los valores se cargan desde POST si hubo error, o desde el DTO si se está editando.
     protected function generaCamposFormulario(array $datos): string
     {
         $id = htmlspecialchars(
@@ -70,11 +74,16 @@ class FormularioEditarProducto extends Formulario
             'UTF-8'
         );
 
+        // Valores seleccionados en selects.
+        // Si se añaden nuevos selects, seguir este patrón:
+        // valor de POST si existe, si no valor del DTO, si no valor por defecto.
         $ivaSeleccionado = (string) ($datos['iva'] ?? $this->obtenerDatoProducto('iva') ?? 21);
         $categoriaSeleccionada = (string) ($datos['id_categoria'] ?? $this->obtenerDatoProducto('id_categoria') ?? 0);
         $ofertadoSeleccionado = (string) ($datos['ofertado'] ?? $this->obtenerDatoProducto('ofertado') ?? 1);
         $requiereCocinaSeleccionado = (string) ($datos['requiere_cocina'] ?? $this->obtenerDatoProducto('requiere_cocina') ?? 1);
 
+        // Opciones de categoría cargadas desde la vista/controlador.
+        // Para otras opciones auxiliares, se puede repetir este patrón con otro array.
         $opcionesCategorias = '<option value="">Selecciona una categoría</option>';
         foreach ($this->categorias as $cat) {
             $idCatRaw = $this->obtenerDatoGenerico($cat, 'id');
@@ -87,6 +96,8 @@ class FormularioEditarProducto extends Formulario
             $opcionesCategorias .= "<option value=\"$idCat\" $selected>$nombreCat</option>";
         }
 
+        // Muestra las imágenes que ya tiene el producto.
+        // El campo hidden imagen_actual conserva los nombres al guardar.
         $imagenesActualesHtml = '';
         $imagenesProducto = (string) ($this->obtenerDatoProducto('imagen') ?? '');
 
@@ -205,14 +216,19 @@ HTML;
 
     protected function procesaFormulario(array $datos): ?string
     {
+        // El guardado real se procesa en ProductoController mediante la acción del formulario.
         return null;
     }
 
+    // Obtiene un dato del producto actual.
+    // Centraliza el acceso para no repetir comprobaciones en todo el formulario.
     private function obtenerDatoProducto(string $campo)
     {
         return $this->obtenerDatoGenerico($this->producto, $campo);
     }
 
+    // Obtiene un dato de un objeto usando getter o propiedad pública.
+    // Permite trabajar con DTOs y objetos auxiliares de forma flexible.
     private function obtenerDatoGenerico(object $objeto, string $campo)
     {
         $getter = 'get' . str_replace(' ', '', ucwords(str_replace('_', ' ', $campo)));
@@ -227,4 +243,18 @@ HTML;
 
         return null;
     }
+
+    // Patrón para ampliar el formulario:
+    // 1. Cargar el valor desde POST o desde el DTO.
+    // 2. Escapar el valor antes de imprimirlo.
+    // 3. Añadir el input, select o textarea.
+    // 4. Usar el mismo name que leerá el controlador.
+    // 5. Validar el dato en ProductoController o ProductoService.
+    // 6. Añadirlo al DTO y al guardado en DAO si pertenece a productos.
+    //
+    // Para selección múltiple:
+    // - usar name="campo[]";
+    // - cargar opciones desde la vista/controlador;
+    // - marcar como checked las opciones ya asociadas;
+    // - guardar las asociaciones después de guardar el producto principal.
 }

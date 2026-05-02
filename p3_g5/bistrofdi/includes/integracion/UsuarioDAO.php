@@ -11,6 +11,8 @@ class UsuarioDAO
         $this->conn = $db;
     }
 
+    // Búsqueda principal por identificador.
+    // Se usa cuando una vista o controlador necesita cargar un usuario concreto.
     public function buscarPorId(int $id): ?UsuarioDTO
     {
         $stmt = $this->conn->prepare('SELECT * FROM usuarios WHERE id = ?');
@@ -26,6 +28,8 @@ class UsuarioDAO
         return $fila ? UsuarioDTO::crearDesdeFila($fila) : null;
     }
 
+    // Búsqueda por nombre de usuario.
+    // Útil para login, registro y comprobaciones de duplicados.
     public function buscarPorNombreUsuario(string $nombreUsuario): ?UsuarioDTO
     {
         $stmt = $this->conn->prepare('SELECT * FROM usuarios WHERE nombre_usuario = ?');
@@ -41,6 +45,8 @@ class UsuarioDAO
         return $fila ? UsuarioDTO::crearDesdeFila($fila) : null;
     }
 
+    // Búsqueda por email.
+    // Se utiliza para validar que no existan cuentas repetidas.
     public function buscarPorEmail(string $email): ?UsuarioDTO
     {
         $stmt = $this->conn->prepare('SELECT * FROM usuarios WHERE email = ?');
@@ -56,6 +62,8 @@ class UsuarioDAO
         return $fila ? UsuarioDTO::crearDesdeFila($fila) : null;
     }
 
+    // Comprobación de email existente.
+    // El parámetro opcional permite excluir el propio usuario cuando se edita un perfil.
     public function existeEmail(string $email, ?int $idExcluir = null): bool
     {
         if ($idExcluir !== null) {
@@ -77,6 +85,8 @@ class UsuarioDAO
         return $existe;
     }
 
+    // Comprobación de nombre de usuario existente.
+    // Mantiene la misma estructura que existeEmail para reutilizar el patrón.
     public function existeNombreUsuario(string $nombreUsuario, ?int $idExcluir = null): bool
     {
         if ($idExcluir !== null) {
@@ -98,6 +108,9 @@ class UsuarioDAO
         return $existe;
     }
 
+    // Inserción de un usuario completo.
+    // Si se añaden nuevos campos obligatorios a usuarios, deben añadirse aquí,
+    // en el DTO y en el formulario correspondiente.
     public function insertar(UsuarioDTO $usuario): bool
     {
         $stmt = $this->conn->prepare(
@@ -120,6 +133,8 @@ class UsuarioDAO
         return $ok;
     }
 
+    // Actualización de datos generales del usuario.
+    // Mantener aquí solo los campos editables desde administración o perfil.
     public function actualizar(UsuarioDTO $usuario): bool
     {
         $stmt = $this->conn->prepare(
@@ -140,6 +155,8 @@ class UsuarioDAO
         return $ok;
     }
 
+    // Actualización específica del rol.
+    // Es preferible separar cambios concretos para evitar modificar datos no necesarios.
     public function actualizarRol(int $idUsuario, string $rol): bool
     {
         $stmt = $this->conn->prepare('UPDATE usuarios SET rol = ? WHERE id = ?');
@@ -150,6 +167,7 @@ class UsuarioDAO
         return $ok;
     }
 
+    // Actualización específica del avatar.
     public function actualizarAvatar(int $idUsuario, string $avatar): bool
     {
         $stmt = $this->conn->prepare('UPDATE usuarios SET avatar = ? WHERE id = ?');
@@ -160,6 +178,8 @@ class UsuarioDAO
         return $ok;
     }
 
+    // Actualización específica de contraseña.
+    // El hash debe venir ya calculado desde la capa de negocio.
     public function actualizarPassword(int $idUsuario, string $passwordHash): bool
     {
         $stmt = $this->conn->prepare('UPDATE usuarios SET password_hash = ? WHERE id = ?');
@@ -170,6 +190,8 @@ class UsuarioDAO
         return $ok;
     }
 
+    // Borrado por identificador.
+    // Revisar dependencias antes de borrar si existen tablas relacionadas.
     public function borrar(int $idUsuario): bool
     {
         $stmt = $this->conn->prepare('DELETE FROM usuarios WHERE id = ?');
@@ -180,6 +202,9 @@ class UsuarioDAO
         return $ok;
     }
 
+    // Listado general.
+    // Si se necesitan datos relacionados, usar una consulta específica con JOIN
+    // para no sobrecargar este método básico.
     public function listarTodos(): array
     {
         $stmt = $this->conn->prepare('SELECT * FROM usuarios ORDER BY id');
@@ -197,4 +222,10 @@ class UsuarioDAO
 
         return $usuarios;
     }
+
+    // Patrón para ampliaciones con datos auxiliares:
+    // 1. Crear un método que liste las opciones disponibles.
+    // 2. Crear un método que actualice la opción asociada al usuario.
+    // 3. Crear un método con LEFT JOIN para mostrar usuarios junto con esos datos.
+    // 4. Dejar las consultas SQL en el DAO y no en la vista.
 }

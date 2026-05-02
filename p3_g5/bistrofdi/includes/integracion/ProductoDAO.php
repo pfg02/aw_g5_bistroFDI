@@ -3,6 +3,7 @@ declare(strict_types=1);
 
 /**
  * Clase de acceso a datos para productos.
+ * Centraliza las consultas SQL relacionadas con productos.
  */
 
 require_once __DIR__ . '/../negocio/ProductoDTO.php';
@@ -13,9 +14,12 @@ class ProductoDAO
 
     public function __construct(mysqli $db)
     {
-    $this->db = $db;
+        $this->db = $db;
     }
 
+    // Convierte una fila de base de datos en un ProductoDTO.
+    // Si se añaden nuevos campos a productos, deben mapearse aquí
+    // y también añadirse en ProductoDTO, guardar(), formularios y vistas.
     private function mapear(array $row): ProductoDTO
     {
         return new ProductoDTO(
@@ -32,6 +36,9 @@ class ProductoDAO
         );
     }
 
+    // Lista todos los productos para administración.
+    // Usa LEFT JOIN para mostrar también productos sin categoría asociada.
+    // Si se necesitan más datos relacionados, se pueden añadir con otros JOIN.
     public function listarTodos(): array
     {
         $productos = [];
@@ -58,6 +65,8 @@ class ProductoDAO
         return $productos;
     }
 
+    // Obtiene un producto concreto por id.
+    // Se usa normalmente para cargar formularios de edición o validar operaciones.
     public function obtenerPorId(int $id): ?ProductoDTO
     {
         $sql = "SELECT * FROM productos WHERE id = ?";
@@ -73,6 +82,10 @@ class ProductoDAO
         return $row ? $this->mapear($row) : null;
     }
 
+    // Guarda un producto.
+    // Si el DTO tiene id, actualiza. Si no tiene id, inserta.
+    // Al añadir campos nuevos a productos, revisar:
+    // SELECT/mapear, INSERT, UPDATE, bind_param, DTO y formulario.
     public function guardar(ProductoDTO $p): bool
     {
         $id = $this->obtenerDatoProducto($p, 'id');
@@ -129,6 +142,8 @@ class ProductoDAO
         return $exito;
     }
 
+    // Actualiza solo la visibilidad/oferta del producto.
+    // Separar operaciones concretas evita modificar campos que no forman parte del cambio.
     public function actualizarEstado(int $id, int $estado): bool
     {
         $sql = "UPDATE productos SET ofertado = ? WHERE id = ?";
@@ -171,6 +186,8 @@ class ProductoDAO
         return $productos;
     }
 
+    // Obtiene datos del DTO usando getter si existe.
+    // Permite trabajar con propiedades públicas antiguas o métodos getX().
     private function obtenerDatoProducto(ProductoDTO $dto, string $campo)
     {
         $getter = 'get' . str_replace(' ', '', ucwords(str_replace('_', ' ', $campo)));
@@ -185,4 +202,12 @@ class ProductoDAO
 
         return null;
     }
+
+    // Patrón para datos auxiliares asociados a productos:
+    // 1. Crear método para listar opciones disponibles.
+    // 2. Crear método para obtener opciones asociadas a un producto.
+    // 3. Al guardar, actualizar el producto principal.
+    // 4. Borrar asociaciones anteriores si la relación es múltiple.
+    // 5. Insertar de nuevo las opciones seleccionadas.
+    // 6. Usar JOIN si se necesitan mostrar los datos relacionados en catálogo o administración.
 }

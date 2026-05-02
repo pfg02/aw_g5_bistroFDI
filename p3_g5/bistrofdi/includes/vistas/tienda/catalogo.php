@@ -3,22 +3,28 @@ declare(strict_types=1);
 
 /**
  * Catálogo de productos para añadir a un pedido.
+ * Muestra solo productos visibles y disponibles para el cliente.
  */
 
 require_once __DIR__ . '/../../core/config.php';
 require_once __DIR__ . '/../../core/sesion.php';
 require_once __DIR__ . '/../../integracion/ProductoDAO.php';
-require_once __DIR__ . '/../../negocio/OfertasController.php';
+require_once __DIR__ . '/../../integracion/OfertasDAO.php';
 
 exigirLogin();
 exigirRol('cliente');
 
 $tiposPermitidos = ['Local', 'Llevar'];
 
+// Inicialización del carrito en sesión.
+// La vista puede leer y modificar datos de sesión, pero la lógica principal
+// de añadir productos se procesa en la acción correspondiente.
 if (!isset($_SESSION['carrito']) || !is_array($_SESSION['carrito'])) {
     $_SESSION['carrito'] = [];
 }
 
+// Si el usuario llega desde la pantalla inicial del pedido,
+// se guarda el tipo seleccionado en sesión.
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     $tipoRecibido = trim((string) (filter_input(INPUT_POST, 'tipo', FILTER_UNSAFE_RAW) ?? ''));
 
@@ -31,6 +37,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     }
 }
 
+// Recupera el tipo de pedido actual.
+// Si no existe o no es válido, se asigna un valor por defecto.
 $tipoPedido = $_SESSION['tipoPedido'] ?? 'Local';
 
 if (!in_array($tipoPedido, $tiposPermitidos, true)) {
@@ -38,11 +46,19 @@ if (!in_array($tipoPedido, $tiposPermitidos, true)) {
     $_SESSION['tipoPedido'] = $tipoPedido;
 }
 
+// Carga de productos visibles.
+// Si se necesitan más datos relacionados, se añaden en el DAO con JOIN
+// o mediante métodos auxiliares antes de pintar la vista.
 $productoDAO = new ProductoDAO(Application::getInstance()->conexionBd());
 $productosDTO = $productoDAO->listarOfertados();
-$ofertasController = OfertasController::getInstance($db);
-$ofertasDisponibles = $ofertasController->obtenerOfertasActivas();
 
+// Carga de promociones activas.
+// La vista solo muestra la información; la lógica de cálculo se realiza fuera.
+$ofertaDAO = new OfertaDAO(Application::getInstance()->conexionBd());
+$ofertasDisponibles = $ofertaDAO->obtenerOfertasActivas();
+
+// Agrupación de productos por categoría.
+// Este patrón permite mostrar bloques separados sin hacer más consultas en la vista.
 $menuAgrupado = [];
 
 foreach ($productosDTO as $producto) {
@@ -55,6 +71,7 @@ foreach ($productosDTO as $producto) {
     $menuAgrupado[$categoria][] = $producto;
 }
 
+// Cálculo simple del número de productos en carrito para el badge.
 $itemsEnCarrito = 0;
 
 if (!empty($_SESSION['carrito']) && is_array($_SESSION['carrito'])) {
@@ -126,6 +143,9 @@ ob_start();
                             <div class="lista-productos">
                                 <?php foreach ($productosCat as $p): ?>
                                     <?php
+                                        // Preparación de datos del producto antes de imprimir HTML.
+                                        // Mantener este bloque como zona de lectura/formateo,
+                                        // no como zona de consulta SQL.
                                         $productoId = (int) ($p->id ?? 0);
                                         $nombre = (string) ($p->nombre ?? '');
                                         $descripcion = (string) ($p->descripcion ?? 'Este producto no tiene descripción adicional.');
@@ -174,13 +194,21 @@ ob_start();
 
                                         $fotoPrincipal = $imagenesModal[0];
 
+                                        // JSON escapado para pasarlo al modal mediante data-attributes.
                                         $imagenesJson = htmlspecialchars(
                                             json_encode($imagenesModal, JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE) ?: '[]',
                                             ENT_QUOTES,
                                             'UTF-8'
                                         );
 
+                                        // Valor normalizado para el buscador del catálogo.
                                         $nombreBusqueda = mb_strtolower($nombre, 'UTF-8');
+
+                                        // Si se añaden nuevos datos visibles en catálogo:
+                                        // 1. Obtenerlos aquí desde el DTO.
+                                        // 2. Escaparlos antes de imprimirlos.
+                                        // 3. Añadirlos a la tarjeta o al modal.
+                                        // 4. Si vienen de otra tabla, cargarlos previamente desde DAO/controlador.
                                     ?>
 
                                     <article
@@ -202,6 +230,11 @@ ob_start();
                                             <h4><?= htmlspecialchars($nombre, ENT_QUOTES, 'UTF-8') ?></h4>
                                             <p><?= number_format($precioConIva, 2) ?> €</p>
 
+                                            <?php
+                                            // Botón que abre el modal de detalle.
+                                            // Los data-* permiten pasar información al JavaScript sin crear otra consulta.
+                                            ?>
+
                                             <button
                                                 type="button"
                                                 class="btn-abrir-modal"
@@ -218,6 +251,11 @@ ob_start();
                                                 Ver producto
                                             </button>
                                         </div>
+
+                                        <?php
+                                        // Formulario para añadir al carrito.
+                                        // La acción separada valida id_producto, cantidad y stock.
+                                        ?>
 
                                         <form
                                             action="../../acciones/carrito/anadir_producto.php"
@@ -297,7 +335,9 @@ ob_start();
 
                         <ul>
                             <?php
-                                $prods = $of->getProductos();
+                                // Carga de productos incluidos en cada promoción.
+                                // Si se repite mucho esta consulta, puede optimizarse cargando todo antes del bucle.
+                                $prods = $ofertaDAO->obtenerProductosDeOferta($of->getId());
 
                                 foreach ($prods as $p):
                             ?>
@@ -321,4 +361,14 @@ ob_start();
 <?php
 $contenidoPrincipal = ob_get_clean();
 require_once __DIR__ . '/../partials/plantilla.php';
+?>
+
+<?php
+// Patrón para mostrar información nueva del producto en catálogo:
+// 1. Asegurar que el DAO carga el dato.
+// 2. Asegurar que el DTO lo contiene o que llega como dato auxiliar.
+// 3. Preparar el valor antes de imprimirlo.
+// 4. Escapar con htmlspecialchars().
+// 5. Mostrarlo en la tarjeta o pasarlo al modal mediante data-*.
+// 6. Evitar consultas SQL dentro del HTML salvo casos muy controlados.
 ?>
