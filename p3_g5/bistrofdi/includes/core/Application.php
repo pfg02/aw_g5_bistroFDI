@@ -131,6 +131,7 @@ class Application
         }
 
         $rolUsuario = $this->rolActual();
+
         return $rolUsuario !== null && in_array($rolUsuario, $rolesPermitidos, true);
     }
 

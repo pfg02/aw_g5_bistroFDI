@@ -13,6 +13,7 @@ class FormularioRegistro extends Formulario
             'class' => 'f0-form',
             'urlRedireccion' => 'login.php?registro=ok',
         ]);
+
         $this->controller = $controller;
     }
 
@@ -22,40 +23,86 @@ class FormularioRegistro extends Formulario
         $email = htmlspecialchars(trim($datos['email'] ?? ''));
         $nombre = htmlspecialchars(trim($datos['nombre'] ?? ''));
         $apellidos = htmlspecialchars(trim($datos['apellidos'] ?? ''));
+
         $errorGlobal = !empty($this->errores)
             ? '<div class="f0-msg-error">' . htmlspecialchars($this->errores[0]) . '</div>'
             : '';
 
         return <<<HTML
 {$errorGlobal}
+
 <label>
     Nombre de usuario
-    <input type="text" name="nombre_usuario" value="{$nombreUsuario}" placeholder="Nombre de usuario" required>
+    <input 
+        type="text" 
+        id="nombre_usuario" 
+        name="nombre_usuario" 
+        value="{$nombreUsuario}" 
+        placeholder="Nombre de usuario" 
+        required
+    >
+    <small id="error-nombre_usuario" class="mensaje-campo"></small>
 </label>
 
 <label>
     Email
-    <input type="email" name="email" value="{$email}" placeholder="Correo electrónico" required>
+    <input 
+        type="email" 
+        id="email" 
+        name="email" 
+        value="{$email}" 
+        placeholder="Correo electrónico" 
+        required
+    >
+    <small id="error-email" class="mensaje-campo"></small>
 </label>
 
 <label>
     Nombre
-    <input type="text" name="nombre" value="{$nombre}" placeholder="Nombre" required>
+    <input 
+        type="text" 
+        id="nombre" 
+        name="nombre" 
+        value="{$nombre}" 
+        placeholder="Nombre" 
+        required
+    >
 </label>
 
 <label>
     Apellidos
-    <input type="text" name="apellidos" value="{$apellidos}" placeholder="Apellidos" required>
+    <input 
+        type="text" 
+        id="apellidos" 
+        name="apellidos" 
+        value="{$apellidos}" 
+        placeholder="Apellidos" 
+        required
+    >
 </label>
 
 <label>
     Contraseña
-    <input type="password" name="password" placeholder="Contraseña" required>
+    <input 
+        type="password" 
+        id="password" 
+        name="password" 
+        placeholder="Contraseña" 
+        required
+    >
+    <small id="error-password" class="mensaje-campo"></small>
 </label>
 
 <label>
     Repetir contraseña
-    <input type="password" name="password2" placeholder="Repetir contraseña" required>
+    <input 
+        type="password" 
+        id="password2" 
+        name="password2" 
+        placeholder="Repetir contraseña" 
+        required
+    >
+    <small id="error-password2" class="mensaje-campo"></small>
 </label>
 
 <div class="f0-form-actions">
@@ -70,8 +117,9 @@ HTML;
 
         if (!$ok) {
             $this->errores[] = $mensaje;
+            return null;
         }
 
-        return null;
+        return 'login.php?registro=ok';
     }
 }

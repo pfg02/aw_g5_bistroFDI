@@ -6,9 +6,9 @@ class UsuarioDAO
 {
     private mysqli $conn;
 
-   public function __construct(mysqli $db)
+    public function __construct(mysqli $db)
     {
-    $this->conn = $db;
+        $this->conn = $db;
     }
 
     public function buscarPorId(int $id): ?UsuarioDTO
@@ -59,17 +59,38 @@ class UsuarioDAO
     public function existeEmail(string $email, ?int $idExcluir = null): bool
     {
         if ($idExcluir !== null) {
-            $stmt = $this->conn->prepare('SELECT id FROM usuarios WHERE email = ? AND id <> ?');
+            $stmt = $this->conn->prepare('SELECT id FROM usuarios WHERE email = ? AND id <> ? LIMIT 1');
             $stmt->bind_param('si', $email, $idExcluir);
         } else {
-            $stmt = $this->conn->prepare('SELECT id FROM usuarios WHERE email = ?');
+            $stmt = $this->conn->prepare('SELECT id FROM usuarios WHERE email = ? LIMIT 1');
             $stmt->bind_param('s', $email);
         }
 
         $stmt->execute();
 
         $res = $stmt->get_result();
-        $existe = (bool)$res->fetch_assoc();
+        $existe = (bool) $res->fetch_assoc();
+        $res->free();
+
+        $stmt->close();
+
+        return $existe;
+    }
+
+    public function existeNombreUsuario(string $nombreUsuario, ?int $idExcluir = null): bool
+    {
+        if ($idExcluir !== null) {
+            $stmt = $this->conn->prepare('SELECT id FROM usuarios WHERE nombre_usuario = ? AND id <> ? LIMIT 1');
+            $stmt->bind_param('si', $nombreUsuario, $idExcluir);
+        } else {
+            $stmt = $this->conn->prepare('SELECT id FROM usuarios WHERE nombre_usuario = ? LIMIT 1');
+            $stmt->bind_param('s', $nombreUsuario);
+        }
+
+        $stmt->execute();
+
+        $res = $stmt->get_result();
+        $existe = (bool) $res->fetch_assoc();
         $res->free();
 
         $stmt->close();
