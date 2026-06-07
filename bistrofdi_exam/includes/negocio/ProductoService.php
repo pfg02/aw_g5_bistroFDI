@@ -33,19 +33,10 @@ class ProductoService
         return $this->dao->obtenerPorId($id) ?? new ProductoDTO();
     }
 
-    public function obtenerAlergenosProducto(int $idProducto): array
+    // El formulario llamará a este método para pintar los checkboxes dinámicamente
+    public function listarTodosAlergenos(): array
     {
-        return $this->dao->obtenerAlergenosProducto($idProducto);
-    }
-
-    public function eliminarAlergenosProductos(int $idProducto): bool
-    {
-        return $this->dao->eliminarAlergenosProductos($idProducto);
-    }
-
-    public function vincularProductoAlergeno(int $idProducto, int $idAlergeno): bool
-    {
-        return $this->dao->vincularProductoAlergeno($idProducto, $idAlergeno);
+        return $this->dao->listarTodosAlergenos();
     }
 
     // Devuelve los errores generados en la última operación.
@@ -108,9 +99,13 @@ class ProductoService
             $this->ultimosErrores[] = 'La descripción no puede superar 2000 caracteres.';
         }
 
-        // Si se añaden nuevos campos al producto, validar aquí antes de guardar.
-        // Si se añaden datos asociados mediante otra tabla, normalmente se guardan
-        // después de guardar correctamente el producto principal.
+        // Aseguramos que los alérgenos son un array de números enteros para evitar inyecciones SQL
+        $alergenos = $dto->getAlergenos();
+        if (!is_array($alergenos)) {
+             $dto->setAlergenos([]);
+        } else {
+             $dto->setAlergenos(array_map('intval', $alergenos));
+        }
 
         if (!empty($this->ultimosErrores)) {
             return false;
@@ -226,13 +221,4 @@ class ProductoService
 
         return null;
     }
-
-    // Patrón para ampliar operaciones de producto:
-    // 1. Añadir el dato al DTO y formulario.
-    // 2. Validar el dato en este servicio.
-    // 3. Guardar el campo principal desde el DAO.
-    // 4. Si hay relación múltiple, guardar primero el producto principal.
-    // 5. Borrar asociaciones antiguas.
-    // 6. Insertar las asociaciones seleccionadas.
-    // 7. Devolver errores claros para la vista.
 }

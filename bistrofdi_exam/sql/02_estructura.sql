@@ -252,12 +252,12 @@ CREATE TABLE productos_alergenos (
     CONSTRAINT fk_productos_alergenos_producto
         FOREIGN KEY (producto_id) REFERENCES productos(id)
         ON UPDATE CASCADE
-        ON DELETE RESTRICT,
+        ON DELETE CASCADE,
 
     CONSTRAINT fk_productos_alergenos_alergeno
         FOREIGN KEY (alergeno_id) REFERENCES alergenos(id)
         ON UPDATE CASCADE
-        ON DELETE RESTRICT,
+        ON DELETE CASCADE,
 
     UNIQUE KEY uk_productos_alergeno (producto_id, alergeno_id),
     INDEX idx_productos_alergenos_producto(producto_id),

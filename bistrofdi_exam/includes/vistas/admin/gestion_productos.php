@@ -58,13 +58,10 @@ ob_start();
                 <tbody>
                     <?php if (empty($productos)): ?>
                         <tr>
-                            <td colspan="6" class="txt-center">No hay productos en la base de datos.</td>
+                            <td colspan="7" class="txt-center">No hay productos en la base de datos.</td>
                         </tr>
                     <?php else: ?>
                         <?php foreach ($productos as $p): ?>
-                        <?php
-                            $alergenoProducto = $service->obtenerAlergenosProducto($p->getId());
-                        ?>
                         <tr class="<?= isset($p->ofertado) && $p->ofertado == 0 ? 'fila-inactiva' : '' ?>">
                             <td class="col-imagenes" data-label="Imagen">
                                 <?php
@@ -97,13 +94,22 @@ ob_start();
                             </td>
 
                             <td class="col-alergias" data-label="Alergias">
-                                <div class="contenedor-fotos-tabla">
+                                <div class="rejilla-alergenos">
                                 <?php
-                                    foreach ($alergenoProducto as $alergeno):
+                                    $misAlergenos = $p->getAlergenos();
+                                    if (!empty($misAlergenos)):
+                                        foreach ($misAlergenos as $alergeno):
+                                            $idAl = (int)$alergeno['id'];
+                                            $nombreAl = htmlspecialchars($alergeno['nombre'], ENT_QUOTES, 'UTF-8');
+                                            $imagenAl = htmlspecialchars($alergeno['imagen'], ENT_QUOTES, 'UTF-8');
+                                            $rutaImg = BASE_URL . '/img/alergenos/' . $imagenAl;
                                 ?>        
-                                    <img src="<?= BASE_URL ?>/img/alergenos/<?= htmlspecialchars(trim($alergeno['imagen'])) ?>" alt="Foto alergeno" class="img-mini-tabla">
+                                    <img src="<?= $rutaImg ?>" alt="<?= $nombreAl ?>" title="Contiene: <?= $nombreAl ?>" class="img-alergeno-tabla">
                                 <?php
-                                    endforeach;
+                                        endforeach;
+                                    else:
+                                        echo '<span class="txt-sin-alergenos">Sin alérgenos</span>';
+                                    endif;
                                 ?>
                                 </div>     
                             </td>
@@ -131,10 +137,6 @@ ob_start();
                                 <a href="editar_producto.php?id=<?= $p->id ?>" class="btn-editar">Editar</a>
 
                                 <?php if (!isset($p->ofertado) || $p->ofertado == 1): ?>
-                                    <?php
-                                    // Formulario de acción concreta.
-                                    // Usa POST porque modifica el estado del producto.
-                                    ?>
                                     <form action="../../negocio/ProductoController.php" method="POST" class="form-del-inline">
                                         <input type="hidden" name="accion" value="eliminar">
                                         <input type="hidden" name="id" value="<?= $p->id ?>">
@@ -160,15 +162,4 @@ ob_start();
 <?php
 $contenidoPrincipal = ob_get_clean();
 require_once __DIR__ . '/../partials/plantilla.php';
-?>
-
-<?php
-// Patrón para ampliar esta vista:
-// 1. Cargar los datos desde ProductoService.
-// 2. Si se necesitan datos relacionados, añadirlos desde DAO/Service antes de pintar.
-// 3. Añadir la columna nueva en el <thead>.
-// 4. Añadir la celda correspondiente dentro del foreach.
-// 5. Escapar siempre los valores antes de mostrarlos.
-// 6. Para cambios de estado o acciones, usar formularios POST.
-// 7. Procesar la acción en ProductoController y redirigir con mensaje.
 ?>

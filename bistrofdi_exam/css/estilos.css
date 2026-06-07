@@ -3626,3 +3626,70 @@ html {
     align-items: left;
 
 }
+
+/* =========================================
+   ALÉRGENOS - FORMULARIO EDICIÓN PRODUCTO
+   ========================================= */
+.grid-alergenos-form {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+    gap: 10px;
+    padding: 15px;
+    border: 1px solid #ccc;
+    border-radius: 5px;
+    background: #fafafa;
+    margin-top: 5px;
+}
+
+.grupo-control div.grid-alergenos-form label.label-alergeno-form {
+	display: flex;
+    flex-direction: row;
+    align-items: center;
+    gap: 8px;
+    width: auto;
+    margin: 0;
+    font-weight: normal;
+    cursor: pointer;
+    text-align: left;
+}
+
+.grupo-control div.grid-alergenos-form label.label-alergeno-form img.img-alergeno-form {
+    width: 24px;
+    height: 24px;
+    object-fit: contain;
+    flex-shrink: 0;
+    margin: 0;
+}
+
+.grupo-control div.grid-alergenos-form label.label-alergeno-form input[type="checkbox"] {
+    width: 18px;
+    height: 18px;
+    margin: 0;
+    flex-shrink: 0;
+    display: inline-block;
+    appearance: auto;
+}
+
+/* =========================================
+   ALÉRGENOS - TABLA DE GESTIÓN (ADMIN)
+   ========================================= */
+.rejilla-alergenos-tabla {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 5px;
+    max-width: 100px;
+    margin: 0 auto;
+}
+
+.img-alergeno-tabla {
+    width: 40px;
+    height: 40px;
+    object-fit: contain;
+}
+
+.txt-sin-alergenos {
+    font-size: 0.8rem;
+    color: #777;
+    display: block;
+    text-align: center;
+}

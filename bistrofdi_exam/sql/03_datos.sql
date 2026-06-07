@@ -157,9 +157,20 @@ INSERT INTO pedidos_ofertas (pedido_id, oferta_id, descuento_aplicado) VALUES
     (9, 1, 3.23);
 
 INSERT INTO alergenos (nombre, descripcion, imagen) VALUES
-    ('Gluten', 'Alimentos con gluten', 'gluten.png'),
-    ('Crustáceos', 'Alimentos que contienen crustaceo', 'crustaceo.png'),
-    ('Lácteos', 'Alimentos derivados del lacteo', 'lacteo.png');
+    ('Gluten', 'Cereales que contengan gluten (trigo, centeno, cebada)', 'gluten.png'),
+    ('Crustáceos', 'Crustáceos y productos a base de crustáceos', 'crustaceos.png'),
+    ('Huevos', 'Huevos y productos a base de huevo', 'huevos.png'),
+    ('Pescado', 'Pescado y productos a base de pescado', 'pescado.png'),
+    ('Cacahuetes', 'Cacahuetes y productos a base de cacahuetes', 'cacahuetes.png'),
+    ('Soja', 'Soja y productos a base de soja', 'soja.png'),
+    ('Lácteos', 'Leche y sus derivados (incluida la lactosa)', 'lacteos.png'),
+    ('Frutos de cáscara', 'Almendras, avellanas, nueces, anacardos', 'cascara.png'),
+    ('Apio', 'Apio y productos derivados', 'apio.png'),
+    ('Mostaza', 'Mostaza y productos derivados', 'mostaza.png'),
+    ('Granos de sésamo', 'Granos de sésamo y productos a base de granos de sésamo', 'sesamo.png'),
+    ('Dióxido de azufre y sulfitos', 'En concentraciones superiores a 10 mg/kg', 'dioxido.png'),
+    ('Moluscos', 'Moluscos y productos a base de moluscos', 'moluscos.png'),
+    ('Altramuces', 'Altramuces y productos a base de altramuces', 'altramuces.png');
 
 INSERT INTO productos_alergenos(producto_id, alergeno_id) VALUES
     (4, 1),

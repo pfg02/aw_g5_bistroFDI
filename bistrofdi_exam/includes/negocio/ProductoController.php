@@ -8,13 +8,10 @@ require_once __DIR__ . '/ProductoDTO.php';
 class ProductoController
 {
     private ProductoService $service;
-    private ProductoController $controller;
 
     public function __construct()
     {
         $this->service = new ProductoService();
-        $controller = new ProductoController();
-        $controller->manejarPeticion();
     }
 
     // Punto de entrada para las operaciones de administración de productos.
@@ -74,6 +71,12 @@ class ProductoController
         $requiereCocina = filter_input(INPUT_POST, 'requiere_cocina', FILTER_VALIDATE_INT);
         $iva = filter_input(INPUT_POST, 'iva', FILTER_VALIDATE_INT);
         $imagenActual = trim((string) (filter_input(INPUT_POST, 'imagen_actual', FILTER_UNSAFE_RAW) ?? ''));
+
+        // Los arrays no se filtran bien con filter_input
+        $alergenos = $_POST['alergenos'] ?? [];
+        if (!is_array($alergenos)) {
+            $alergenos = [];
+        }
 
         // Validación inicial de campos numéricos y obligatorios.
         // Las reglas más concretas se completan en el servicio.
@@ -135,7 +138,9 @@ class ProductoController
             (int) $requiereCocina,
             (int) $iva
         );
-
+        
+        // Le pasamos el array de alérgenos al DTO
+        $dto->setAlergenos($alergenos);
         if ($this->service->guardarProducto($dto)) {
             header('Location: ' . BASE_URL . '/includes/vistas/admin/gestion_productos.php?msg=exito');
             exit();
@@ -193,30 +198,10 @@ class ProductoController
 
         return true;
     }
-
-    public function obtenerAlergenosProducto(int $idProducto): array
-    {
-        return $this->controller->obtenerAlergenosProducto($idProducto);
-    }
-
-    public function eliminarAlergenosProductos(int $idProducto): bool
-    {
-        return $this->controller->eliminarAlergenosProductos($idProducto);
-    }
-
-    public function vincularProductoAlergeno(int $idProducto, int $idAlergeno): bool
-    {
-        return $this->controller->vincularProductoAlergeno($idProducto, $idAlergeno);
-    }
-
-    // Patrón para ampliar guardado de productos:
-    // 1. Leer el nuevo dato desde POST.
-    // 2. Validarlo en el controlador o servicio.
-    // 3. Añadirlo al DTO si pertenece al producto principal.
-    // 4. Guardarlo en INSERT/UPDATE desde el DAO.
-    // 5. Si es una relación múltiple, guardar primero el producto principal
-    //    y después actualizar las asociaciones correspondientes.
 }
 
-$controller = new ProductoController();
-$controller->manejarPeticion();
+// Inicializamos el controlador SOLO si se le llama directamente y no es un require de clase
+if (basename($_SERVER['PHP_SELF']) === 'ProductoController.php') {
+    $controller = new ProductoController();
+    $controller->manejarPeticion();
+}

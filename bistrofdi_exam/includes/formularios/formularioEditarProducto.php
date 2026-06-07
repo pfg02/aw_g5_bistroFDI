@@ -11,6 +11,7 @@ class FormularioEditarProducto extends Formulario
     private ProductoDTO $producto;
     private array $categorias;
     private ?string $id;
+	private ProductoService $service;
 
     public function __construct(ProductoDTO $producto, array $categorias, ?string $id)
     {
@@ -23,6 +24,7 @@ class FormularioEditarProducto extends Formulario
         $this->producto = $producto;
         $this->categorias = $categorias;
         $this->id = $id;
+		$this->service = new ProductoService();
 
         // Mensajes de error recibidos por GET después de una redirección.
         // Permite informar al usuario sin procesar lógica de guardado en la vista.
@@ -97,6 +99,48 @@ class FormularioEditarProducto extends Formulario
             $opcionesCategorias .= "<option value=\"$idCat\" $selected>$nombreCat</option>";
         }
 
+		// Obetener la lista de alergeenos para mostrarlos.
+       $todosLosAlergenos = $this->service->listarTodosAlergenos();
+
+        // Obtener los alérgenos que ya tiene este producto
+       	$alergenosSeleccionadosInfo = $this->obtenerDatoProducto('alergenos');
+        $alergenosSeleccionados = [];
+
+        if (is_array($alergenosSeleccionadosInfo)) {
+            if (!empty($alergenosSeleccionadosInfo) && isset($alergenosSeleccionadosInfo[0]['id'])) {
+                $alergenosSeleccionados = array_column($alergenosSeleccionadosInfo, 'id');
+            } else {
+                $alergenosSeleccionados = array_map('intval', $alergenosSeleccionadosInfo);
+            }
+        }
+        
+        // Por si hay error en el post
+        if (isset($datos['alergenos']) && is_array($datos['alergenos'])) {
+            $alergenosSeleccionados = array_map('intval', $datos['alergenos']);
+        }
+
+        // Generar el html con los checkboxes.
+        $htmlAlergenos = '<div class="grupo-control"><label>Alérgenos (Marca los que contenga el producto):</label>';
+        $htmlAlergenos .= '<div class="grid-alergenos-form">';
+        
+        foreach ($todosLosAlergenos as $alergeno) {
+            $idAl = $alergeno['id'];
+            $nombreAl = htmlspecialchars($alergeno['nombre'], ENT_QUOTES, 'UTF-8');
+            $imagenAl = htmlspecialchars($alergeno['imagen'], ENT_QUOTES, 'UTF-8');
+            $rutaImg = BASE_URL . '/img/alergenos/' . $imagenAl;
+            
+            $checked = in_array($idAl, $alergenosSeleccionados, true) ? 'checked' : '';
+            
+            $htmlAlergenos .= <<<HTML
+                <label class="label-alergeno-form">
+                    <input type="checkbox" name="alergenos[]" value="$idAl" $checked>
+                    <img src="$rutaImg" alt="$nombreAl" class="img-alergeno-form">
+                    $nombreAl
+                </label>
+HTML;
+        }
+        $htmlAlergenos .= '</div></div>';
+
         // Muestra las imágenes que ya tiene el producto.
         // El campo hidden imagen_actual conserva los nombres al guardar.
         $imagenesActualesHtml = '';
@@ -131,17 +175,6 @@ class FormularioEditarProducto extends Formulario
         $selCocinaNo = ($requiereCocinaSeleccionado === '0') ? 'selected' : '';
 
         $urlListado = BASE_URL . '/includes/vistas/admin/gestion_productos.php';
-
-        $filasAlergenosHTML = '';
-        $filasAlergenosHTML .= <<<HTML
-        <div class="fila-pack-oferta">
-            <div class="grupo-control">
-                <label for="alergeno_id">Alergeno</label>
-                <select name="id[]" id="alergeno_id" class="js-producto-oferta" required>
-        </select>
-    </div>
-</div>
-HTML;
 
 
         return <<<HTML
@@ -187,6 +220,8 @@ $erroresHtml
     <textarea id="descripcion" name="descripcion" rows="4" maxlength="2000">$descripcion</textarea>
 </div>
 
+$htmlAlergenos
+
 <div class="grupo-control">
     <label for="ofertado">Estado:</label>
     <select id="ofertado" name="ofertado" required>
@@ -217,18 +252,6 @@ $erroresHtml
         <input type="file" id="foto3" name="foto3" accept=".jpg,.jpeg,.png,.webp,.gif,image/jpeg,image/png,image/webp,image/gif">
     </div>
 </fieldset>
-
-<fieldset class="bloque-pack-alergenos">
-    <legend>Alérgenos del producto</legend>
-
-    <div id="contenedor-alergenos">
-        $filasAlergenosHTML
-    </div>
-
-    <button type="button" id="btn-anadir-alergeno" class="btn-primario">+ Añadir otro alérgeno</button>
-    <button type="button" id="btn-eliminar-alergeno" class="btn-secundario"> Eliminar todos los alérgenos</button>   
-</fieldset>
-
 
 $imagenesActualesHtml
 

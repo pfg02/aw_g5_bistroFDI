@@ -37,8 +37,6 @@ class ProductoDAO
     }
 
     // Lista todos los productos para administración.
-    // Usa LEFT JOIN para mostrar también productos sin categoría asociada.
-    // Si se necesitan más datos relacionados, se pueden añadir con otros JOIN.
     public function listarTodos(): array
     {
         $productos = [];
@@ -56,6 +54,10 @@ class ProductoDAO
         while ($row = $res->fetch_assoc()) {
             $producto = $this->mapear($row);
             $producto->categoria_nombre = $row['cat_nombre'] ?? 'Sin categoría';
+            
+            // Rellenamos el DTO con sus alérgenos
+            $producto->setAlergenos($this->obtenerInfoAlergenosProducto((int)$producto->getId()));
+            
             $productos[] = $producto;
         }
 
@@ -65,16 +67,39 @@ class ProductoDAO
         return $productos;
     }
 
+    // Devuelve un array de IDs de alérgenos asociados a ese producto.
     public function obtenerAlergenosProducto(int $idProducto): array
     {
-        $sql = "SELECT
-                    pa.alergeno_id,
-                    a.nombre,
-                    a.descripcion,
-                    a.imagen
-                FROM productos_alergenos pa
-                INNER JOIN productos p ON pa.producto_id = p.id
-                LEFT JOIN alergenos a ON a.id = pa.alergeno_id
+        $sql = "SELECT alergeno_id FROM productos_alergenos WHERE producto_id = ?";
+
+        $stmt = $this->db->prepare($sql);
+
+        if (!$stmt) {
+            return [];
+        }
+
+        $stmt->bind_param('i', $idProducto);
+        $stmt->execute();
+
+        $result = $stmt->get_result();
+        $alergenosIds = [];
+
+        while ($row = $result->fetch_assoc()) {
+            $alergenosIds[] = (int) $row['alergeno_id'];
+        }
+
+        $result->free();
+        $stmt->close();
+
+        return $alergenosIds;
+    }
+
+    // Obtiene la información completa de los alérgenos.
+    public function obtenerInfoAlergenosProducto(int $idProducto): array
+    {
+        $sql = "SELECT a.id, a.nombre, a.descripcion, a.imagen
+                FROM alergenos a
+                INNER JOIN productos_alergenos pa ON a.id = pa.alergeno_id
                 WHERE pa.producto_id = ?";
 
         $stmt = $this->db->prepare($sql);
@@ -91,7 +116,7 @@ class ProductoDAO
 
         while ($row = $result->fetch_assoc()) {
             $alergenos[] = [
-                'id' => (int) $row['alergeno_id'],
+                'id' => (int) $row['id'],
                 'nombre' => (string) $row['nombre'],
                 'descripcion' => (string) $row['descripcion'],
                 'imagen' => (string) $row['imagen']
@@ -101,6 +126,31 @@ class ProductoDAO
         $result->free();
         $stmt->close();
 
+        return $alergenos;
+    }
+
+    // Listar todos los alérgenos disponibles (Para el FormularioEditarProducto)
+    public function listarTodosAlergenos(): array
+    {
+        $sql = "SELECT * FROM alergenos ORDER BY id ASC";
+        $stmt = $this->db->prepare($sql);
+        $stmt->execute();
+        
+        $result = $stmt->get_result();
+        $alergenos = [];
+        
+        while ($row = $result->fetch_assoc()) {
+             $alergenos[] = [
+                 'id' => (int) $row['id'],
+                 'nombre' => (string) $row['nombre'],
+                 'descripcion' => (string) $row['descripcion'],
+                 'imagen' => (string) $row['imagen']
+             ];
+        }
+        
+        $result->free();
+        $stmt->close();
+        
         return $alergenos;
     }
 
@@ -141,8 +191,6 @@ class ProductoDAO
         return $exito;
     }
 
-    // Obtiene un producto concreto por id.
-    // Se usa normalmente para cargar formularios de edición o validar operaciones.
     public function obtenerPorId(int $id): ?ProductoDTO
     {
         $sql = "SELECT * FROM productos WHERE id = ?";
@@ -155,13 +203,16 @@ class ProductoDAO
         $result->free();
         $stmt->close();
 
-        return $row ? $this->mapear($row) : null;
+        if ($row) {
+            $producto = $this->mapear($row);
+            $producto->setAlergenos($this->obtenerAlergenosProducto($id));
+            return $producto;
+        }
+
+        return null;
     }
 
     // Guarda un producto.
-    // Si el DTO tiene id, actualiza. Si no tiene id, inserta.
-    // Al añadir campos nuevos a productos, revisar:
-    // SELECT/mapear, INSERT, UPDATE, bind_param, DTO y formulario.
     public function guardar(ProductoDTO $p): bool
     {
         $id = $this->obtenerDatoProducto($p, 'id');
@@ -213,13 +264,27 @@ class ProductoDAO
         }
 
         $exito = $stmt->execute();
+        
+        if ($exito && $id === null) {
+             $id = $this->db->insert_id;
+             $p->id = $id;
+        }
         $stmt->close();
+        
+        // Si todo salió bien, gestionamos los alérgenos
+        if ($exito && $id !== null) {
+            // Borramos los que ya tuviera
+            $this->eliminarAlergenosProductos($id);
+            // Insertamos los que haya pedido guardar
+            $alergenos = $p->getAlergenos();
+            foreach ($alergenos as $idAlergeno) {
+                $this->vincularProductoAlergeno($id, (int)$idAlergeno);
+            }
+        }
 
         return $exito;
     }
 
-    // Actualiza solo la visibilidad/oferta del producto.
-    // Separar operaciones concretas evita modificar campos que no forman parte del cambio.
     public function actualizarEstado(int $id, int $estado): bool
     {
         $sql = "UPDATE productos SET ofertado = ? WHERE id = ?";
@@ -232,9 +297,6 @@ class ProductoDAO
         return $exito;
     }
 
-    /**
-     * Obtiene solo los productos visibles para los clientes en la carta.
-     */
     public function listarOfertados(): array
     {
         $productos = [];
@@ -253,6 +315,10 @@ class ProductoDAO
         while ($row = $res->fetch_assoc()) {
             $producto = $this->mapear($row);
             $producto->categoria_nombre = $row['cat_nombre'] ?? 'Sin categoría';
+            
+            // Rellenamos el DTO con sus alérgenos
+            $producto->setAlergenos($this->obtenerInfoAlergenosProducto((int)$producto->getId()));
+            
             $productos[] = $producto;
         }
 
@@ -262,8 +328,6 @@ class ProductoDAO
         return $productos;
     }
 
-    // Obtiene datos del DTO usando getter si existe.
-    // Permite trabajar con propiedades públicas antiguas o métodos getX().
     private function obtenerDatoProducto(ProductoDTO $dto, string $campo)
     {
         $getter = 'get' . str_replace(' ', '', ucwords(str_replace('_', ' ', $campo)));
@@ -278,12 +342,4 @@ class ProductoDAO
 
         return null;
     }
-
-    // Patrón para datos auxiliares asociados a productos:
-    // 1. Crear método para listar opciones disponibles.
-    // 2. Crear método para obtener opciones asociadas a un producto.
-    // 3. Al guardar, actualizar el producto principal.
-    // 4. Borrar asociaciones anteriores si la relación es múltiple.
-    // 5. Insertar de nuevo las opciones seleccionadas.
-    // 6. Usar JOIN si se necesitan mostrar los datos relacionados en catálogo o administración.
 }

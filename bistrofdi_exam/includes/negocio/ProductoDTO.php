@@ -17,11 +17,10 @@ class ProductoDTO
     public int $ofertado;
     public int $requiere_cocina;
     public int $iva;
-
-    // Dato relacionado obtenido mediante JOIN con categorías.
-    // No pertenece necesariamente a la tabla principal de productos,
-    // pero se usa para mostrar información más completa en vistas.
     public ?string $categoria_nombre;
+
+    // IDs de los alérgenos asociados a este producto.
+    public array $alergenos = [];
 
     public function __construct(
         ?int $id = null,
@@ -110,6 +109,16 @@ class ProductoDTO
         return $this->categoria_nombre;
     }
 
+    public function getAlergenos(): array
+    {
+        return $this->alergenos;
+    }
+
+    public function setAlergenos(array $alergenos): void
+    {
+        $this->alergenos = $alergenos;
+    }
+
     // Método calculado.
     // No se guarda directamente en base de datos: se obtiene a partir del precio base y el IVA.
     public function getPrecioFinal(): float
@@ -128,17 +137,4 @@ class ProductoDTO
     {
         return $this->requiere_cocina === 1;
     }
-
-    // Patrón para ampliar el DTO:
-    // 1. Añadir la propiedad.
-    // 2. Añadir el parámetro al constructor con valor por defecto.
-    // 3. Asignar la propiedad dentro del constructor.
-    // 4. Crear getter.
-    // 5. Mapear el campo en ProductoDAO::mapear().
-    // 6. Añadirlo al INSERT/UPDATE si pertenece a la tabla principal.
-    //
-    // Para datos relacionados mediante otra tabla:
-    // - se puede usar una propiedad auxiliar si solo se va a mostrar;
-    // - si es una relación múltiple, normalmente se carga desde el DAO
-    //   con métodos específicos y no como campo simple del producto.
 }
