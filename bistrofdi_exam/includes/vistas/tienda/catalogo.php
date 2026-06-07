@@ -213,17 +213,15 @@ ob_start();
                                         } else {
                                             $htmlAlergenosModal = '<span>Sin alérgenos</span>';
                                         }
-                                        // Si se añaden nuevos datos visibles en catálogo:
-                                        // 1. Obtenerlos aquí desde el DTO.
-                                        // 2. Escaparlos antes de imprimirlos.
-                                        // 3. Añadirlos a la tarjeta o al modal.
-                                        // 4. Si vienen de otra tabla, cargarlos previamente desde DAO/controlador.
-                                    ?>
 
+										// Extraemos los IDs de los alergenos
+										$idsAlergenosProd = !empty($misAlergenos) ? implode(',', array_column($misAlergenos, 'id')) : '';
+									?>
                                     <article
                                         class="tarjeta-producto"
                                         id="producto-<?= $productoId ?>"
                                         data-nombre="<?= htmlspecialchars($nombreBusqueda, ENT_QUOTES, 'UTF-8') ?>"
+										data-alergenos="<?= $idsAlergenosProd ?>"
                                     >
                                         <div class="imagen-producto">
                                             <img
@@ -288,7 +286,7 @@ ob_start();
                                             <input type="number" name="cantidad" value="1" min="1" max="20" required>
 
                                             <div class="wrap-boton-anadir">
-                                                <button type="submit" class="btn-login">Añadir</button>
+                                                <button type="submit" class="btn-login btn-anadir-catalogo">Añadir</button>
                                                 <span class="mensaje-anadido" id="mensaje-<?= $productoId ?>">✓ Añadido</span>
                                             </div>
                                         </form>
@@ -313,7 +311,7 @@ ob_start();
                     $imagenAl = htmlspecialchars($alergeno['imagen'], ENT_QUOTES, 'UTF-8');
                     $rutaImg = BASE_URL . '/img/alergenos/' . $imagenAl;
                 ?>
-                    <div id="alergeno-<?= $idAl ?>" class="item-leyenda-alergeno">
+                    <div id="alergeno-<?= $idAl ?>" class="item-leyenda-alergeno alergeno-seleccionable" data-id="<?= $idAl ?>">
                         <img src="<?= $rutaImg ?>" alt="<?= $nombreAl ?>" class="img-alergeno-grande"> 
                         <div class="info-leyenda-alergeno">
                             <strong><?= $nombreAl ?></strong>
@@ -397,6 +395,7 @@ ob_start();
 </div>
 
 <script src="../../../js/modal.js"></script>
+<script src="../../../js/alergias.js"></script>
 
 <?php
 $contenidoPrincipal = ob_get_clean();
