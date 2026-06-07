@@ -22,6 +22,12 @@ class ProductoService
         return $this->dao->listarTodos();
     }
 
+	// Lista solo los productos activos para el catálogo de clientes
+    public function listarOfertados(): array
+    {
+        return $this->dao->listarOfertados();
+    }
+
     // Obtiene un producto por id.
     // Si el id no es válido o no existe, devuelve un DTO vacío para evitar errores en formularios.
     public function obtenerProducto(int $id): ProductoDTO

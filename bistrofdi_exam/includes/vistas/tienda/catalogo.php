@@ -8,9 +8,8 @@ declare(strict_types=1);
 
 require_once __DIR__ . '/../../core/config.php';
 require_once __DIR__ . '/../../core/sesion.php';
-require_once __DIR__ . '/../../integracion/ProductoDAO.php';
-require_once __DIR__ . '/../../integracion/OfertasDAO.php';
-require_once __DIR__ . '/../../negocio/AlergenoController.php';
+require_once __DIR__ . '/../../negocio/ProductoService.php';
+require_once __DIR__ . '/../../negocio/OfertasServiceApp.php';
 
 exigirLogin();
 exigirRol('cliente');
@@ -50,19 +49,13 @@ if (!in_array($tipoPedido, $tiposPermitidos, true)) {
 // Carga de productos visibles.
 // Si se necesitan más datos relacionados, se añaden en el DAO con JOIN
 // o mediante métodos auxiliares antes de pintar la vista.
-$productoDAO = new ProductoDAO(Application::getInstance()->conexionBd());
-$productosDTO = $productoDAO->listarOfertados();
+$productoService = new ProductoService();
+$productosDTO = $productoService->listarOfertados();
+$listaAlergenos = $productoService->listarTodosAlergenos();
 
-// Carga de promociones activas.
-// La vista solo muestra la información; la lógica de cálculo se realiza fuera.
-$ofertaDAO = new OfertaDAO(Application::getInstance()->conexionBd());
-$ofertasDisponibles = $ofertaDAO->obtenerOfertasActivas();
+$ofertaService = new OfertasServiceApp();
+$ofertasDisponibles = $ofertaService->obtenerOfertasActivas();
 
-$alergenoController = new AlergenoController(Application::getInstance()->conexionBd());
-$listaAlergenos = $alergenoController->listar();
-
-// Agrupación de productos por categoría.
-// Este patrón permite mostrar bloques separados sin hacer más consultas en la vista.
 $menuAgrupado = [];
 
 foreach ($productosDTO as $producto) {
@@ -145,9 +138,7 @@ ob_start();
                             <h3><?= htmlspecialchars((string) $categoria, ENT_QUOTES, 'UTF-8') ?></h3>
 
                             <div class="lista-productos">
-                                <?php foreach ($productosCat as $p): 
-                                    $alergenoProducto = $productoDAO->obtenerAlergenosProducto($p->getId());    
-                                ?>
+                                <?php foreach ($productosCat as $p): ?>
                                     <?php
                                         // Preparación de datos del producto antes de imprimir HTML.
                                         // Mantener este bloque como zona de lectura/formateo,
@@ -198,13 +189,6 @@ ob_start();
                                             $imagenesModal[] = $imagenPorDefecto;
                                         }
 
-                                        $imagenesAlergenos = [];
-                                        $rutaAlergenoFisica = __DIR__ . '/../../../img/alergenos/';
-                                        foreach($alergenoProducto as $alergeno)
-                                        {
-                                            $imagenesAlergenos[] = $rutaAlergenoFisica . $alergeno['imagen'];
-                                        }
-
                                         $fotoPrincipal = $imagenesModal[0];
 
                                         // JSON escapado para pasarlo al modal mediante data-attributes.
@@ -217,6 +201,18 @@ ob_start();
                                         // Valor normalizado para el buscador del catálogo.
                                         $nombreBusqueda = mb_strtolower($nombre, 'UTF-8');
 
+										$misAlergenos = $p->getAlergenos();
+                                        $htmlAlergenosModal = '';
+                                        
+                                        if (!empty($misAlergenos)) {
+                                            foreach ($misAlergenos as $alergeno) {
+                                                $nombreAl = htmlspecialchars($alergeno['nombre'], ENT_QUOTES, 'UTF-8');
+                                                $rutaImg = BASE_URL . '/img/alergenos/' . htmlspecialchars($alergeno['imagen'], ENT_QUOTES, 'UTF-8');
+                                                $htmlAlergenosModal .= '<img src="' . $rutaImg . '" alt="' . $nombreAl . '" title="' . $nombreAl . '" class="img-alergeno-small">';
+                                            }
+                                        } else {
+                                            $htmlAlergenosModal = '<span>Sin alérgenos</span>';
+                                        }
                                         // Si se añaden nuevos datos visibles en catálogo:
                                         // 1. Obtenerlos aquí desde el DTO.
                                         // 2. Escaparlos antes de imprimirlos.
@@ -238,24 +234,29 @@ ob_start();
                                                 onerror="this.onerror=null; this.src='../../../img/productos/default.png';"
                                             >
                                         </div>
-                                        <div class="imagen-alergeno">
+
+                                        <div class="rejilla-alergenos-catalogo">
                                             <?php
-                                                foreach ($alergenoProducto as $alergeno):
+                                                $misAlergenos = $p->getAlergenos();
+                                                if (!empty($misAlergenos)):
+                                                    foreach ($misAlergenos as $alergeno):
+                                                        $idAl = (int)$alergeno['id'];
+                                                        $nombreAl = htmlspecialchars($alergeno['nombre'], ENT_QUOTES, 'UTF-8');
+                                                        $imagenAl = htmlspecialchars($alergeno['imagen'], ENT_QUOTES, 'UTF-8');
+                                                        $rutaImg = BASE_URL . '/img/alergenos/' . $imagenAl;
                                             ?>        
-                                                <img src="<?= BASE_URL ?>/img/alergenos/<?= htmlspecialchars(trim($alergeno['imagen'])) ?>" alt="Foto alergeno" class="img-mini-alergeno" href="/catalogo.php#<?= htmlspecialchars(trim($alergeno['nombre'])) ?>">
+                                                <a href="#alergeno-<?= $idAl ?>" title="Ir a información de: <?= $nombreAl ?>">
+                                                    <img src="<?= $rutaImg ?>" alt="Icono <?= $nombreAl ?>" class="img-alergeno-small">
+                                                </a>
                                             <?php
-                                                endforeach;
+                                                    endforeach;
+                                                endif;
                                             ?>
                                         </div>
 
                                         <div class="info-producto">
                                             <h4><?= htmlspecialchars($nombre, ENT_QUOTES, 'UTF-8') ?></h4>
                                             <p><?= number_format($precioConIva, 2) ?> €</p>
-
-                                            <?php
-                                            // Botón que abre el modal de detalle.
-                                            // Los data-* permiten pasar información al JavaScript sin crear otra consulta.
-                                            ?>
 
                                             <button
                                                 type="button"
@@ -269,15 +270,11 @@ ob_start();
                                                 data-categoria="<?= htmlspecialchars($categoriaTexto, ENT_QUOTES, 'UTF-8') ?>"
                                                 data-requiere-cocina="<?= htmlspecialchars((string) $requiereCocina, ENT_QUOTES, 'UTF-8') ?>"
                                                 data-imagenes="<?= $imagenesJson ?>"
+												data-alergenos="<?= htmlspecialchars($htmlAlergenosModal, ENT_QUOTES, 'UTF-8') ?>"
                                             >
                                                 Ver producto
                                             </button>
                                         </div>
-
-                                        <?php
-                                        // Formulario para añadir al carrito.
-                                        // La acción separada valida id_producto, cantidad y stock.
-                                        ?>
 
                                         <form
                                             action="../../acciones/carrito/anadir_producto.php"
@@ -288,14 +285,7 @@ ob_start();
                                             <input type="hidden" name="accion" value="agregar">
                                             <input type="hidden" name="id_producto" value="<?= $productoId ?>">
 
-                                            <input
-                                                type="number"
-                                                name="cantidad"
-                                                value="1"
-                                                min="1"
-                                                max="20"
-                                                required
-                                            >
+                                            <input type="number" name="cantidad" value="1" min="1" max="20" required>
 
                                             <div class="wrap-boton-anadir">
                                                 <button type="submit" class="btn-login">Añadir</button>
@@ -313,14 +303,25 @@ ob_start();
         
         <div class="divisor"></div>
 
-        <div class = "div-alergenos">
-            
-            <?php foreach($listaAlergenos as $alergeno): ?>
-                <div id ="<?= htmlspecialchars(trim($alergeno->getNombre()))?>">
-                    <img src="<?= BASE_URL ?>/img/alergenos/<?= htmlspecialchars(trim($alergeno->getImagen())) ?>" alt="Foto alergeno" class="img-mini-alergeno"> 
-                    <p><?= htmlspecialchars(trim($alergeno->getNombre())) ?> - <?= htmlspecialchars(trim($alergeno->getDescripcion())) ?></p>
-                </div>
-            <?php endforeach; ?>
+        <div class="lista-alergenos-leyenda">
+            <h2>Guía de Información de Alérgenos</h2>
+            <div class="grid-leyenda-alergenos">
+                <?php foreach($listaAlergenos as $alergeno): 
+                    $idAl = (int)$alergeno['id'];
+                    $nombreAl = htmlspecialchars($alergeno['nombre'], ENT_QUOTES, 'UTF-8');
+                    $descAl = htmlspecialchars($alergeno['descripcion'], ENT_QUOTES, 'UTF-8');
+                    $imagenAl = htmlspecialchars($alergeno['imagen'], ENT_QUOTES, 'UTF-8');
+                    $rutaImg = BASE_URL . '/img/alergenos/' . $imagenAl;
+                ?>
+                    <div id="alergeno-<?= $idAl ?>" class="item-leyenda-alergeno">
+                        <img src="<?= $rutaImg ?>" alt="<?= $nombreAl ?>" class="img-alergeno-grande"> 
+                        <div class="info-leyenda-alergeno">
+                            <strong><?= $nombreAl ?></strong>
+                            <p><?= $descAl ?></p>
+                        </div>
+                    </div>
+                <?php endforeach; ?>
+            </div>
         </div>
 
         <a href="#top" class="btn-subir-arriba" aria-label="Subir arriba">
@@ -345,7 +346,13 @@ ob_start();
         <div class="modal-detalles-extra">
             <p><strong>Categoría:</strong> <span id="modalCategoria">-</span></p>
             <p><strong>IVA:</strong> <span id="modalIva">-</span>%</p>
+			<div>
+                <strong>Alérgenos:</strong>
+                <div id="modalAlergenos"></div>
+            </div>
         </div>
+
+		
 
         <div class="modal-footer">
             <span class="precio-modal">
@@ -371,10 +378,7 @@ ob_start();
 
                         <ul>
                             <?php
-                                // Carga de productos incluidos en cada promoción.
-                                // Si se repite mucho esta consulta, puede optimizarse cargando todo antes del bucle.
-                                $prods = $ofertaDAO->obtenerProductosDeOferta($of->getId());
-
+                                $prods = $ofertaService->obtenerProductosDeOferta($of->getId());
                                 foreach ($prods as $p):
                             ?>
                                 <li>
@@ -397,14 +401,4 @@ ob_start();
 <?php
 $contenidoPrincipal = ob_get_clean();
 require_once __DIR__ . '/../partials/plantilla.php';
-?>
-
-<?php
-// Patrón para mostrar información nueva del producto en catálogo:
-// 1. Asegurar que el DAO carga el dato.
-// 2. Asegurar que el DTO lo contiene o que llega como dato auxiliar.
-// 3. Preparar el valor antes de imprimirlo.
-// 4. Escapar con htmlspecialchars().
-// 5. Mostrarlo en la tarjeta o pasarlo al modal mediante data-*.
-// 6. Evitar consultas SQL dentro del HTML salvo casos muy controlados.
 ?>

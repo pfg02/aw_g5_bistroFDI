@@ -64,6 +64,11 @@ class OfertasServiceApp
         return $this->ofertasDAO->obtenerOfertasDePedido($idPedido);
     }
 
+	public function obtenerProductosDeOferta(int $idOferta): array
+    {
+        return $this->ofertasDAO->obtenerProductosDeOferta($idOferta);
+    }
+
     public function obtenerOfertasActivas(): array
     {
         return $this->ofertasDAO->obtenerOfertasActivas();

@@ -134,7 +134,7 @@ class FormularioEditarProducto extends Formulario
             $htmlAlergenos .= <<<HTML
                 <label class="label-alergeno-form">
                     <input type="checkbox" name="alergenos[]" value="$idAl" $checked>
-                    <img src="$rutaImg" alt="$nombreAl" class="img-alergeno-form">
+                    <img src="$rutaImg" alt="$nombreAl" class="img-alergeno-small">
                     $nombreAl
                 </label>
 HTML;

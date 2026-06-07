@@ -39,6 +39,7 @@ document.addEventListener('DOMContentLoaded', function () {
     const ivaModal = document.getElementById('modalIva');
     const stockModal = document.getElementById('modalStock');
     const galeriaModal = document.getElementById('modalGaleria');
+	const cajaAlergenos = document.getElementById('modalAlergenos');
 
     document.querySelectorAll('.btn-abrir-modal').forEach(function (btn) {
         btn.addEventListener('click', function () {
@@ -49,6 +50,7 @@ document.addEventListener('DOMContentLoaded', function () {
             const iva = this.getAttribute('data-iva') || '';
             const stock = this.getAttribute('data-stock') || '';
             const imagenesTexto = this.getAttribute('data-imagenes') || '[]';
+			const alergenosHTML = this.getAttribute('data-alergenos') || '';
 
             let imagenes = [];
 
@@ -82,6 +84,10 @@ document.addEventListener('DOMContentLoaded', function () {
                     galeriaModal.innerHTML = '<p class="txt-sin-imagenes">Este producto no tiene imágenes.</p>';
                 }
             }
+
+			if (cajaAlergenos) {
+				cajaAlergenos.innerHTML = alergenosHTML;
+			}
 
             if (modal) {
                 modal.style.display = 'flex';

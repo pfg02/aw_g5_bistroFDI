@@ -3611,22 +3611,6 @@ html {
     border: 2px solid #16a34a !important;
 }
 
-.img-mini-alergeno {
-    border: 2px solid #ccc;
-    border-radius: 50%;
-    color: #ccc;
-    font-size: 1.2rem;
-    width: 35px;
-    height: 35px;
-    align-items: center;
-    justify-content: center;
-}
-
-.div-alergenos{
-    align-items: left;
-
-}
-
 /* =========================================
    ALÉRGENOS - FORMULARIO EDICIÓN PRODUCTO
    ========================================= */
@@ -3642,23 +3626,12 @@ html {
 }
 
 .grupo-control div.grid-alergenos-form label.label-alergeno-form {
-	display: flex;
-    flex-direction: row;
+    display: flex;
     align-items: center;
     gap: 8px;
-    width: auto;
     margin: 0;
     font-weight: normal;
     cursor: pointer;
-    text-align: left;
-}
-
-.grupo-control div.grid-alergenos-form label.label-alergeno-form img.img-alergeno-form {
-    width: 24px;
-    height: 24px;
-    object-fit: contain;
-    flex-shrink: 0;
-    margin: 0;
 }
 
 .grupo-control div.grid-alergenos-form label.label-alergeno-form input[type="checkbox"] {
@@ -3666,8 +3639,6 @@ html {
     height: 18px;
     margin: 0;
     flex-shrink: 0;
-    display: inline-block;
-    appearance: auto;
 }
 
 /* =========================================
@@ -3692,4 +3663,89 @@ html {
     color: #777;
     display: block;
     text-align: center;
+}
+
+/* =========================================
+   ALÉRGENOS - CATÁLOGO PÚBLICO (EJERCICIO 2)
+   ========================================= */
+.rejilla-alergenos-catalogo {
+    display: grid;
+    grid-template-columns: repeat(7, 24px);
+    gap: 5px;
+    margin-top: 10px;
+    justify-content: center;
+}
+
+.rejilla-alergenos-catalogo a {
+    display: block;
+    transition: transform 0.2s ease;
+}
+
+.rejilla-alergenos-catalogo a:hover {
+    transform: scale(1.2);
+}
+
+/* =========================================
+   ALÉRGENOS - ICONOS UNIFICADOS
+   ========================================= */
+.img-alergeno-small {
+    width: 24px;
+    height: 24px;
+    object-fit: contain;
+    flex-shrink: 0;
+    margin: 0;
+}
+
+/* =========================================
+   ALÉRGENOS - GLOSARIO FINAL COMPACTO
+   ========================================= */
+.lista-alergenos-leyenda {
+    margin-top: 30px;
+    padding: 15px;
+    background: #f9f9f9;
+    border-radius: 8px;
+    border: 1px solid #ddd;
+}
+
+.lista-alergenos-leyenda h2 {
+    font-size: 1.2rem;
+    margin-bottom: 15px;
+    color: #444;
+}
+
+.grid-leyenda-alergenos {
+    display: grid;
+    grid-template-columns: repeat(3, minmax(150px, 1fr));
+    gap: 10px;
+}
+
+.item-leyenda-alergeno {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 8px;
+    background: white;
+    border-radius: 6px;
+    box-shadow: 0 1px 3px rgba(0,0,0,0.05);
+}
+
+.img-alergeno-grande {
+    width: 28px; 
+    height: 28px;
+    object-fit: contain;
+    flex-shrink: 0;
+}
+
+.info-leyenda-alergeno strong {
+    display: block;
+    font-size: 0.85rem; 
+    color: #333;
+    margin-bottom: 2px;
+}
+
+.info-leyenda-alergeno p {
+    margin: 0;
+    font-size: 0.75rem; 
+    color: #666;
+    line-height: 1.2;
 }
